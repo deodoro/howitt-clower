@@ -37,15 +37,18 @@
 // -------------------------------
 // numruns: how many independent runs for each slope configuration
 // FirstSlope..LastSlope: iterate fixed overhead slope s in steps of 2
-#define numruns 2     // Number of runs for each configuration
+#define numruns 1     // Number of runs for each configuration
 #define FirstSlope 16 // The program starts with this slope coeff
 #define LastSlope 18  // The program ends with this slope coeff
 
 // Core model sizes (match the paper’s large-scale experiments by setting
 // n=10, bsize=24, K=200; each run is T weeks long)
-#define n 10     // Number of goods
-#define bsize 24 // Number of each type of person
-#define K 200    // Number of store locations
+#define n 2     // Number of goods
+#define bsize 2 // Number of each type of person
+#define K 2    // Number of store locations
+// #define n 10     // Number of goods
+// #define bsize 24 // Number of each type of person
+// #define K 200    // Number of store locations
 
 // Behavioral/tuning parameters
 #define xMax 200    // Maximal target (animal spirits) for a new entrant
@@ -72,6 +75,7 @@
 #define F(x, y, z) ((y - z - C > 0) ? ((y - C - z) / x) : 0) // F(tr0,tr1,f1) = buying price of good 0
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
 
+#define PRINT_LOOP_N 6 // Number of loops between progress reports
 // -----------------------------------
 // Global state (agents, shops, stats)
 // -----------------------------------
@@ -157,6 +161,10 @@ void tryTwo(void);
 int Calc1(void);
 void Calc2(void);
 void RMSE(void);
+void report(int);
+void print_debug(void);
+void print_shop(int);
+void print_trader(int);
 
 // ------------------------
 // RNG: PCG32 implementation
@@ -170,14 +178,17 @@ pcg32_t rng;
 uint32_t pcg32_next(pcg32_t *rng);
 void pcg32_seed(pcg32_t *rng, uint64_t initstate, uint64_t initseq);
 #define SEED_RANDOM(seed) pcg32_seed(&rng, seed, seed)
-#define RANDOM_N(x) (pcg32_next(&rng) % (x))
+#define RANDOM_N(x) trap_rnd_gen(x)
 #define rnd01 ((1 + RANDOM_N(1000)) / 1000.0) // Uniform(0,1] with 0.001 granularity
+void report_trader(int r);
+int trap_rnd_gen(int i);
 
 int main()
 {
   Init();
-  for (slope = FirstSlope; slope <= LastSlope; slope += 2)
+  for (int _slope = FirstSlope; _slope <= LastSlope; _slope += 2)
   { // Sweep overhead slope
+    slope = _slope;
     for (run = 1; run <= numruns; run++)
     { // Repeat runs per slope
       InitRun();
@@ -213,7 +224,15 @@ int main()
           }
         } while (NS == 0); // Ensure at least one shop exists
 
+        print_debug();
+
         // Matching (search/adoption): agents sample a small set of shops
+        printf("line: ");
+        for (i = 1; i <= m; i++) {
+          printf("%d ", line[i]);
+        }
+        printf("\n");
+      
         for (i = 1; i <= m; i++)
         {
           r = line[i];   // Visit in randomized lineup order
@@ -229,6 +248,7 @@ int main()
             fr = soulmate(); // Friend with same consumption good → use their source
             addshop(sh[1][fr]);
             addshop(RANDOM_N(K) + 1); // One random shop (stranger)
+            // NOTE: extra is set within addshop!!!
             if (extra)
             { // If any candidates were found, compare options
               Ucomp = U;
@@ -250,6 +270,7 @@ int main()
               }
             }
           }
+          print_trader(r);
         }
 
         // Trade (accounting): tally shop incomes from adopted relationships
@@ -309,20 +330,12 @@ int main()
           }
 
         // Periodic check during run (here printed every week with prtoscr)
-        if(t%(50*RptPer)==0) {
-        monetary = Calc1(); // Update participation & money stats
-        i = prtoscr;
-        if (i != 0)
-        {
-          printf("%6.0f %6.0f ", part, moneytraders);
-          for (b = 1; b <= 5; b++)
-            printf("%6.0f ", usingmoney[b]);
-          printf("%6d %4d\n", t / 50, NS);
-        }
-        // exit(0);
-        // if(t%(50*RptPer*20)==0) getch();
-        if (monetary == 1)
-          break;
+        if(t%(PRINT_LOOP_N*RptPer)==0) {
+          report(t);
+          monetary = Calc1(); // Update participation & money stats          // if(t%(50*RptPer*20)==0) getch();
+          if (monetary == 1)
+            break;
+            ;
         }
         // End of the week loop
       }
@@ -843,4 +856,48 @@ void pcg32_seed(pcg32_t *rng, uint64_t initstate, uint64_t initseq)
   pcg32_next(rng);
   rng->state += initstate;
   pcg32_next(rng);
+}
+
+void report(int t) 
+{
+  if (prtoscr != 0)
+  {
+    if (t == -1)
+      printf("***");
+    printf("%6.0f %6.0f ", part, moneytraders);
+    for (b = 1; b <= 5; b++)
+      printf("%6.0f ", usingmoney[b]);
+    printf("%6d %4d\n", t / 50, NS);
+  }
+}
+
+void print_debug() {
+  printf("Shops:\n");
+  printf("--------------------------------------------------\n");
+  for (int i = 1; i <= K; i++) {
+    print_shop(i);
+  }
+  printf("Traders:\n");
+  for (int i = 1; i <= m; i++) {
+    print_trader(i);
+  }
+}
+
+void print_shop(int i) {
+  printf("Shop %d: Shop{active=%d, g=[%d,%d], owner=%d, P=[%f,%f], y=[%f,%f], tr=[%f,%f]}\n",
+         i, active[i], g[0][i], g[1][i], owner[i], P[0][i], P[1][i], y[0][i], y[1][i], tr[0][i], tr[1][i]);
+}
+
+void print_trader(int i) 
+{
+  printf("Trader %d: Trader{s=%d, d=%d, q=%d, sh=[%d,%d], familyshop=%d}\n",
+         i, s[i], d[i], q[i], sh[0][i], sh[1][i], familyshop[i]);
+}
+
+int trap_rnd_gen(int i)
+{
+  uint32_t u = pcg32_next(&rng);
+  int next_n = (int)(u % i);
+  printf("RND: %u\n", u);
+  return next_n;
 }
