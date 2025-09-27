@@ -223,6 +223,9 @@ private:
     // Derived/utility
     static constexpr int PRINT_LOOP_N = 6;
 
+    int global_m0; // HACK NECESSARY TO MAKE IT COMPATIBLE WITH FORMER VERSION
+    int global_m1; // HACK NECESSARY TO MAKE IT COMPATIBLE WITH FORMER VERSION
+
     double slope{16.0};
 
     // State
@@ -289,6 +292,8 @@ private:
         }
         // Theoretical max number of "money traders": bsize*(n-2)*(n-1)
         Fmon = bsize * (n - 2.0) * (n - 1.0);
+        global_m0 = 0;
+        global_m1 = 0;
     }
 
     void init_run() {
@@ -575,17 +580,21 @@ private:
         double X = 0.0;
         int a = traders[fr].sh[0];
         int b = traders[fr].sh[1];
+        int m0 = (shops[a].g[0] == traders[fr].s);
+        int m1 = (shops[b].g[0] == traders[fr].d);
+        global_m0 = m0;
+        global_m1 = m1;
+        printf("[0] SET m1 to %d\n", global_m1);
         if (a > 0) {
-            int m0 = (shops[a].g[0] == traders[fr].s) ? 0 : 1;
             if (shops[a].g[m0] == traders[fr].d) {
                 X = shops[a].P[1 - m0];
             } else if (b > 0) {
-                int m1 = (shops[b].g[0] == traders[fr].d) ? 0 : 1;
                 if (shops[a].g[m0] == shops[b].g[m1]) {
                     X = shops[a].P[1 - m0] * shops[b].P[m1];
                 }
             }
         }
+
         return X;
     }
 
@@ -594,12 +603,15 @@ private:
         double X = 0.0;
         int a = traders[r].sh[0];
         int b = traders[r].sh[1];
+        int m0 = (shops[a].g[0] == traders[r].s);
+        int m1 = (shops[b].g[0] == traders[r].d);
+        global_m0 = m0;
+        global_m1 = m1;
+        printf("[1] SET m1 to %d\n", global_m1);
         if (a > 0) {
-            int m0 = (shops[a].g[0] == traders[r].s) ? 0 : 1;
             if (shops[a].g[m0] == traders[r].d) {
                 X = shops[a].P[1 - m0];
             } else if (b > 0) {
-                int m1 = (shops[b].g[0] == traders[r].d) ? 0 : 1;
                 if (shops[a].g[m0] == shops[b].g[m1]) {
                     X = shops[a].P[1 - m0] * shops[b].P[m1];
                 }
@@ -635,7 +647,7 @@ private:
         }
         // optional: remove the chosen shop from candidates to avoid reuse
         if (bestbarter > 0) {
-            c.erase(std::remove(c.begin(), c.end(), bestbarter), c.end());
+            c.erase(c.begin() + bestbarter);
         }
     }
 
@@ -649,22 +661,29 @@ private:
             // improve outlet (sell s)
             if (shops[k].g[0] == s || shops[k].g[1] == s) {
                 int ma = side_of(k, s);
-                if (c[1] == 0 || shops[k].g[ma] == shops[c[1]].g[(shops[c[1]].g[0] == d) ? 0 : 1] || shops[c[0]].P[1 - ((shops[c[0]].g[0] == s) ? 0 : 1)] == 0.0) {
-                    double candidate = shops[k].P[1 - ma] * ((c[1] > 0) ? shops[c[1]].P[(shops[c[1]].g[0] == d) ? 0 : 1] : 0.0);
-                    if (shops[c[0]].P[1 - ((shops[c[0]].g[0] == s) ? 0 : 1)] < shops[k].P[1 - ma]) {
+                if (shops[k].g[ma] == shops[c[1]].g[global_m1] || shops[c[0]].P[1 - global_m0] == 0.0) {
+                    double candidate = shops[k].P[1 - ma] * ((c[1] > 0) ? shops[c[1]].P[1 - global_m0] : 0.0);
+                    if (shops[c[0]].P[1 - global_m0] < shops[k].P[1 - ma]) {
                         c[0] = k;
-                        Ucomp = (c[1] > 0 && shops[k].g[ma] == shops[c[1]].g[(shops[c[1]].g[0] == d) ? 0 : 1]) ? candidate : 0.0;
+                        global_m0 = ma;
+                        Ucomp = (shops[k].g[ma] == shops[c[1]].g[global_m1]) ? candidate : 0.0;
+                        c.erase(c.begin() + k);
                     }
                 }
             }
-            // improve source (buy d)
-            if (shops[k].g[0] == d || shops[k].g[1] == d) {
-                int ma = (shops[k].g[0] == d) ? 0 : 1;
-                if (c[0] == 0 || shops[k].g[ma] == shops[c[0]].g[(shops[c[0]].g[0] == s) ? 0 : 1] || shops[c[1]].P[(shops[c[1]].g[0] == d) ? 0 : 1] == 0.0) {
-                    double candidate = ((c[0] > 0) ? shops[c[0]].P[1 - ((shops[c[0]].g[0] == s) ? 0 : 1)] : 0.0) * shops[k].P[ma];
-                    if (c[1] == 0 || shops[c[1]].P[(shops[c[1]].g[0] == d) ? 0 : 1] < shops[k].P[ma]) {
-                        c[1] = k;
-                        Ucomp = (c[0] > 0 && shops[k].g[ma] == shops[c[0]].g[(shops[c[0]].g[0] == s) ? 0 : 1]) ? candidate : 0.0;
+            else {
+                // improve source (buy d)
+                if (shops[k].g[0] == d || shops[k].g[1] == d) {
+                    int ma = (shops[k].g[0] == d) ? 0 : 1;
+                    if (c[0] == 0 || shops[k].g[ma] == shops[c[0]].g[global_m0] || shops[c[1]].P[global_m1] == 0.0) {
+                        double candidate = (shops[c[0]].P[1 - global_m0]) * shops[k].P[ma];
+                        if (shops[c[1]].P[global_m1] < shops[k].P[ma]) {
+                            c[1] = k;
+                            global_m1 = ma;
+                            printf("[2] SET m1 to %d\n", global_m1);
+                            Ucomp = (c[0] > 0 && shops[k].g[ma] == shops[c[0]].g[global_m0]) ? candidate : 0.0;
+                            c.erase(c.begin() + k);
+                        }
                     }
                 }
             }
@@ -690,8 +709,13 @@ private:
                     double val = shops[a].P[1 - ma] * shops[b].P[mb];
                     if (Ucomp < val) {
                         Ucomp = val;
+                        global_m0 = ma;
+                        global_m1 = mb;
+                        printf("[3] SET m1 to %d\n", global_m1);
                         c[0] = a;
                         c[1] = b;
+                        c.erase(c.begin() + a);
+                        c.erase(c.begin() + b);
                     }
                 }
             }

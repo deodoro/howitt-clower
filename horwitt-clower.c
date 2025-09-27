@@ -562,6 +562,7 @@ double Usample(void)
 {
   m0 = (g[0][sh[0][fr]] == s[fr]);
   m1 = (g[0][sh[1][fr]] == d[fr]);
+  printf("SET M1 to %d\n", m1);
   double X = 0;
   if (sh[0][fr] > 0)
   {
@@ -578,6 +579,7 @@ double Utility(void)
 {
   m0 = (g[0][sh[0][r]] == s[r]);
   m1 = (g[0][sh[1][r]] == d[r]);
+  printf("[2]SET M1 to %d\n", m1);
   double X = 0;
   if (sh[0][r] > 0)
   {
@@ -618,8 +620,8 @@ void tryBarter(void)
       {
         bestbarter = c[a];
         Ubarter = P[q[r]][c[a]];
+        dropshop();
       }
-      dropshop();
     }
 }
 
@@ -636,32 +638,34 @@ void dropshop(void)
 void tryOne(void)
 {
   for (a = 2; a <= 1 + extra; a++)
-    if (g[0][c[a]] == s[r] || g[1][c[a]] == s[r])
+    if ((g[0][c[a]] == s[r]) || (g[1][c[a]] == s[r]))
     {
       ma = (g[0][c[a]] == s[r]);
-      if (g[ma][c[a]] == g[m1][c[1]] || P[1 - m0][c[0]] == 0)
+      if ((g[ma][c[a]] == g[m1][c[1]]) || (P[1 - m0][c[0]] == 0))
       {
         if (P[1 - m0][c[0]] < P[1 - ma][c[a]])
         {
           c[0] = c[a];
           m0 = ma;
           Ucomp = (g[ma][c[a]] == g[m1][c[1]] ? P[1 - ma][c[a]] * P[m1][c[1]] : 0);
+          dropshop();
         }
-        dropshop();
       }
     }
     else
     {
       ma = (g[0][c[a]] == d[r]);
-      if (g[ma][c[a]] == g[m0][c[0]] || P[m1][c[1]] == 0)
+      if ((g[ma][c[a]] == g[m0][c[0]]) || (P[m1][c[1]] == 0))
       {
         if (P[m1][c[1]] < P[ma][c[a]])
         {
           c[1] = c[a];
           m1 = ma;
+          printf("[3]SET M1 to %d\n", m1);
+
           Ucomp = (g[ma][c[a]] == g[m0][c[0]] ? P[1 - m0][c[0]] * P[ma][c[a]] : 0);
+          dropshop();
         }
-        dropshop();
       }
     }
 }
@@ -684,6 +688,7 @@ void tryTwo(void)
             c[1] = c[b];
             m0 = ma;
             m1 = mb;
+            printf("[4]SET M1 to %d\n", m1);
           }
         }
     }
@@ -872,8 +877,8 @@ void report(int t)
 }
 
 void print_debug() {
-  printf("Shops:\n");
   printf("--------------------------------------------------\n");
+  printf("Shops:\n");
   for (int i = 1; i <= K; i++) {
     print_shop(i);
   }
