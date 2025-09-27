@@ -9,7 +9,7 @@ from collections import Counter, defaultdict
 # =========================================
 # Defaults (Table 1 in Howitt–Clower 2000)
 # =========================================
-DEF_T = 20000              # weeks per run
+DEF_T = 1000              # weeks per run
 DEF_n = 10                 # number of commodities
 DEF_b = 24                 # agents per (i,j)-type; m=b*n*(n-1)=2160 for n=10
 DEF_K = 200                # potential shop sites
@@ -391,11 +391,13 @@ def run_once(run_idx, params):
 
     def log_progress(week):
         if params.quiet: return
-        if (week+1) % 50 == 0:
+        # if (week+1) % 50 == 0:
+        if True:
             part, moneytraders, usingmoney = compute_c_stats(transactors, shops, params.n)
             year = (week+1) // 50
             ns = len(shops)
             print(f"{part:6.0f} {moneytraders:6.0f} {usingmoney[1]:6.0f} {usingmoney[2]:6.0f} {usingmoney[3]:6.0f} {usingmoney[4]:6.0f} {usingmoney[5]:6.0f} {year:6d} {ns:4d}")
+            exit(0)
 
     # main loop
     for t in range(params.T):
