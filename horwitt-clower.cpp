@@ -370,42 +370,41 @@ private:
             int r = line[i];
             double U = utility(r);
             double psearch = (U > 0.0 ? lambda : 1.0);
-            if (rng.uniform01_inclusive() >= psearch || traders[r].familyshop != 0) {
-                continue; // skip search
-            }
+            // Skip condition: random or already owns a shop
+            if (rng.uniform01_inclusive() < psearch && traders[r].familyshop == 0) {
+                // candidate initialization with current links
+                std::vector<int> cand;
+                cand.reserve(8);
+                cand.push_back(traders[r].sh[0]); // c[0]
+                cand.push_back(traders[r].sh[1]); // c[1]
 
-            // candidate initialization with current links
-            std::vector<int> cand;
-            cand.reserve(8);
-            cand.push_back(traders[r].sh[0]); // c[0]
-            cand.push_back(traders[r].sh[1]); // c[1]
+                // add friend outlets/sources and one random shop
+                int fr1 = comrade(r);
+                addshop(r, traders[fr1].sh[0], cand);
 
-            // add friend outlets/sources and one random shop
-            int fr1 = comrade(r);
-            addshop(r, traders[fr1].sh[0], cand);
+                int fr2 = soulmate(r);
+                addshop(r, traders[fr2].sh[1], cand);
 
-            int fr2 = soulmate(r);
-            addshop(r, traders[fr2].sh[1], cand);
+                addshop(r, rng.uniform_int(K) + 1, cand);
 
-            addshop(r, rng.uniform_int(K) + 1, cand);
+                int extra = (int)cand.size() - 2;
+                if (extra > 0) {
+                    double Ucomp = U;
+                    int bestbarter = 0;
+                    double Ubarter = 0.0;
 
-            int extra = (int)cand.size() - 2;
-            if (extra > 0) {
-                double Ucomp = U;
-                int bestbarter = 0;
-                double Ubarter = 0.0;
+                    try_barter(r, cand, bestbarter, Ubarter, Ucomp);
+                    try_one(r, cand, Ucomp);
+                    try_two(r, cand, Ucomp);
 
-                try_barter(r, cand, bestbarter, Ubarter, Ucomp);
-                try_one(r, cand, Ucomp);
-                try_two(r, cand, Ucomp);
-
-                if (Ucomp < Ubarter && bestbarter > 0) {
-                    traders[r].sh[0] = bestbarter;
-                    traders[r].sh[1] = 0;
-                } else {
-                    // adopt c[0], c[1] as improved chain if any
-                    traders[r].sh[0] = cand[0];
-                    traders[r].sh[1] = cand[1];
+                    if (Ucomp < Ubarter && bestbarter > 0) {
+                        traders[r].sh[0] = bestbarter;
+                        traders[r].sh[1] = 0;
+                    } else {
+                        // adopt c[0], c[1] as improved chain if any
+                        traders[r].sh[0] = cand[0];
+                        traders[r].sh[1] = cand[1];
+                    }
                 }
             }
             report_trader(traders[r]);
