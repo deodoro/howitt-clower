@@ -28,6 +28,7 @@
 #include <string>
 #include <iostream>
 
+#define DEBUG 1
 struct PCG32 {
     uint64_t state{0};
     uint64_t inc{0}; // must be odd
@@ -164,9 +165,9 @@ public:
                 clock_begin = std::clock();
 
                 for (t = 1; t <= T; ++t) {
-                    while (NS == 0) {
+                    do {
                         weekly_entry();
-                    }
+                    } while (NS == 0);
                     weekly_matching();
                     weekly_trade_and_exit();
                     weekly_update_prices();
@@ -367,10 +368,12 @@ private:
 
     // Matching: agents sample a small set of shops and adopt best links
     void weekly_matching() {
-        std::cout << "line: ";
-        for (int i = 0; i <m; i++)
-            std::cout << line[i + 1] << " ";
-        std::cout << std::endl;
+        if (DEBUG) {
+            std::cout << "line: ";
+            for (int i = 0; i <m; i++)
+                std::cout << line[i + 1] << " ";
+            std::cout << std::endl;
+        }
         for (int i = 1; i <= m; i++) {
             int r = line[i];
             double U = utility(r);
@@ -417,7 +420,9 @@ private:
     }
 
     void report_trader(Trader const& trader) {
-        std::cout << "Trader " << trader.to_string() << std::endl;
+        if (DEBUG) {
+            std::cout << "Trader " << trader.to_string() << std::endl;
+        }
     }
 
     // Trade/accounting and stochastic exit of unprofitable shops
@@ -558,7 +563,7 @@ private:
     }
 
     int comrade(int r) {
-        // someone else producing s[r]
+        // someone else producing s[r] (the same production good)
         int cnt = std::max(1, numprod[traders[r].s]);
         int k = 1 + rng.uniform_int(std::max(1, cnt - 1));
         int fr = produces[traders[r].s][k - 1];
@@ -567,7 +572,7 @@ private:
     }
 
     int soulmate(int r) {
-        // someone else consuming d[r]
+        // someone else consuming d[r] (the  same consumption good)
         int cnt = std::max(1, numcons[traders[r].d]);
         int k = 1 + rng.uniform_int(std::max(1, cnt - 1));
         int fr = consumes[traders[r].d][k - 1];
@@ -584,7 +589,9 @@ private:
         int m1 = (shops[b].g[0] == traders[fr].d);
         global_m0 = m0;
         global_m1 = m1;
-        printf("[0] SET m1 to %d\n", global_m1);
+        if (DEBUG) {
+            printf("[0] SET m1 to %d\n", global_m1);
+        }
         if (a > 0) {
             if (shops[a].g[m0] == traders[fr].d) {
                 X = shops[a].P[1 - m0];
@@ -607,7 +614,9 @@ private:
         int m1 = (shops[b].g[0] == traders[r].d);
         global_m0 = m0;
         global_m1 = m1;
-        printf("[1] SET m1 to %d\n", global_m1);
+        if (DEBUG) {
+            printf("[1] SET m1 to %d\n", global_m1);
+        }
         if (a > 0) {
             if (shops[a].g[m0] == traders[r].d) {
                 X = shops[a].P[1 - m0];
@@ -654,14 +663,14 @@ private:
     void try_one(int r, std::vector<int>& c, double& Ucomp) {
         int s = traders[r].s, d = traders[r].d;
         // Track which side matches for current c[0] and c[1]
-        auto side_of = [&](int k, int good)->int { return (shops[k].g[0] == good) ? 0 : 1; };
+        auto side_of = [&](int k, int good)->int { return shops[k].g[0] == good; };
 
         for (size_t idx = 2; idx < c.size(); ++idx) {
             int k = c[idx];
             // improve outlet (sell s)
             if (shops[k].g[0] == s || shops[k].g[1] == s) {
                 int ma = side_of(k, s);
-                if (shops[k].g[ma] == shops[c[1]].g[global_m1] || shops[c[0]].P[1 - global_m0] == 0.0) {
+                if ((shops[k].g[ma] == shops[c[1]].g[global_m1]) || (shops[c[0]].P[1 - global_m0] == 0.0)) {
                     double candidate = shops[k].P[1 - ma] * ((c[1] > 0) ? shops[c[1]].P[1 - global_m0] : 0.0);
                     if (shops[c[0]].P[1 - global_m0] < shops[k].P[1 - ma]) {
                         c[0] = k;
@@ -675,12 +684,14 @@ private:
                 // improve source (buy d)
                 if (shops[k].g[0] == d || shops[k].g[1] == d) {
                     int ma = (shops[k].g[0] == d) ? 0 : 1;
-                    if (c[0] == 0 || shops[k].g[ma] == shops[c[0]].g[global_m0] || shops[c[1]].P[global_m1] == 0.0) {
+                    if ((c[0] == 0 || shops[k].g[ma] == shops[c[0]].g[global_m0]) || (shops[c[1]].P[global_m1] == 0.0)) {
                         double candidate = (shops[c[0]].P[1 - global_m0]) * shops[k].P[ma];
                         if (shops[c[1]].P[global_m1] < shops[k].P[ma]) {
                             c[1] = k;
                             global_m1 = ma;
-                            printf("[2] SET m1 to %d\n", global_m1);
+                            if (DEBUG) {
+                                printf("[2] SET m1 to %d\n", global_m1);
+                            }
                             Ucomp = (c[0] > 0 && shops[k].g[ma] == shops[c[0]].g[global_m0]) ? candidate : 0.0;
                             c.erase(c.begin() + k);
                         }
@@ -692,7 +703,7 @@ private:
 
     void try_two(int r, std::vector<int>& c, double& Ucomp) {
         int s = traders[r].s, d = traders[r].d;
-        auto side_of = [&](int k, int good)->int { return (shops[k].g[0] == good) ? 0 : 1; };
+        auto side_of = [&](int k, int good)->int { return shops[k].g[0] == good; };
 
         for (size_t ia = 2; ia < c.size(); ++ia) {
             int a = c[ia];
@@ -711,7 +722,9 @@ private:
                         Ucomp = val;
                         global_m0 = ma;
                         global_m1 = mb;
-                        printf("[3] SET m1 to %d\n", global_m1);
+                        if (DEBUG) {
+                            printf("[3] SET m1 to %d\n", global_m1);
+                        }
                         c[0] = a;
                         c[1] = b;
                         c.erase(c.begin() + a);
@@ -867,9 +880,11 @@ private:
     }
 
     void print_debug() const {
-        std::cout << "--------------------------------------------------" << std::endl;
-        print_shops();
-        print_traders();
+        if (DEBUG) {
+            std::cout << "--------------------------------------------------" << std::endl;
+            print_shops();
+            print_traders();
+        }
     }
 
     void print_traders() const {
