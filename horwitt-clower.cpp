@@ -108,9 +108,9 @@ public:
     static constexpr int FirstSlope = 16;
     static constexpr int LastSlope  = 18;
 
-    static constexpr int n      = 10;   // goods
-    static constexpr int bsize  = 24;   // each (i!=j) type count
-    static constexpr int K      = 200;  // shop locations
+    static constexpr int n      = 4;   // goods
+    static constexpr int bsize  = 2;   // each (i!=j) type count
+    static constexpr int K      = 4;  // shop locations
 
     // static constexpr int n      = 10;   // goods
     // static constexpr int bsize  = 24;   // each (i!=j) type count
@@ -135,16 +135,16 @@ public:
     Simulation() {
         traders.resize(m + 1); // 1-based
         shops.resize(K + 1);   // 1-based
-        produces.assign(n + 1, {});
-        consumes.assign(n + 1, {});
-        numprod.assign(n + 1, 0);
-        numcons.assign(n + 1, 0);
-        line.resize(m + 1, 0);
-        usingmoney.assign(n + 1, 0.0);
-        Pinv.assign(n + 1, 0.0);
+        produces.assign(n, {});
+        consumes.assign(n, {});
+        numprod.assign(n, 0);
+        numcons.assign(n, 0);
+        line.resize(m, 0);
+        usingmoney.assign(n, 0.0);
+        Pinv.assign(n, 0.0);
         for (int h = 0; h < 2; ++h) {
-            vol[h].assign(n + 1, 0.0);
-            avp[h].assign(n + 1, 0.0);
+            vol[h].assign(n, 0.0);
+            avp[h].assign(n, 0.0);
         }
         init_static();
     }
@@ -289,8 +289,8 @@ private:
                     traders[r].s = i;
                     traders[r].d = j;
                     traders[r].q = (traders[r].s > traders[r].d);
-                    numprod[i]++; produces[i].push_back(r);
-                    numcons[j]++; consumes[j].push_back(r);
+                    numprod[i-1]++; produces[i-1].push_back(r);
+                    numcons[j-1]++; consumes[j-1].push_back(r);
                 }
             }
         }
@@ -326,10 +326,11 @@ private:
 
     void lineup() {
         // random permutation of 1..m
-        std::vector<int> start(m + 1);
-        for (int i = 1; i <= m; ++i) start[i] = i;
-        for (int j = 1; j <= m; ++j) {
-            int k = rng.uniform_int(m - j + 1) + 1;
+        std::vector<int> start(m);
+        for (int i = 0; i < m; ++i) 
+            start[i] = i+1;
+        for (int j = 0; j < m; ++j) {
+            int k = rng.uniform_int(m - j);
             line[j] = start[k];
             for (int i = k; i <= m - j; ++i) {
                 start[i] = start[i + 1];
@@ -373,12 +374,12 @@ private:
     void weekly_matching() {
         if (DEBUG) {
             std::cout << "line: ";
-            for (int i = 0; i <m; i++)
-                std::cout << line[i + 1] << " ";
+            for (int i = 0; i < m; i++)
+                std::cout << line[i] << " ";
             std::cout << std::endl;
         }
         for (int i = 1; i <= m; i++) {
-            int r = line[i];
+            int r = line[i-1];
             double U = utility(r);
             double psearch = (U > 0.0 ? lambda : 1.0);
             // Skip condition: random or already owns a shop
@@ -543,8 +544,8 @@ private:
         
         // Stranger who likes s[r]
         U = 0.0;
-        int k = 1 + rng.uniform_int(std::max(1, numcons[traders[r].s]) - 1);
-        fr = consumes[traders[r].s][k - 1];
+        int k = 1 + rng.uniform_int(std::max(1, numcons[traders[r].s-1]) - 1);
+        fr = consumes[traders[r].s-1][k - 1];
         Ucomp = u_sample(fr);
         U = 0.0;
         if (traders[fr].s == traders[r].d) U = P1;
@@ -557,8 +558,8 @@ private:
         }
         // Stranger who produces d[r]
         if (U < Ucomp) {
-            int k = 1 + rng.uniform_int(std::max(1, numprod[traders[r].d]) - 1);
-            fr = produces[traders[r].d][k - 1];
+            int k = 1 + rng.uniform_int(std::max(1, numprod[traders[r].d-1]) - 1);
+            fr = produces[traders[r].d-1][k - 1];
             Ucomp = u_sample(fr);
             U = 0.0;
             if (traders[fr].d == traders[r].s) U = P1;
@@ -581,19 +582,19 @@ private:
 
     int comrade(int r) {
         // someone else producing s[r] (the same production good)
-        int cnt = std::max(1, numprod[traders[r].s]);
+        int cnt = std::max(1, numprod[traders[r].s-1]);
         int k = 1 + rng.uniform_int(std::max(1, cnt - 1));
-        int fr = produces[traders[r].s][k - 1];
-        if (fr >= r && k < cnt) fr = produces[traders[r].s][k]; // skip self
+        int fr = produces[traders[r].s-1][k - 1];
+        if (fr >= r && k < cnt) fr = produces[traders[r].s-1][k]; // skip self
         return fr;
     }
 
     int soulmate(int r) {
         // someone else consuming d[r] (the  same consumption good)
-        int cnt = std::max(1, numcons[traders[r].d]);
+        int cnt = std::max(1, numcons[traders[r].d-1]);
         int k = 1 + rng.uniform_int(std::max(1, cnt - 1));
-        int fr = consumes[traders[r].d][k - 1];
-        if (fr >= r && k < cnt) fr = consumes[traders[r].d][k]; // skip self
+        int fr = consumes[traders[r].d-1][k - 1];
+        if (fr >= r && k < cnt) fr = consumes[traders[r].d-1][k]; // skip self
         return fr;
     }
 
@@ -767,7 +768,7 @@ private:
 
             if (b > 0 && shops[a].g[ma] == shops[b].g[mb]) {
                 moneytraders += 1.0;
-                usingmoney[shops[b].g[mb]] += 1.0;
+                usingmoney[shops[b].g[mb]-1] += 1.0;
             }
         }
 
@@ -783,14 +784,14 @@ private:
 
         usingmax = 0.0;
         moneygood = 0;
-        for (int i = 1; i <= n; ++i) {
+        for (int i = 0; i < n; ++i) {
             if (usingmoney[i] > usingmax) {
                 usingmax = usingmoney[i];
-                moneygood = i;
+                moneygood = i+1;
             }
         }
 
-        if (usingmoney[moneygood] >= 0.99 * Fmon) {
+        if (usingmoney[moneygood-1] >= 0.99 * Fmon) {
             if (endcount == 0) monyear = t / 50;
             endcount++;
         } else {
@@ -812,8 +813,8 @@ private:
 
         W = 1.0 - (overhead_f(moneygood) + C) / bsize;
         if (W > 0.0) {
-            for (int i = 1; i <= n; ++i) {
-                Pinv[i] = ((m / n) - (overhead_f(i) + C)) /
+            for (int i = 0; i < n; ++i) {
+                Pinv[i] = ((m / n) - (overhead_f(i+1) + C)) /
                           ((m / n) - (n - 2) * (overhead_f(moneygood) + C));
             }
         }
@@ -849,21 +850,21 @@ private:
                 if (shops[k].g[0] == moneygood || shops[k].g[1] == moneygood) {
                     int ma = (shops[k].g[1] == moneygood);
                     int i = shops[k].g[1 - ma];
-                    vol[0][i] += shops[k].y[1 - ma];
-                    if (vol[0][i] > 0.0) {
-                        avp[0][i] += (shops[k].y[1 - ma] / vol[0][i]) * (shops[k].P[1 - ma] - avp[0][i]);
+                    vol[0][i-1] += shops[k].y[1 - ma];
+                    if (vol[0][i-1] > 0.0) {
+                        avp[0][i-1] += (shops[k].y[1 - ma] / vol[0][i-1]) * (shops[k].P[1 - ma] - avp[0][i-1]);
                     }
-                    vol[1][i] += shops[k].y[ma];
-                    if (vol[1][i] > 0.0) {
-                        avp[1][i] += (shops[k].y[ma] / vol[1][i]) * (shops[k].P[ma] - avp[1][i]);
+                    vol[1][i-1] += shops[k].y[ma];
+                    if (vol[1][i-1] > 0.0) {
+                        avp[1][i-1] += (shops[k].y[ma] / vol[1][i-1]) * (shops[k].P[ma] - avp[1][i-1]);
                     }
                 }
             }
 
             for (int i = 1; i <= n; ++i) {
                 if (i == moneygood) continue;
-                avp[0][i] = (W != 0.0) ? (avp[0][i] / W) : 0.0;
-                avp[1][i] = (Pinv[i] != 0.0) ? (avp[1][i] / Pinv[i]) : 0.0;
+                avp[0][i-1] = (W != 0.0) ? (avp[0][i-1] / W) : 0.0;
+                avp[1][i-1] = (Pinv[i-1] != 0.0) ? (avp[1][i-1] / Pinv[i-1]) : 0.0;
             }
 
             for (int h = 0; h < 2; ++h) {
@@ -871,7 +872,7 @@ private:
                 int count = 0;
                 for (int i = 1; i <= n; ++i) {
                     if (i == moneygood) continue;
-                    double e = 1.0 - avp[h][i];
+                    double e = 1.0 - avp[h][i-1];
                     sse += e * e;
                     ++count;
                 }
@@ -887,7 +888,7 @@ private:
             if (tt == -1) std::printf("***");
             std::printf("%6.0f %6.0f ", part, moneytraders);
             for (int b = 1; b <= 5 && b <= n; ++b) {
-                std::printf("%6.0f ", usingmoney[b]);
+                std::printf("%6.0f ", usingmoney[b-1]);
             }
             std::printf("%6d %4d\n", (tt == -1 ? t : tt) / 50, NS);
         }
