@@ -147,8 +147,6 @@ public:
         shops.resize(K + 1);   // 1-based
         produces.assign(n + 1, {});
         consumes.assign(n + 1, {});
-        numprod.assign(n + 1, 0);
-        numcons.assign(n + 1, 0);
         line.resize(m + 1, 0);
         usingmoney.assign(n + 1, 0.0);
         Pinv.assign(n + 1, 0.0);
@@ -244,7 +242,6 @@ private:
 
     std::vector<std::vector<int>> produces; // by good i: trader ids producing i
     std::vector<std::vector<int>> consumes; // by good j: trader ids desiring j
-    std::vector<int> numprod, numcons;
 
     std::vector<int> line; // weekly lineup (permutation of traders)
     std::vector<double> usingmoney; // per good
@@ -300,8 +297,6 @@ private:
                     traders[r].s = i;
                     traders[r].d = j;
                     traders[r].q = (traders[r].s > traders[r].d);
-                    numprod[i]++;
-                    numcons[j]++;
                     produces[i].push_back(r);
                     consumes[j].push_back(r);
                 }
@@ -562,7 +557,7 @@ private:
         results, but it should be removed */
         // Stranger who likes s[r]
         U = 0.0;
-        int k = 1 + rng.uniform_int(std::max(1, numcons[traders[r].s]) - 1);
+        int k = 1 + rng.uniform_int(std::max(1, (int)consumes[traders[r].s].size()) - 1);
         fr = consumes[traders[r].s][k - 1];
         Ucomp = u_sample(traders[fr]);
         U = 0.0;
@@ -577,7 +572,7 @@ private:
         }
         // Stranger who produces d[r]
         if (U < Ucomp) {
-            int k = 1 + rng.uniform_int(std::max(1, numprod[traders[r].d]) - 1);
+            int k = 1 + rng.uniform_int(std::max(1, (int)produces[traders[r].d].size()) - 1);
             fr = produces[traders[r].d][k - 1];
             Ucomp = u_sample(traders[fr]);
             U = 0.0;
@@ -608,7 +603,7 @@ private:
     */
     int comrade(const Trader& trader) {
         // someone else producing s[r] (the same production good)
-        int k = rng.uniform_int(std::max(0, std::max(1, numprod[trader.s]) - 1));
+        int k = rng.uniform_int(std::max(0, std::max(1, (int)produces[trader.s].size()) - 1));
         int fr = produces[trader.s][k];
         if (fr >= trader.idx) fr = produces[trader.s][k+1]; // skip self
         return fr;
@@ -616,7 +611,7 @@ private:
 
     int soulmate(const Trader& trader) {
         // someone else consuming d[r] (the  same consumption good)
-        int k = rng.uniform_int(std::max(0, std::max(1, numcons[trader.d]) - 1));
+        int k = rng.uniform_int(std::max(0, std::max(1, (int)consumes[trader.d].size()) - 1));
         int fr = consumes[trader.d][k];
         if (fr >= trader.idx) fr = consumes[trader.d][k+1]; // skip self
         return fr;
