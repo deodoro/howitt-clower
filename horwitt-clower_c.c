@@ -32,7 +32,7 @@
 #include <stdlib.h>
 #include <stdint.h>
 
-#define DEBUG 1
+#define DEBUG 0
 
 // -------------------------------
 // Global configuration parameters
@@ -357,7 +357,6 @@ int main()
           monetary = Calc1(); // Update participation & money stats          // if(t%(50*RptPer*20)==0) getch();
           if (monetary == 1)
             break;
-            ;
         }
         // End of the week loop
       }

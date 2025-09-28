@@ -28,7 +28,7 @@
 #include <string>
 #include <iostream>
 
-#define DEBUG 1
+#define DEBUG 0
 struct PCG32 {
     uint64_t state{0};
     uint64_t inc{0}; // must be odd
@@ -293,7 +293,7 @@ private:
                     ++r;
                     traders[r].s = i;
                     traders[r].d = j;
-                    traders[r].q = (traders[r].s > traders[r].d) ? 1 : 0;
+                    traders[r].q = (traders[r].s > traders[r].d);
                     numprod[i]++; produces[i].push_back(r);
                     numcons[j]++; consumes[j].push_back(r);
                 }
@@ -516,6 +516,7 @@ private:
         else {
             int sh1 = traders[fr].sh[1];
             if (sh1 > 0) {
+                // TODO: These unary checks don't look right, to review
                 int m1 = (shops[sh1].g[0] == traders[fr].d) ? 0 : 1;
                 if (shops[sh1].g[m1] == traders[r].d) U = P0 * shops[sh1].P[m1];
             }
@@ -699,7 +700,7 @@ private:
             else {
                 // improve source (buy d)
                 if (shops[k].g[0] == d || shops[k].g[1] == d) {
-                    int ma = (shops[k].g[0] == d) ? 0 : 1;
+                    int ma = (shops[k].g[0] == d);
                     if ((c[0] == 0 || shops[k].g[ma] == shops[c[0]].g[global_m0]) || (shops[c[1]].P[global_m1] == 0.0)) {
                         double candidate = (shops[c[0]].P[1 - global_m0]) * shops[k].P[ma];
                         if (shops[c[1]].P[global_m1] < shops[k].P[ma]) {
@@ -760,12 +761,11 @@ private:
             if (traders[r].sh[0] <= 0) continue;
             int a = traders[r].sh[0];
             int b = traders[r].sh[1];
-            int ma = (shops[a].g[0] == traders[r].s) ? 0 : 1;
-            int mb = (b > 0 && shops[b].g[0] == traders[r].d) ? 0 : 1;
+            int ma = (shops[a].g[0] == traders[r].s);
+            int mb = (b > 0 && shops[b].g[0] == traders[r].d);
 
-            bool can_trade = (shops[a].g[ma] == traders[r].d) ||
-                             (b > 0 && shops[a].g[ma] == shops[b].g[mb]);
-            part += can_trade ? 1.0 : 0.0;
+            part += (shops[a].g[ma] == traders[r].d) ||
+                    (shops[a].g[ma] == shops[b].g[mb]);
 
             if (b > 0 && shops[a].g[ma] == shops[b].g[mb]) {
                 moneytraders += 1.0;
@@ -799,7 +799,7 @@ private:
             endcount = 0;
         }
 
-        return (endcount >= persist) ? 1 : 0;
+        return (endcount >= persist);
     }
 
     void calc2() {
@@ -849,7 +849,7 @@ private:
             for (int k = 1; k <= K; ++k) {
                 if (!shops[k].active) continue;
                 if (shops[k].g[0] == moneygood || shops[k].g[1] == moneygood) {
-                    int ma = (shops[k].g[1] == moneygood) ? 1 : 0;
+                    int ma = (shops[k].g[1] == moneygood);
                     int i = shops[k].g[1 - ma];
                     vol[0][i] += shops[k].y[1 - ma];
                     if (vol[0][i] > 0.0) {
