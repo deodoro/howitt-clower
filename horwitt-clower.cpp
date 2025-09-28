@@ -508,44 +508,42 @@ private:
 
     // Research process for a prospective owner r
     // Should return an object ResearchResults, with targ0 and targ1 set as the local variables, and enter set as the return value of the function
-    ResearchResults research(int r) {
+    ResearchResults research(int idx) {
         ResearchResults res;
+        Trader& trader = traders[idx];
         // trial targets
         res.targ0 = rng.uniform_int(xMax) + 1.0;
         res.targ1 = rng.uniform_int(xMax) + 1.0;
 
-        double P0 = priceF(res.targ0, res.targ1, overhead_f(traders[r].d));
-        double P1 = priceF(res.targ1, res.targ0, overhead_f(traders[r].s));
+        double P0 = priceF(res.targ0, res.targ1, overhead_f(trader.d));
+        double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.s));
 
         // Test with a comrade
-        int fr = comrade(traders[r]);
-        Trader& partner = traders[fr];
+        Trader& partner = traders[comrade(trader)];
         double Ucomp = u_sample(partner);
         double U = 0.0;
         // direct or indirect reachability check through fr’s links
-        if (partner.d == traders[r].d) U = P0;
+        if (partner.d == trader.d) U = P0;
         else {
             int sh1 = partner.buy;
             if (sh1 > 0) {
                 int m1 = (shops[sh1].g[0] == partner.d);
-                if (shops[sh1].g[m1] == traders[r].d) U = P0 * shops[sh1].P[m1];
+                if (shops[sh1].g[m1] == trader.d) U = P0 * shops[sh1].P[m1];
             }
         }
         // Test with a soulmate
         if (U < Ucomp) {
             U = 0;
-            fr = soulmate(traders[r]);
-            Trader& partner = traders[fr];
+            Trader& partner = traders[soulmate(trader)];
             // partner = traders[fr];
             Ucomp = u_sample(partner);
             U = 0.0;
-            if (partner.s == traders[r].s) {
+            if (partner.s == trader.s) {
                 U = P0;
             } else {
-                int sh0 = partner.sell;
-                if (sh0 > 0) {
-                    int m0 = (shops[sh0].g[0] == partner.s);
-                    if (shops[sh0].g[m0] == traders[r].s) U = shops[sh0].P[1 - m0] * P0;
+                if (partner.sell > 0) {
+                    int m0 = (shops[partner.sell].g[0] == partner.s);
+                    if (shops[partner.sell].g[m0] == trader.s) U = shops[partner.sell].P[1 - m0] * P0;
                 }
             }
             if (U < Ucomp) {
@@ -562,34 +560,30 @@ private:
         // Stranger who likes s[r]
         {
             U = 0.0;
-            int k = 1 + rng.uniform_int(std::max(1, (int)consumes[traders[r].s].size()) - 1);
-            int fr = consumes[traders[r].s][k - 1];
-            Trader &partner = traders[fr];
+            int k = 1 + rng.uniform_int(std::max(1, (int)consumes[trader.s].size()) - 1);
+            Trader &partner = traders[consumes[trader.s][k - 1]];
             Ucomp = u_sample(partner);
             U = 0.0;
-            if (partner.s == traders[r].d) {
+            if (partner.s == trader.d) {
                 U = P1;
             } else {
-                int sh0 = partner.sell;
-                if (sh0 > 0) {
-                    int m0 = (shops[sh0].g[0] == partner.s);
-                    if (shops[sh0].g[m0] == traders[r].d) U = shops[sh0].P[1 - m0] * P1;
+                if (partner.sell > 0) {
+                    int m0 = (shops[partner.sell].g[0] == partner.s);
+                    if (shops[partner.sell].g[m0] == trader.d) U = shops[partner.sell].P[1 - m0] * P1;
                 }
             }
             // Stranger who produces d[r]
             if (U < Ucomp) {
-                int k = 1 + rng.uniform_int(std::max(1, (int)produces[traders[r].d].size()) - 1);
-                int  fr = produces[traders[r].d][k - 1];
-                Trader& partner = traders[fr];
+                int k = 1 + rng.uniform_int(std::max(1, (int)produces[trader.d].size()) - 1);
+                Trader& partner = traders[produces[trader.d][k - 1]];
                 Ucomp = u_sample(partner);
                 U = 0.0;
-                if (partner.d == traders[r].s) {
+                if (partner.d == trader.s) {
                     U = P1;
                 } else {
-                    int sh1 = partner.buy;
-                    if (sh1 > 0) {
-                        int m1 = (shops[sh1].g[0] == partner.d);
-                        if (shops[sh1].g[m1] == traders[r].s) U = P1 * shops[sh1].P[m1];
+                    if (partner.buy > 0) {
+                        int m1 = (shops[partner.buy].g[0] == partner.d);
+                        if (shops[partner.buy].g[m1] == trader.s) U = P1 * shops[partner.buy].P[m1];
                     }
                 }
                 if (U < Ucomp) {
