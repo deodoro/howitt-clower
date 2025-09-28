@@ -27,6 +27,7 @@
 #include <numeric>
 #include <string>
 #include <iostream>
+#include <assert.h>
 
 #define DEBUG 0
 struct PCG32 {
@@ -91,6 +92,7 @@ public:
 
 class Shop {
 public:
+    int idx{0};
     int active{0};         // 1 if active
     int g[2]{0,0};         // traded goods, ordered so g[0]<=g[1]
     int owner{0};          // trader id that owns this shop
@@ -104,7 +106,7 @@ public:
                "], y=[" + std::to_string(y[0]) + "," + std::to_string(y[1]) + "], tr=[" + std::to_string(tr[0]) + "," + std::to_string(tr[1]) + "]}";
     }
 
-    bool provides(int good) {
+    bool provides(int good) const {
         return g[0] == good || g[1] == good;
     }
 };
@@ -330,6 +332,7 @@ private:
         }
         for (int k = 1; k <= K; ++k) {
             shops[k] = Shop{};
+            shops[k].idx = k; // PROVISIONAL: to make the code compatible while it's  refactored
         }
 
         lineup();
@@ -403,12 +406,12 @@ private:
 
                 // add friend outlets/sources and one random shop
                 int fr1 = comrade(r);
-                addshop(traders[fr1], traders[fr1].sell, cand);
+                addshop(traders[fr1], shops[traders[fr1].sell], cand);
 
                 int fr2 = soulmate(r);
-                addshop(traders[fr2], traders[fr2].buy, cand);
+                addshop(traders[fr2], shops[traders[fr2].buy], cand);
 
-                addshop(traders[r], rng.uniform_int(K) + 1, cand);
+                addshop(traders[r], shops[rng.uniform_int(K) + 1], cand);
 
                 if (cand.size() > 2) {
                     double Ucomp = U;
@@ -446,11 +449,11 @@ private:
     // Trade/accounting and stochastic exit of unprofitable shops
     void weekly_trade_and_exit() {
         print_debug("Weekly trade begins");
+
         // reset shop weekly incomes
         for (int k = 1; k <= K; ++k) if (shops[k].active) {
             shops[k].y[0] = shops[k].y[1] = 0.0;
         }
-
         // tally incomes from adopted relationships
         for (int r = 1; r <= m; ++r) {
             int a = traders[r].sell;
@@ -469,7 +472,6 @@ private:
                 }
             }
         }
-
         // exit if unprofitable
         for (int k = 1; k <= K; ++k) if (shops[k].active) {
             bool unprof0 = (shops[k].y[0] - shops[k].P[1] * shops[k].y[1] - overhead_f(shops[k].g[0]) <= 0.0);
@@ -477,6 +479,7 @@ private:
             if ((unprof0 || unprof1) && rng.uniform01_inclusive() <= theta) {
                 int own = shops[k].owner;
                 shops[k] = Shop{};
+                shops[k].idx = k;
                 NS--;
                 if (own > 0) traders[own].familyshop = 0;
 
@@ -487,6 +490,7 @@ private:
                 }
             }
         }
+
 
         print_debug("Weekly trade and exit completed");
     }
@@ -667,14 +671,10 @@ private:
         return X;
     }
 
-    void addshop(const Trader& trader, int ss, std::vector<int>& cand) {
-        if (shops[ss].active) {
-            int s = trader.s;
-            int d = trader.d;
-            if (shops[ss].g[0] == s || shops[ss].g[1] == s || shops[ss].g[0] == d || shops[ss].g[1] == d) {
-                if (std::find(cand.begin(), cand.end(), ss) == cand.end()) {
-                    cand.push_back(ss);
-                }
+    void addshop(const Trader& trader, Shop& shop, std::vector<int>& cand) {
+        if (shop.active && (shop.provides(trader.s) || shop.provides(trader.d))) {
+            if (std::find(cand.begin(), cand.end(), shop.idx) == cand.end()) {
+                cand.push_back(shop.idx);
             }
         }
     }
