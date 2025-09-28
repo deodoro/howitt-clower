@@ -108,9 +108,9 @@ public:
     static constexpr int FirstSlope = 16;
     static constexpr int LastSlope  = 18;
 
-    static constexpr int n      = 10;   // goods
-    static constexpr int bsize  = 24;   // each (i!=j) type count
-    static constexpr int K      = 200;  // shop locations
+    static constexpr int n      = 4;   // goods
+    static constexpr int bsize  = 2;   // each (i!=j) type count
+    static constexpr int K      = 4;  // shop locations
 
     // static constexpr int n      = 10;   // goods
     // static constexpr int bsize  = 24;   // each (i!=j) type count
@@ -581,19 +581,17 @@ private:
 
     int comrade(int r) {
         // someone else producing s[r] (the same production good)
-        int cnt = std::max(1, numprod[traders[r].s]);
-        int k = 1 + rng.uniform_int(std::max(1, cnt - 1));
-        int fr = produces[traders[r].s][k - 1];
-        if (fr >= r && k < cnt) fr = produces[traders[r].s][k]; // skip self
+        int k = rng.uniform_int(std::max(0, std::max(1, numprod[traders[r].s]) - 1));
+        int fr = produces[traders[r].s][k];
+        if (fr >= r) fr = produces[traders[r].s][k+1]; // skip self
         return fr;
     }
 
     int soulmate(int r) {
         // someone else consuming d[r] (the  same consumption good)
-        int cnt = std::max(1, numcons[traders[r].d]);
-        int k = 1 + rng.uniform_int(std::max(1, cnt - 1));
-        int fr = consumes[traders[r].d][k - 1];
-        if (fr >= r && k < cnt) fr = consumes[traders[r].d][k]; // skip self
+        int k = rng.uniform_int(std::max(0, std::max(1, numcons[traders[r].d]) - 1));
+        int fr = consumes[traders[r].d][k];
+        if (fr >= r) fr = consumes[traders[r].d][k+1]; // skip self
         return fr;
     }
 
