@@ -405,10 +405,10 @@ private:
                 cand.push_back(traders[r].buy); // c[1]
 
                 // add friend outlets/sources and one random shop
-                int fr1 = comrade(r);
+                int fr1 = comrade(traders[r]);
                 addshop(traders[fr1], shops[traders[fr1].sell], cand);
 
-                int fr2 = soulmate(r);
+                int fr2 = soulmate(traders[r]);
                 addshop(traders[fr2], shops[traders[fr2].buy], cand);
 
                 addshop(traders[r], shops[rng.uniform_int(K) + 1], cand);
@@ -523,7 +523,7 @@ private:
         double P1 = priceF(res.targ1, res.targ0, overhead_f(traders[r].s));
 
         // Test with a comrade
-        int fr = comrade(r);
+        int fr = comrade(traders[r]);
         double Ucomp = u_sample(fr);
         double U = 0.0;
         // direct or indirect reachability check through fr’s links
@@ -538,7 +538,7 @@ private:
         // Test with a soulmate
         if (U < Ucomp) {
             U = 0;
-            fr = soulmate(r);
+            fr = soulmate(traders[r]);
             Ucomp = u_sample(fr);
             U = 0.0;
             if (traders[fr].s == traders[r].s) U = P0;
@@ -606,19 +606,19 @@ private:
      The current index math (k+1) can go out of range when k is the last index.
      Simpler, correct approach: pick a random index in the full vector; if it equals r and size>1, pick the next (or wrap) — this guarantees a different trader without bias and avoids bounds errors.
     */
-    int comrade(int r) {
+    int comrade(const Trader& trader) {
         // someone else producing s[r] (the same production good)
-        int k = rng.uniform_int(std::max(0, std::max(1, numprod[traders[r].s]) - 1));
-        int fr = produces[traders[r].s][k];
-        if (fr >= r) fr = produces[traders[r].s][k+1]; // skip self
+        int k = rng.uniform_int(std::max(0, std::max(1, numprod[trader.s]) - 1));
+        int fr = produces[trader.s][k];
+        if (fr >= trader.idx) fr = produces[trader.s][k+1]; // skip self
         return fr;
     }
 
-    int soulmate(int r) {
+    int soulmate(const Trader& trader) {
         // someone else consuming d[r] (the  same consumption good)
-        int k = rng.uniform_int(std::max(0, std::max(1, numcons[traders[r].d]) - 1));
-        int fr = consumes[traders[r].d][k];
-        if (fr >= r) fr = consumes[traders[r].d][k+1]; // skip self
+        int k = rng.uniform_int(std::max(0, std::max(1, numcons[trader.d]) - 1));
+        int fr = consumes[trader.d][k];
+        if (fr >= trader.idx) fr = consumes[trader.d][k+1]; // skip self
         return fr;
     }
 
@@ -706,7 +706,7 @@ private:
         for (size_t idx = 2; idx < c.size(); ++idx) {
             int k = c[idx];
             // improve outlet (sell s)
-            if (shops[k].g[0] == s || shops[k].g[1] == s) {
+            if (shops[k].provides(s)) {
                 int ma = side_of(k, s);
                 if ((shops[k].g[ma] == shops[c[1]].g[global_m1]) || (shops[c[0]].P[1 - global_m0] == 0.0)) {
                     double candidate = shops[k].P[1 - ma] * ((c[1] > 0) ? shops[c[1]].P[1 - global_m0] : 0.0);
@@ -721,7 +721,7 @@ private:
             }
             else {
                 // improve source (buy d)
-                if (shops[k].g[0] == d || shops[k].g[1] == d) {
+                if (shops[k].provides(d)) {
                     int ma = (shops[k].g[0] == d);
                     if ((shops[k].g[ma] == shops[c[0]].g[global_m0]) || (shops[c[1]].P[global_m1] == 0.0)) {
                         double candidate = (shops[c[0]].P[1 - global_m0]) * shops[k].P[ma];
@@ -747,26 +747,27 @@ private:
 
         for (size_t ia = 2; ia < c.size(); ++ia) {
             int a = c[ia];
-            if (!(shops[a].g[0] == s || shops[a].g[1] == s)) continue;
-            for (size_t ib = 2; ib < c.size(); ++ib) {
-                if (ia == ib) continue;
-                int b = c[ib];
-                if (!(shops[b].g[0] == d || shops[b].g[1] == d)) continue;
-
-                int ma = side_of(a, s);
-                int mb = side_of(b, d);
-                // common intermediary condition
-                if (shops[a].g[ma] == shops[b].g[mb]) {
-                    double val = shops[a].P[1 - ma] * shops[b].P[mb];
-                    if (Ucomp < val) {
-                        Ucomp = val;
-                        global_m0 = ma;
-                        global_m1 = mb;
-                        if (DEBUG) {
-                            printf("[4] SET m1 to %d\n", global_m1);
+            if (shops[a].provides(s)) {
+                for (size_t ib = 2; ib < c.size(); ++ib) {
+                    if (ia == ib) continue;
+                    int b = c[ib];
+                    if (shops[b].provides(d)) {
+                        int ma = side_of(a, s);
+                        int mb = side_of(b, d);
+                        // common intermediary condition
+                        if (shops[a].g[ma] == shops[b].g[mb]) {
+                            double val = shops[a].P[1 - ma] * shops[b].P[mb];
+                            if (Ucomp < val) {
+                                Ucomp = val;
+                                global_m0 = ma;
+                                global_m1 = mb;
+                                if (DEBUG) {
+                                    printf("[4] SET m1 to %d\n", global_m1);
+                                }
+                                c[0] = a;
+                                c[1] = b;
+                            }
                         }
-                        c[0] = a;
-                        c[1] = b;
                     }
                 }
             }
