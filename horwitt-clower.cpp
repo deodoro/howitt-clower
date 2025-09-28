@@ -77,12 +77,13 @@ struct Trader {
     int s{0};              // produced good
     int d{0};              // desired good
     int q{0};              // 0 if s<=d else 1 (orders shop's good pair)
-    int sh[2]{0,0};        // sh[0]=outlet (sell s), sh[1]=source (buy d)
+    int sell{0};
+    int buy{0};
     int familyshop{0};     // owned shop index (0 if none)
 
     std::string to_string() const {
-        return "Trader{s=" + std::to_string(s) + ", d=" + std::to_string(d) + ", q=" + std::to_string(q) + 
-               ", sh=[" + std::to_string(sh[0]) + "," + std::to_string(sh[1]) + "], familyshop=" + std::to_string(familyshop) + "}";
+        return "Trader{s=" + std::to_string(s) + ", d=" + std::to_string(d) + ", q=" + std::to_string(q) +
+               ", sh=[" + std::to_string(sell) + "," + std::to_string(buy) + "], familyshop=" + std::to_string(familyshop) + "}";
     }
 };
 
@@ -95,8 +96,8 @@ struct Shop {
     double tr[2]{0.0,0.0}; // income targets per side
 
     std::string to_string() const {
-        return "Shop{active=" + std::to_string(active) + ", g=[" + std::to_string(g[0]) + "," + std::to_string(g[1]) + 
-               "], owner=" + std::to_string(owner) + ", P=[" + std::to_string(P[0]) + "," + std::to_string(P[1]) + 
+        return "Shop{active=" + std::to_string(active) + ", g=[" + std::to_string(g[0]) + "," + std::to_string(g[1]) +
+               "], owner=" + std::to_string(owner) + ", P=[" + std::to_string(P[0]) + "," + std::to_string(P[1]) +
                "], y=[" + std::to_string(y[0]) + "," + std::to_string(y[1]) + "], tr=[" + std::to_string(tr[0]) + "," + std::to_string(tr[1]) + "]}";
     }
 };
@@ -313,8 +314,8 @@ private:
         NS = 0;
 
         for (int r = 1; r <= m; ++r) {
-            traders[r].sh[0] = 0;
-            traders[r].sh[1] = 0;
+            traders[r].sell = 0;
+            traders[r].buy = 0;
             traders[r].familyshop = 0;
         }
         for (int k = 1; k <= K; ++k) {
@@ -360,8 +361,8 @@ private:
                 shops[k].P[1]  = priceF(shops[k].tr[1], shops[k].tr[0], overhead_f(shops[k].g[0]));
 
                 // owner links
-                traders[r].sh[0] = k;
-                traders[r].sh[1] = 0;
+                traders[r].sell = k;
+                traders[r].buy = 0;
                 traders[r].familyshop = k;
                 shops[k].owner = r;
             }
@@ -387,15 +388,15 @@ private:
                 // candidate initialization with current links
                 std::vector<int> cand;
                 cand.reserve(8);
-                cand.push_back(traders[r].sh[0]); // c[0]
-                cand.push_back(traders[r].sh[1]); // c[1]
+                cand.push_back(traders[r].sell); // c[0]
+                cand.push_back(traders[r].buy); // c[1]
 
                 // add friend outlets/sources and one random shop
                 int fr1 = comrade(r);
-                addshop(r, traders[fr1].sh[0], cand);
+                addshop(r, traders[fr1].sell, cand);
 
                 int fr2 = soulmate(r);
-                addshop(r, traders[fr2].sh[1], cand);
+                addshop(r, traders[fr2].buy, cand);
 
                 addshop(r, rng.uniform_int(K) + 1, cand);
 
@@ -413,12 +414,12 @@ private:
                     }
 
                     if (Ucomp < Ubarter && bestbarter > 0) {
-                        traders[r].sh[0] = bestbarter;
-                        traders[r].sh[1] = 0;
+                        traders[r].sell = bestbarter;
+                        traders[r].buy = 0;
                     } else {
                         // adopt c[0], c[1] as improved chain if any
-                        traders[r].sh[0] = cand[0];
-                        traders[r].sh[1] = cand[1];
+                        traders[r].sell = cand[0];
+                        traders[r].buy = cand[1];
                     }
                 }
             }
@@ -442,12 +443,12 @@ private:
 
         // tally incomes from adopted relationships
         for (int r = 1; r <= m; ++r) {
-            int a = traders[r].sh[0];
+            int a = traders[r].sell;
             if (a > 0) {
-                int b = traders[r].sh[1];
+                int b = traders[r].buy;
                 int ma = (shops[a].g[0] == traders[r].s);
                 int mb = (shops[b].g[0] == traders[r].d);
-    
+
                 if (shops[a].g[ma] == traders[r].d) {
                     // direct barter
                     shops[a].y[1 - ma] += 1.0;
@@ -471,8 +472,8 @@ private:
 
                 // sever links
                 for (int r = 1; r <= m; ++r) {
-                    if (traders[r].sh[0] == k) traders[r].sh[0] = 0;
-                    if (traders[r].sh[1] == k) traders[r].sh[1] = 0;
+                    if (traders[r].sell == k) traders[r].sell = 0;
+                    if (traders[r].buy == k) traders[r].buy = 0;
                 }
             }
         }
@@ -514,10 +515,9 @@ private:
         // direct or indirect reachability check through fr’s links
         if (traders[fr].d == traders[r].d) U = P0;
         else {
-            int sh1 = traders[fr].sh[1];
+            int sh1 = traders[fr].buy;
             if (sh1 > 0) {
-                // TODO: These unary checks don't look right, to review
-                int m1 = (shops[sh1].g[0] == traders[fr].d); // ? 0 : 1;
+                int m1 = (shops[sh1].g[0] == traders[fr].d);
                 if (shops[sh1].g[m1] == traders[r].d) U = P0 * shops[sh1].P[m1];
             }
         }
@@ -529,9 +529,9 @@ private:
             U = 0.0;
             if (traders[fr].s == traders[r].s) U = P0;
             else {
-                int sh0 = traders[fr].sh[0];
+                int sh0 = traders[fr].sell;
                 if (sh0 > 0) {
-                    int m0 = (shops[sh0].g[0] == traders[fr].s); // ? 0 : 1;
+                    int m0 = (shops[sh0].g[0] == traders[fr].s);
                     if (shops[sh0].g[m0] == traders[r].s) U = shops[sh0].P[1 - m0] * P0;
                 }
             }
@@ -540,18 +540,19 @@ private:
                 return res;
             }
         }
-        
+
         // Stranger who likes s[r]
         U = 0.0;
         int k = 1 + rng.uniform_int(std::max(1, numcons[traders[r].s]) - 1);
         fr = consumes[traders[r].s][k - 1];
         Ucomp = u_sample(fr);
         U = 0.0;
-        if (traders[fr].s == traders[r].d) U = P1;
-        else {
-            int sh0 = traders[fr].sh[0];
+        if (traders[fr].s == traders[r].d) {
+            U = P1;
+        } else {
+            int sh0 = traders[fr].sell;
             if (sh0 > 0) {
-                int m0 = (shops[sh0].g[0] == traders[fr].s); // ? 0 : 1;
+                int m0 = (shops[sh0].g[0] == traders[fr].s);
                 if (shops[sh0].g[m0] == traders[r].d) U = shops[sh0].P[1 - m0] * P1;
             }
         }
@@ -561,11 +562,12 @@ private:
             fr = produces[traders[r].d][k - 1];
             Ucomp = u_sample(fr);
             U = 0.0;
-            if (traders[fr].d == traders[r].s) U = P1;
-            else {
-                int sh1 = traders[fr].sh[1];
+            if (traders[fr].d == traders[r].s) {
+                U = P1;
+            } else {
+                int sh1 = traders[fr].buy;
                 if (sh1 > 0) {
-                    int m1 = (shops[sh1].g[0] == traders[fr].d); // ? 0 : 1;
+                    int m1 = (shops[sh1].g[0] == traders[fr].d);
                     if (shops[sh1].g[m1] == traders[r].s) U = P1 * shops[sh1].P[m1];
                 }
             }
@@ -579,6 +581,12 @@ private:
         return res;
     }
 
+    /*
+     NOTE: ChatGPT says:
+     Checking fr >= r is wrong: it skips any trader with id >= r (not just self) and can bias selection.
+     The current index math (k+1) can go out of range when k is the last index.
+     Simpler, correct approach: pick a random index in the full vector; if it equals r and size>1, pick the next (or wrap) — this guarantees a different trader without bias and avoids bounds errors.
+    */
     int comrade(int r) {
         // someone else producing s[r] (the same production good)
         int k = rng.uniform_int(std::max(0, std::max(1, numprod[traders[r].s]) - 1));
@@ -598,8 +606,8 @@ private:
     double u_sample(int fr) {
         // attainable consumption for fr via current links
         double X = 0.0;
-        int a = traders[fr].sh[0];
-        int b = traders[fr].sh[1];
+        int a = traders[fr].sell;
+        int b = traders[fr].buy;
         int m0 = (shops[a].g[0] == traders[fr].s);
         int m1 = (shops[b].g[0] == traders[fr].d);
         global_m0 = m0;
@@ -623,8 +631,8 @@ private:
     double utility(int r) {
         // attainable consumption for r via current links
         double X = 0.0;
-        int a = traders[r].sh[0];
-        int b = traders[r].sh[1];
+        int a = traders[r].sell;
+        int b = traders[r].buy;
         int m0 = (shops[a].g[0] == traders[r].s);
         int m1 = (shops[b].g[0] == traders[r].d);
         global_m0 = m0;
@@ -754,9 +762,9 @@ private:
         std::fill(usingmoney.begin(), usingmoney.end(), 0.0);
 
         for (int r = 1; r <= m; ++r) {
-            if (traders[r].sh[0] <= 0) continue;
-            int a = traders[r].sh[0];
-            int b = traders[r].sh[1];
+            if (traders[r].sell <= 0) continue;
+            int a = traders[r].sell;
+            int b = traders[r].buy;
             int ma = (shops[a].g[0] == traders[r].s);
             int mb = (b > 0 && shops[b].g[0] == traders[r].d);
 
