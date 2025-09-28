@@ -519,14 +519,15 @@ private:
 
         // Test with a comrade
         int fr = comrade(traders[r]);
-        double Ucomp = u_sample(traders[fr]);
+        Trader& partner = traders[fr];
+        double Ucomp = u_sample(partner);
         double U = 0.0;
         // direct or indirect reachability check through fr’s links
-        if (traders[fr].d == traders[r].d) U = P0;
+        if (partner.d == traders[r].d) U = P0;
         else {
-            int sh1 = traders[fr].buy;
+            int sh1 = partner.buy;
             if (sh1 > 0) {
-                int m1 = (shops[sh1].g[0] == traders[fr].d);
+                int m1 = (shops[sh1].g[0] == partner.d);
                 if (shops[sh1].g[m1] == traders[r].d) U = P0 * shops[sh1].P[m1];
             }
         }
@@ -534,13 +535,16 @@ private:
         if (U < Ucomp) {
             U = 0;
             fr = soulmate(traders[r]);
-            Ucomp = u_sample(traders[fr]);
+            Trader& partner = traders[fr];
+            // partner = traders[fr];
+            Ucomp = u_sample(partner);
             U = 0.0;
-            if (traders[fr].s == traders[r].s) U = P0;
-            else {
-                int sh0 = traders[fr].sell;
+            if (partner.s == traders[r].s) {
+                U = P0;
+            } else {
+                int sh0 = partner.sell;
                 if (sh0 > 0) {
-                    int m0 = (shops[sh0].g[0] == traders[fr].s);
+                    int m0 = (shops[sh0].g[0] == partner.s);
                     if (shops[sh0].g[m0] == traders[r].s) U = shops[sh0].P[1 - m0] * P0;
                 }
             }
@@ -556,41 +560,44 @@ private:
         I assume this is wrong. It's kept for now for comparison with former
         results, but it should be removed */
         // Stranger who likes s[r]
-        U = 0.0;
-        int k = 1 + rng.uniform_int(std::max(1, (int)consumes[traders[r].s].size()) - 1);
-        fr = consumes[traders[r].s][k - 1];
-        Ucomp = u_sample(traders[fr]);
-        U = 0.0;
-        if (traders[fr].s == traders[r].d) {
-            U = P1;
-        } else {
-            int sh0 = traders[fr].sell;
-            if (sh0 > 0) {
-                int m0 = (shops[sh0].g[0] == traders[fr].s);
-                if (shops[sh0].g[m0] == traders[r].d) U = shops[sh0].P[1 - m0] * P1;
-            }
-        }
-        // Stranger who produces d[r]
-        if (U < Ucomp) {
-            int k = 1 + rng.uniform_int(std::max(1, (int)produces[traders[r].d].size()) - 1);
-            fr = produces[traders[r].d][k - 1];
-            Ucomp = u_sample(traders[fr]);
+        {
             U = 0.0;
-            if (traders[fr].d == traders[r].s) {
+            int k = 1 + rng.uniform_int(std::max(1, (int)consumes[traders[r].s].size()) - 1);
+            int fr = consumes[traders[r].s][k - 1];
+            Trader &partner = traders[fr];
+            Ucomp = u_sample(partner);
+            U = 0.0;
+            if (partner.s == traders[r].d) {
                 U = P1;
             } else {
-                int sh1 = traders[fr].buy;
-                if (sh1 > 0) {
-                    int m1 = (shops[sh1].g[0] == traders[fr].d);
-                    if (shops[sh1].g[m1] == traders[r].s) U = P1 * shops[sh1].P[m1];
+                int sh0 = partner.sell;
+                if (sh0 > 0) {
+                    int m0 = (shops[sh0].g[0] == partner.s);
+                    if (shops[sh0].g[m0] == traders[r].d) U = shops[sh0].P[1 - m0] * P1;
                 }
             }
+            // Stranger who produces d[r]
             if (U < Ucomp) {
-                res.enter = 0;
-                return res;
+                int k = 1 + rng.uniform_int(std::max(1, (int)produces[traders[r].d].size()) - 1);
+                int  fr = produces[traders[r].d][k - 1];
+                Trader& partner = traders[fr];
+                Ucomp = u_sample(partner);
+                U = 0.0;
+                if (partner.d == traders[r].s) {
+                    U = P1;
+                } else {
+                    int sh1 = partner.buy;
+                    if (sh1 > 0) {
+                        int m1 = (shops[sh1].g[0] == partner.d);
+                        if (shops[sh1].g[m1] == traders[r].s) U = P1 * shops[sh1].P[m1];
+                    }
+                }
+                if (U < Ucomp) {
+                    res.enter = 0;
+                    return res;
+                }
             }
         }
-
         res.enter = 1;
         return res;
     }
@@ -695,18 +702,20 @@ private:
         int s = traders[r].s, d = traders[r].d;
         // Track which side matches for current c[0] and c[1]
         auto side_of = [&](int k, int good)->int { return shops[k].g[0] == good; };
-
         for (size_t idx = 2; idx < c.size(); ++idx) {
-            int k = c[idx];
+            Shop& shop = shops[c[idx]];
             // improve outlet (sell s)
-            if (shops[k].provides(s)) {
-                int ma = side_of(k, s);
-                if ((shops[k].g[ma] == shops[c[1]].g[global_m1]) || (shops[c[0]].P[1 - global_m0] == 0.0)) {
-                    double candidate = shops[k].P[1 - ma] * ((c[1] > 0) ? shops[c[1]].P[1 - global_m0] : 0.0);
-                    if (shops[c[0]].P[1 - global_m0] < shops[k].P[1 - ma]) {
-                        c[0] = k;
+            if (shop.provides(s)) {
+                int ma = side_of(c[idx], s);
+                if ((shop.g[ma] == shops[c[1]].g[global_m1]) || (shops[c[0]].P[1 - global_m0] == 0.0)) {
+                    if (shops[c[0]].P[1 - global_m0] < shop.P[1 - ma]) {
+                        double candidate = 0;
+                        if (c[1] > 0) {
+                            candidate = shop.P[1 - ma] * shops[c[1]].P[1 - global_m0];
+                        }
+                        c[0] = c[idx];
                         global_m0 = ma;
-                        Ucomp = (shops[k].g[ma] == shops[c[1]].g[global_m1]) ? candidate : 0.0;
+                        Ucomp = (shop.g[ma] == shops[c[1]].g[global_m1]) ? candidate : 0.0;
                         c.erase(c.begin() + idx);
                         --idx;
                     }
@@ -714,17 +723,17 @@ private:
             }
             else {
                 // improve source (buy d)
-                if (shops[k].provides(d)) {
-                    int ma = (shops[k].g[0] == d);
-                    if ((shops[k].g[ma] == shops[c[0]].g[global_m0]) || (shops[c[1]].P[global_m1] == 0.0)) {
-                        double candidate = (shops[c[0]].P[1 - global_m0]) * shops[k].P[ma];
-                        if (shops[c[1]].P[global_m1] < shops[k].P[ma]) {
-                            c[1] = k;
+                if (shop.provides(d)) {
+                    int ma = (shop.g[0] == d);
+                    if ((shop.g[ma] == shops[c[0]].g[global_m0]) || (shops[c[1]].P[global_m1] == 0.0)) {
+                        if (shops[c[1]].P[global_m1] < shop.P[ma]) {
+                            double candidate = (shops[c[0]].P[1 - global_m0]) * shop.P[ma];
+                            c[1] = c[idx];
                             global_m1 = ma;
                             if (DEBUG) {
                                 printf("[3] SET m1 to %d\n", global_m1);
                             }
-                            Ucomp = (shops[k].g[ma] == shops[c[0]].g[global_m0]) ? candidate : 0.0;
+                            Ucomp = (shop.g[ma] == shops[c[0]].g[global_m0]) ? candidate : 0.0;
                             c.erase(c.begin() + idx);
                             --idx;
                         }

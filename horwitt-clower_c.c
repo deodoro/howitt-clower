@@ -31,6 +31,7 @@
 #include <time.h>
 #include <stdlib.h>
 #include <stdint.h>
+#include <assert.h>
 
 #define DEBUG 0
 
