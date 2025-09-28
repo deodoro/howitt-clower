@@ -192,6 +192,7 @@ public:
                     weekly_matching();
                     weekly_trade_and_exit();
                     weekly_update_prices();
+                    assert(!shops[0].active);
 
                     if (t % (PRINT_LOOP_N * RptPer) == 0) {
                         report(t);
@@ -339,9 +340,10 @@ private:
             trader.buyer = 0;
             trader.familyshop = 0;
         }
-        for (int k = 1; k <= K; ++k) {
-            shops[k] = Shop{};
-            shops[k].idx = k; // PROVISIONAL: to make the code compatible while it's  refactored
+        int i = 0;
+        for (Shop& shop : shops) {
+            shop.clear();
+            shop.idx = i++;
         }
 
         lineup();
@@ -367,27 +369,27 @@ private:
         if (NS < K && traders[r].familyshop == 0) {
             ResearchResults ok = research(r);
             if (ok.enter > 0) {
-                // open new shop
-                NS++;
-                int k = 1;
-                while (k <= K && shops[k].active == 1) k++;
-                if (k > K) return; // no slot (shouldn't occur if NS<K)
-
-                shops[k].active = 1;
-                shops[k].g[1 - traders[r].q] = traders[r].d;
-                shops[k].g[traders[r].q]     = traders[r].s;
-
-                // initialize prices - targets are taken from previous research
-                shops[k].tr[0] = ok.targ0;
-                shops[k].tr[1] = ok.targ1;
-                shops[k].P[0]  = priceF(shops[k].tr[0], shops[k].tr[1], overhead_f(shops[k].g[1]));
-                shops[k].P[1]  = priceF(shops[k].tr[1], shops[k].tr[0], overhead_f(shops[k].g[0]));
-
-                // owner links
-                traders[r].seller = k;
-                traders[r].buyer = 0;
-                traders[r].familyshop = k;
-                shops[k].owner = r;
+                for (Shop& shop : shops) {
+                    if (!shop.active && (&shop != &shops.front())) { // skip index 0
+                        NS++;
+                        shop.active = 1;
+                        shop.g[1 - traders[r].q] = traders[r].d;
+                        shop.g[traders[r].q]     = traders[r].s;
+        
+                        // initialize prices - targets are taken from previous research
+                        shop.tr[0] = ok.targ0;
+                        shop.tr[1] = ok.targ1;
+                        shop.P[0]  = priceF(shop.tr[0], shop.tr[1], overhead_f(shop.g[1]));
+                        shop.P[1]  = priceF(shop.tr[1], shop.tr[0], overhead_f(shop.g[0]));
+        
+                        // owner links
+                        traders[r].seller = shop.idx;
+                        traders[r].buyer = 0;
+                        traders[r].familyshop = shop.idx;
+                        shop.owner = r;
+                        break;
+                    }
+                }
             }
         }
         print_debug("Weekly entry completed");
@@ -403,33 +405,34 @@ private:
         }
         for (int i = 1; i <= m; i++) {
             int r = line[i];
-            double U = utility(traders[r]);
+            Trader& trader = traders[r];
+            double U = utility(trader);
             double psearch = (U > 0.0 ? lambda : 1.0);
             // Skip condition: random or already owns a shop
             double rr = rng.uniform01_inclusive();
-            if (rr < psearch && traders[r].familyshop == 0) {
+            if (rr < psearch && trader.familyshop == 0) {
                 // candidate initialization with current links
                 std::vector<int> cand;
                 cand.reserve(8);
-                cand.push_back(traders[r].seller); // c[0]
-                cand.push_back(traders[r].buyer); // c[1]
+                cand.push_back(trader.seller); // c[0]
+                cand.push_back(trader.buyer); // c[1]
 
                 // add friend outlets/sources and one random shop
-                int fr1 = comrade(traders[r]);
-                addshop(traders[fr1], shops[traders[fr1].seller], cand);
+                Trader& comrade_ = traders[comrade(trader)];
+                addshop(comrade_, shops[comrade_.seller], cand);
 
-                int fr2 = soulmate(traders[r]);
-                addshop(traders[fr2], shops[traders[fr2].buyer], cand);
+                Trader& soulmate_ = traders[soulmate(trader)];
+                addshop(soulmate_, shops[soulmate_.buyer], cand);
 
-                addshop(traders[r], shops[rng.uniform_int(K) + 1], cand);
+                addshop(trader, shops[rng.uniform_int(K) + 1], cand);
 
                 if (cand.size() > 2) {
                     double Ucomp = U;
                     int bestbarter = 0;
                     double Ubarter = 0.0;
 
-                    try_barter(r, cand, bestbarter, Ubarter, Ucomp);
-                    if (cand.size() > 2 && (shops[cand[0]].g[1 - traders[r].q] != traders[r].d || shops[cand[0]].P[traders[r].q] == 0.0)) {
+                    try_barter(trader, cand, bestbarter, Ubarter, Ucomp);
+                    if (cand.size() > 2 && (shops[cand[0]].g[1 - trader.q] != trader.d || shops[cand[0]].P[trader.q] == 0.0)) {
                         try_one(r, cand, Ucomp);
                     }
                     if (cand.size() > 2) {
@@ -437,16 +440,16 @@ private:
                     }
 
                     if (Ucomp < Ubarter && bestbarter > 0) {
-                        traders[r].seller = bestbarter;
-                        traders[r].buyer = 0;
+                        trader.seller = bestbarter;
+                        trader.buyer = 0;
                     } else {
                         // adopt c[0], c[1] as improved chain if any
-                        traders[r].seller = cand[0];
-                        traders[r].buyer = cand[1];
+                        trader.seller = cand[0];
+                        trader.buyer = cand[1];
                     }
                 }
             }
-            report_trader(traders[r]);
+            report_trader(trader);
         }
     }
 
@@ -693,17 +696,16 @@ private:
         }
     }
 
-    void try_barter(int r, std::vector<int>& c, int& bestbarter, double& Ubarter, double& Ucomp) {
+    void try_barter(Trader& trader, std::vector<int>& c, int& bestbarter, double& Ubarter, double& Ucomp) {
         bestbarter = 0;
         Ubarter = 0.0;
         // iterate candidates from index 2 onward
         for (size_t idx = 2; idx < c.size(); ++idx) {
-            int k = c[idx];
-            int qr = traders[r].q;
-            if (shops[k].g[qr] == traders[r].s && shops[k].g[1 - qr] == traders[r].d) {
-                double val = shops[k].P[qr];
+            Shop& shop = shops[c[idx]];
+            if (shop.provides(trader.s) && shop.provides(trader.d)) {
+                double val = shop.P[trader.q];
                 if (val > std::max(Ucomp, Ubarter)) {
-                    bestbarter = k;
+                    bestbarter = shop.idx;
                     Ubarter = val;
                     c.erase(c.begin() + idx);
                     --idx;
