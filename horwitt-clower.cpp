@@ -73,7 +73,9 @@ struct ResearchResults {
     int enter;
 };
 
-struct Trader {
+class Trader {
+public:
+    int idx{0};             // PROVISIONAL: to make the code compatible while it's  refactored
     int s{0};              // produced good
     int d{0};              // desired good
     int q{0};              // 0 if s<=d else 1 (orders shop's good pair)
@@ -87,7 +89,8 @@ struct Trader {
     }
 };
 
-struct Shop {
+class Shop {
+public:
     int active{0};         // 1 if active
     int g[2]{0,0};         // traded goods, ordered so g[0]<=g[1]
     int owner{0};          // trader id that owns this shop
@@ -99,6 +102,10 @@ struct Shop {
         return "Shop{active=" + std::to_string(active) + ", g=[" + std::to_string(g[0]) + "," + std::to_string(g[1]) +
                "], owner=" + std::to_string(owner) + ", P=[" + std::to_string(P[0]) + "," + std::to_string(P[1]) +
                "], y=[" + std::to_string(y[0]) + "," + std::to_string(y[1]) + "], tr=[" + std::to_string(tr[0]) + "," + std::to_string(tr[1]) + "]}";
+    }
+
+    bool provides(int good) {
+        return g[0] == good || g[1] == good;
     }
 };
 
@@ -287,6 +294,7 @@ private:
                 if (i == j) continue;
                 for (int k = 1; k <= bsize; ++k) {
                     ++r;
+                    traders[r].idx = r;  // PROVISIONAL: to make the code compatible while it's  refactored
                     traders[r].s = i;
                     traders[r].d = j;
                     traders[r].q = (traders[r].s > traders[r].d);
@@ -382,7 +390,7 @@ private:
         }
         for (int i = 1; i <= m; i++) {
             int r = line[i];
-            double U = utility(r);
+            double U = utility(traders[r]);
             double psearch = (U > 0.0 ? lambda : 1.0);
             // Skip condition: random or already owns a shop
             double rr = rng.uniform01_inclusive();
@@ -395,12 +403,12 @@ private:
 
                 // add friend outlets/sources and one random shop
                 int fr1 = comrade(r);
-                addshop(r, traders[fr1].sell, cand);
+                addshop(traders[fr1], traders[fr1].sell, cand);
 
                 int fr2 = soulmate(r);
-                addshop(r, traders[fr2].buy, cand);
+                addshop(traders[fr2], traders[fr2].buy, cand);
 
-                addshop(r, rng.uniform_int(K) + 1, cand);
+                addshop(traders[r], rng.uniform_int(K) + 1, cand);
 
                 if (cand.size() > 2) {
                     double Ucomp = U;
@@ -543,6 +551,11 @@ private:
             }
         }
 
+        /*
+        NOTE: random choices here look funky. I tried to remove the +1 -1,
+        but random number sequence changes for reasons I cannot explain.
+        I assume this is wrong. It's kept for now for comparison with former
+        results, but it should be removed */
         // Stranger who likes s[r]
         U = 0.0;
         int k = 1 + rng.uniform_int(std::max(1, numcons[traders[r].s]) - 1);
@@ -630,20 +643,20 @@ private:
         return X;
     }
 
-    double utility(int r) {
+    double utility(const Trader& trader) {
         // attainable consumption for r via current links
         double X = 0.0;
-        int a = traders[r].sell;
-        int b = traders[r].buy;
-        int m0 = (shops[a].g[0] == traders[r].s);
-        int m1 = (shops[b].g[0] == traders[r].d);
+        int a = trader.sell;
+        int b = trader.buy;
+        int m0 = (shops[a].g[0] == trader.s);
+        int m1 = (shops[b].g[0] == trader.d);
         global_m0 = m0;
         global_m1 = m1;
         if (DEBUG) {
             printf("[2] SET m1 to %d\n", global_m1);
         }
         if (a > 0) {
-            if (shops[a].g[m0] == traders[r].d) {
+            if (shops[a].g[m0] == trader.d) {
                 X = shops[a].P[1 - m0];
             } else if (b > 0) {
                 if (shops[a].g[m0] == shops[b].g[m1]) {
@@ -654,13 +667,15 @@ private:
         return X;
     }
 
-    void addshop(int r, int ss, std::vector<int>& cand) {
-        if (ss <= 0 || ss > K) return;
-        if (!shops[ss].active) return;
-        int s = traders[r].s, d = traders[r].d;
-        if (!(shops[ss].g[0] == s || shops[ss].g[1] == s || shops[ss].g[0] == d || shops[ss].g[1] == d)) return;
-        if (std::find(cand.begin(), cand.end(), ss) == cand.end()) {
-            cand.push_back(ss);
+    void addshop(const Trader& trader, int ss, std::vector<int>& cand) {
+        if (shops[ss].active) {
+            int s = trader.s;
+            int d = trader.d;
+            if (shops[ss].g[0] == s || shops[ss].g[1] == s || shops[ss].g[0] == d || shops[ss].g[1] == d) {
+                if (std::find(cand.begin(), cand.end(), ss) == cand.end()) {
+                    cand.push_back(ss);
+                }
+            }
         }
     }
 
@@ -830,7 +845,7 @@ private:
         rmse();
 
         Csurp = 0.0;
-        for (int r = 1; r <= m; ++r) Csurp += utility(r);
+        for (int r = 1; r <= m; ++r) Csurp += utility(traders[r]);
 
         Psurp = 0.0;
         Nshop = 0;
