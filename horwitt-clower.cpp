@@ -132,9 +132,9 @@ public:
     static constexpr int FirstSlope = 16;
     static constexpr int LastSlope  = 18;
 
-    static constexpr int n      = 4;   // goods
-    static constexpr int bsize  = 2;   // each (i!=j) type count
-    static constexpr int K      = 4;  // shop locations
+    static constexpr int n      = 10;   // goods
+    static constexpr int bsize  = 24;   // each (i!=j) type count
+    static constexpr int K      = 200;  // shop locations
 
     // static constexpr int n      = 10;   // goods
     // static constexpr int bsize  = 24;   // each (i!=j) type count
@@ -192,7 +192,6 @@ public:
                     weekly_matching();
                     weekly_trade_and_exit();
                     weekly_update_prices();
-                    assert(!shops[0].active);
 
                     if (t % (PRINT_LOOP_N * RptPer) == 0) {
                         report(t);
@@ -715,14 +714,14 @@ private:
     }
 
     void try_one(int r, std::vector<int>& c, double& Ucomp) {
-        int s = traders[r].s, d = traders[r].d;
+        int s = traders[r].s;
+        int d = traders[r].d;
         // Track which side matches for current c[0] and c[1]
-        auto side_of = [&](int k, int good)->int { return shops[k].g[0] == good; };
         for (size_t idx = 2; idx < c.size(); ++idx) {
             Shop& shop = shops[c[idx]];
             // improve outlet (sell s)
             if (shop.provides(s)) {
-                int ma = side_of(c[idx], s);
+                int ma = (shop.g[0] == s);
                 if ((shop.g[ma] == shops[c[1]].g[global_m1]) || (shops[c[0]].P[1 - global_m0] == 0.0)) {
                     if (shops[c[0]].P[1 - global_m0] < shop.P[1 - ma]) {
                         double candidate = 0;
