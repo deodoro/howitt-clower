@@ -52,7 +52,9 @@ struct PCG32 {
     // Uniform integer in [0, n-1]
     int uniform_int(int n) {
         uint32_t res = next();
-        std::cout << "RND: " << res << std::endl;
+        if (DEBUG) {
+            std::cout << "RND: " << res << std::endl;
+        }
         return (int)(res % (uint32_t)n);
     }
 
@@ -61,7 +63,9 @@ struct PCG32 {
         // Match original granularity of 0.001 if desired; here use full precision
         // Return (0,1] by excluding exact 0.0
         uint32_t res = next();
-        std::cout << "RND: " << res << std::endl;
+        if (DEBUG) {
+            std::cout << "RND: " << res << std::endl;
+        }
         double x = (res / (double)UINT32_MAX);
         if (x == 0.0) x = std::ldexp(1.0, -53); // tiny positive
         return x;
@@ -271,6 +275,10 @@ private:
         return f1 + (i - 1) * slope;
     }
     double priceF(double tr0, double tr1, double f_other) const {
+        if (DEBUG) {
+            printf("priceF %.2f %.2f %.2f\n", tr0, tr1, f_other);
+            printf("results -> %.2f\n", (tr1 - f_other - C > 0.0) ? ((tr1 - C - f_other) / tr0) : 0.0);
+        }
         return (tr1 - f_other - C > 0.0) ? ((tr1 - C - f_other) / tr0) : 0.0;
     }
 
@@ -363,7 +371,7 @@ private:
                 shops[k].owner = r;
             }
         }
-        print_debug();
+        print_debug("Weekly entry completed");
     }
 
     // Matching: agents sample a small set of shops and adopt best links
@@ -435,18 +443,19 @@ private:
         // tally incomes from adopted relationships
         for (int r = 1; r <= m; ++r) {
             int a = traders[r].sh[0];
-            if (a <= 0) continue;
-            int b = traders[r].sh[1];
-            int ma = (shops[a].g[0] == traders[r].s) ? 0 : 1;
-            int mb = (b > 0 && shops[b].g[0] == traders[r].d) ? 0 : 1;
-
-            if (shops[a].g[ma] == traders[r].d) {
-                // direct barter
-                shops[a].y[1 - ma] += 1.0;
-            } else if (b > 0 && shops[a].g[ma] == shops[b].g[mb]) {
-                // indirect via common intermediary
-                shops[a].y[1 - ma] += 1.0;
-                shops[b].y[mb]     += shops[a].P[1 - ma];
+            if (a > 0) {
+                int b = traders[r].sh[1];
+                int ma = (shops[a].g[0] == traders[r].s);
+                int mb = (shops[b].g[0] == traders[r].d);
+    
+                if (shops[a].g[ma] == traders[r].d) {
+                    // direct barter
+                    shops[a].y[1 - ma] += 1.0;
+                } else if (b > 0 && shops[a].g[ma] == shops[b].g[mb]) {
+                    // indirect via common intermediary
+                    shops[a].y[1 - ma] += 1.0;
+                    shops[b].y[mb]     += shops[a].P[1 - ma];
+                }
             }
         }
 
@@ -467,10 +476,17 @@ private:
                 }
             }
         }
+
+        print_debug("Weekly trade and exit completed");
     }
 
     // Update targets adaptively and recompute posted prices
     void weekly_update_prices() {
+        if (DEBUG) {
+            for (int k = 1; k < K; ++k) if (shops[k].active) {
+                printf("Shop %d: tr0=%.2f tr1=%.2f\n", k, shops[k].tr[0], shops[k].tr[1]);
+            }
+        }
         for (int k = 1; k <= K; ++k) if (shops[k].active) {
             for (int h = 0; h < 2; ++h) {
                 shops[k].tr[h] += alpha * (shops[k].y[h] - shops[k].tr[h]);
@@ -879,11 +895,13 @@ private:
         }
     }
 
-    void print_debug() const {
+    void print_debug(std::string title) const {
         if (DEBUG) {
             std::cout << "--------------------------------------------------" << std::endl;
+            std::cout << title << std::endl;
             print_shops();
             print_traders();
+            std::cout << "--------------------------------------------------" << std::endl;
         }
     }
 

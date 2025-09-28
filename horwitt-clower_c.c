@@ -32,6 +32,8 @@
 #include <stdlib.h>
 #include <stdint.h>
 
+#define DEBUG 1
+
 // -------------------------------
 // Global configuration parameters
 // -------------------------------
@@ -72,8 +74,17 @@
 #define f(i) (f1 + (i - 1) * slope) // Overhead cost schedule for good i (depends on slope)
 // Pricing rule F(tr0,tr1,f_other): posted buying price of good 0
 //   Implements full-cost/target-pricing logic from the paper.
-#define F(x, y, z) ((y - z - C > 0) ? ((y - C - z) / x) : 0) // F(tr0,tr1,f1) = buying price of good 0
+#define G(x, y, z) ((y - z - C > 0) ? ((y - C - z) / x) : 0) // F(tr0,tr1,f1) = buying price of good 0
 #define MAX(a, b) ((a) > (b) ? (a) : (b))
+
+double F(double tr0, double tr1, double f_other)
+{
+  if (DEBUG) {
+    printf("F: tr0=%.2f tr1=%.2f f_other=%.2f\n", tr0, tr1, f_other);
+    printf("G=%.2f\n", G(tr0, tr1, f_other));
+  }
+  return G(tr0, tr1, f_other);
+}
 
 #define PRINT_LOOP_N 6 // Number of loops between progress reports
 // -----------------------------------
@@ -162,7 +173,7 @@ int Calc1(void);
 void Calc2(void);
 void RMSE(void);
 void report(int);
-void print_debug(void);
+void print_debug(char *);
 void print_shop(int);
 void print_trader(int);
 
@@ -224,14 +235,16 @@ int main()
           }
         } while (NS == 0); // Ensure at least one shop exists
 
-        print_debug();
+        if (DEBUG)  {
+          print_debug("Weekly entry completed");
 
-        // Matching (search/adoption): agents sample a small set of shops
-        printf("line: ");
-        for (i = 1; i <= m; i++) {
-          printf("%d ", line[i]);
+          // Matching (search/adoption): agents sample a small set of shops
+          printf("line: ");
+          for (i = 1; i <= m; i++) {
+            printf("%d ", line[i]);
+          }
+          printf("\n");          
         }
-        printf("\n");
       
         for (i = 1; i <= m; i++)
         {
@@ -270,7 +283,8 @@ int main()
               }
             }
           }
-          print_trader(r);
+          if (DEBUG)
+            print_trader(r);
         }
 
         // Trade (accounting): tally shop incomes from adopted relationships
@@ -316,6 +330,14 @@ int main()
                   if (sh[h][r] == k)
                     sh[h][r] = 0; // Sever links
             }
+
+        if (DEBUG)  {
+          print_debug("Weekly trade and exit completed");
+        }
+
+        for (k = 1; k <= K; k++)
+          if (active[k] && DEBUG)
+            printf("Shop %d: tr0=%.2f tr1=%.2f\n", k, tr[0][k], tr[1][k]);
 
         // Update targets (adaptive) and recompute posted prices
         for (k = 1; k <= K; k++)
@@ -562,7 +584,9 @@ double Usample(void)
 {
   m0 = (g[0][sh[0][fr]] == s[fr]);
   m1 = (g[0][sh[1][fr]] == d[fr]);
-  printf("SET M1 to %d\n", m1);
+  if (DEBUG) {
+    printf("SET M1 to %d\n", m1);
+  }
   double X = 0;
   if (sh[0][fr] > 0)
   {
@@ -579,7 +603,9 @@ double Utility(void)
 {
   m0 = (g[0][sh[0][r]] == s[r]);
   m1 = (g[0][sh[1][r]] == d[r]);
-  printf("[2]SET M1 to %d\n", m1);
+  if (DEBUG) {
+    printf("[2]SET M1 to %d\n", m1);
+  }
   double X = 0;
   if (sh[0][r] > 0)
   {
@@ -876,9 +902,10 @@ void report(int t)
   }
 }
 
-void print_debug() {
+void print_debug(char *title) {
   printf("--------------------------------------------------\n");
-  printf("Shops:\n");
+  printf(title);
+  printf("\nShops:\n");
   for (int i = 1; i <= K; i++) {
     print_shop(i);
   }
@@ -886,6 +913,7 @@ void print_debug() {
   for (int i = 1; i <= m; i++) {
     print_trader(i);
   }
+  printf("--------------------------------------------------\n");
 }
 
 void print_shop(int i) {
@@ -903,6 +931,8 @@ int trap_rnd_gen(int i)
 {
   uint32_t u = pcg32_next(&rng);
   int next_n = (int)(u % i);
-  printf("RND: %u\n", u);
+  if (DEBUG) {
+    printf("RND: %u\n", u);
+  }
   return next_n;
 }
