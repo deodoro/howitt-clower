@@ -45,9 +45,9 @@
 
 // Core model sizes (match the paper’s large-scale experiments by setting
 // n=10, bsize=24, K=200; each run is T weeks long)
-#define n 2     // Number of goods
+#define n 4     // Number of goods
 #define bsize 2 // Number of each type of person
-#define K 2    // Number of store locations
+#define K 4    // Number of store locations
 // #define n 10     // Number of goods
 // #define bsize 24 // Number of each type of person
 // #define K 200    // Number of store locations
@@ -80,8 +80,8 @@
 double F(double tr0, double tr1, double f_other)
 {
   if (DEBUG) {
-    printf("F: tr0=%.2f tr1=%.2f f_other=%.2f\n", tr0, tr1, f_other);
-    printf("G=%.2f\n", G(tr0, tr1, f_other));
+    printf("priceF %.2f %.2f %.2f\n", tr0, tr1, f_other);
+    printf("results -> %.2f\n", G(tr0, tr1, f_other));
   }
   return G(tr0, tr1, f_other);
 }
@@ -250,7 +250,8 @@ int main()
         {
           r = line[i];   // Visit in randomized lineup order
           U = Utility(); // Current utility (0 if unmatched)
-          if (rnd01 < (U > 0 ? lambda : 1) && familyshop[r] == 0)
+          double rr =  rnd01;
+          if (rr < (U > 0 ? lambda : 1) && familyshop[r] == 0)
           {
             // Search: if not currently matched (U==0) search with prob 1, else with prob lambda
             extra = 0;
@@ -285,6 +286,10 @@ int main()
           }
           if (DEBUG)
             print_trader(r);
+        }
+
+        if (DEBUG)  {
+          print_debug("Weekly trade begins");
         }
 
         // Trade (accounting): tally shop incomes from adopted relationships
@@ -584,7 +589,7 @@ double Usample(void)
   m0 = (g[0][sh[0][fr]] == s[fr]);
   m1 = (g[0][sh[1][fr]] == d[fr]);
   if (DEBUG) {
-    printf("SET M1 to %d\n", m1);
+    printf("[1] SET m1 to %d\n", m1);
   }
   double X = 0;
   if (sh[0][fr] > 0)
@@ -603,7 +608,7 @@ double Utility(void)
   m0 = (g[0][sh[0][r]] == s[r]);
   m1 = (g[0][sh[1][r]] == d[r]);
   if (DEBUG) {
-    printf("[2]SET M1 to %d\n", m1);
+    printf("[2] SET m1 to %d\n", m1);
   }
   double X = 0;
   if (sh[0][r] > 0)
@@ -686,7 +691,9 @@ void tryOne(void)
         {
           c[1] = c[a];
           m1 = ma;
-          printf("[3]SET M1 to %d\n", m1);
+          if (DEBUG) {
+            printf("[3] SET m1 to %d\n", m1);
+          }
 
           Ucomp = (g[ma][c[a]] == g[m0][c[0]] ? P[1 - m0][c[0]] * P[ma][c[a]] : 0);
           dropshop();
@@ -713,7 +720,7 @@ void tryTwo(void)
             c[1] = c[b];
             m0 = ma;
             m1 = mb;
-            printf("[4]SET M1 to %d\n", m1);
+            printf("[4] SET m1 to %d\n", m1);
           }
         }
     }
@@ -922,8 +929,8 @@ void print_shop(int i) {
 
 void print_trader(int i) 
 {
-  printf("Trader %d: Trader{s=%d, d=%d, q=%d, sh=[%d,%d], familyshop=%d}\n",
-         i, s[i], d[i], q[i], sh[0][i], sh[1][i], familyshop[i]);
+  printf("Trader{s=%d, d=%d, q=%d, sh=[%d,%d], familyshop=%d}\n",
+         s[i], d[i], q[i], sh[0][i], sh[1][i], familyshop[i]);
 }
 
 int trap_rnd_gen(int i)

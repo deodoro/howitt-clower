@@ -62,13 +62,8 @@ struct PCG32 {
     double uniform01_inclusive() {
         // Match original granularity of 0.001 if desired; here use full precision
         // Return (0,1] by excluding exact 0.0
-        uint32_t res = next();
-        if (DEBUG) {
-            std::cout << "RND: " << res << std::endl;
-        }
-        double x = (res / (double)UINT32_MAX);
-        if (x == 0.0) x = std::ldexp(1.0, -53); // tiny positive
-        return x;
+        int x = uniform_int(1000);
+        return double(1 + x)/1000.0;
     }
 };
 
@@ -113,9 +108,9 @@ public:
     static constexpr int FirstSlope = 16;
     static constexpr int LastSlope  = 18;
 
-    static constexpr int n      = 2;   // goods
+    static constexpr int n      = 4;   // goods
     static constexpr int bsize  = 2;   // each (i!=j) type count
-    static constexpr int K      = 2;  // shop locations
+    static constexpr int K      = 4;  // shop locations
 
     // static constexpr int n      = 10;   // goods
     // static constexpr int bsize  = 24;   // each (i!=j) type count
@@ -177,8 +172,8 @@ public:
                     weekly_update_prices();
 
                     if (t % (PRINT_LOOP_N * RptPer) == 0) {
-                        monetary = calc1();
                         report(t);
+                        monetary = calc1();
                         if (monetary == 1) {
                             break;
                         }
@@ -387,7 +382,8 @@ private:
             double U = utility(r);
             double psearch = (U > 0.0 ? lambda : 1.0);
             // Skip condition: random or already owns a shop
-            if (rng.uniform01_inclusive() < psearch && traders[r].familyshop == 0) {
+            double rr = rng.uniform01_inclusive();
+            if (rr < psearch && traders[r].familyshop == 0) {
                 // candidate initialization with current links
                 std::vector<int> cand;
                 cand.reserve(8);
@@ -403,15 +399,18 @@ private:
 
                 addshop(r, rng.uniform_int(K) + 1, cand);
 
-                int extra = (int)cand.size() - 2;
-                if (extra > 0) {
+                if (cand.size() > 2) {
                     double Ucomp = U;
                     int bestbarter = 0;
                     double Ubarter = 0.0;
 
                     try_barter(r, cand, bestbarter, Ubarter, Ucomp);
-                    try_one(r, cand, Ucomp);
-                    try_two(r, cand, Ucomp);
+                    if (cand.size() > 2 && (shops[cand[0]].g[1 - traders[r].q] != traders[r].d || shops[cand[0]].P[traders[r].q] == 0.0)) {
+                        try_one(r, cand, Ucomp);
+                    }
+                    if (cand.size() > 2) {
+                        try_two(r, cand, Ucomp);
+                    }
 
                     if (Ucomp < Ubarter && bestbarter > 0) {
                         traders[r].sh[0] = bestbarter;
@@ -429,12 +428,13 @@ private:
 
     void report_trader(Trader const& trader) {
         if (DEBUG) {
-            std::cout << "Trader " << trader.to_string() << std::endl;
+            std::cout << trader.to_string() << std::endl;
         }
     }
 
     // Trade/accounting and stochastic exit of unprofitable shops
     void weekly_trade_and_exit() {
+        print_debug("Weekly trade begins");
         // reset shop weekly incomes
         for (int k = 1; k <= K; ++k) if (shops[k].active) {
             shops[k].y[0] = shops[k].y[1] = 0.0;
@@ -517,7 +517,7 @@ private:
             int sh1 = traders[fr].sh[1];
             if (sh1 > 0) {
                 // TODO: These unary checks don't look right, to review
-                int m1 = (shops[sh1].g[0] == traders[fr].d) ? 0 : 1;
+                int m1 = (shops[sh1].g[0] == traders[fr].d); // ? 0 : 1;
                 if (shops[sh1].g[m1] == traders[r].d) U = P0 * shops[sh1].P[m1];
             }
         }
@@ -531,7 +531,7 @@ private:
             else {
                 int sh0 = traders[fr].sh[0];
                 if (sh0 > 0) {
-                    int m0 = (shops[sh0].g[0] == traders[fr].s) ? 0 : 1;
+                    int m0 = (shops[sh0].g[0] == traders[fr].s); // ? 0 : 1;
                     if (shops[sh0].g[m0] == traders[r].s) U = shops[sh0].P[1 - m0] * P0;
                 }
             }
@@ -551,7 +551,7 @@ private:
         else {
             int sh0 = traders[fr].sh[0];
             if (sh0 > 0) {
-                int m0 = (shops[sh0].g[0] == traders[fr].s) ? 0 : 1;
+                int m0 = (shops[sh0].g[0] == traders[fr].s); // ? 0 : 1;
                 if (shops[sh0].g[m0] == traders[r].d) U = shops[sh0].P[1 - m0] * P1;
             }
         }
@@ -565,7 +565,7 @@ private:
             else {
                 int sh1 = traders[fr].sh[1];
                 if (sh1 > 0) {
-                    int m1 = (shops[sh1].g[0] == traders[fr].d) ? 0 : 1;
+                    int m1 = (shops[sh1].g[0] == traders[fr].d); // ? 0 : 1;
                     if (shops[sh1].g[m1] == traders[r].s) U = P1 * shops[sh1].P[m1];
                 }
             }
@@ -607,7 +607,7 @@ private:
         global_m0 = m0;
         global_m1 = m1;
         if (DEBUG) {
-            printf("[0] SET m1 to %d\n", global_m1);
+            printf("[1] SET m1 to %d\n", global_m1);
         }
         if (a > 0) {
             if (shops[a].g[m0] == traders[fr].d) {
@@ -632,7 +632,7 @@ private:
         global_m0 = m0;
         global_m1 = m1;
         if (DEBUG) {
-            printf("[1] SET m1 to %d\n", global_m1);
+            printf("[2] SET m1 to %d\n", global_m1);
         }
         if (a > 0) {
             if (shops[a].g[m0] == traders[r].d) {
@@ -668,12 +668,9 @@ private:
                 if (val > std::max(Ucomp, Ubarter)) {
                     bestbarter = k;
                     Ubarter = val;
+                    c.erase(c.begin() + idx);
                 }
             }
-        }
-        // optional: remove the chosen shop from candidates to avoid reuse
-        if (bestbarter > 0) {
-            c.erase(c.begin() + bestbarter);
         }
     }
 
@@ -693,7 +690,7 @@ private:
                         c[0] = k;
                         global_m0 = ma;
                         Ucomp = (shops[k].g[ma] == shops[c[1]].g[global_m1]) ? candidate : 0.0;
-                        c.erase(c.begin() + k);
+                        c.erase(c.begin() + idx);
                     }
                 }
             }
@@ -701,16 +698,16 @@ private:
                 // improve source (buy d)
                 if (shops[k].g[0] == d || shops[k].g[1] == d) {
                     int ma = (shops[k].g[0] == d);
-                    if ((c[0] == 0 || shops[k].g[ma] == shops[c[0]].g[global_m0]) || (shops[c[1]].P[global_m1] == 0.0)) {
+                    if ((shops[k].g[ma] == shops[c[0]].g[global_m0]) || (shops[c[1]].P[global_m1] == 0.0)) {
                         double candidate = (shops[c[0]].P[1 - global_m0]) * shops[k].P[ma];
                         if (shops[c[1]].P[global_m1] < shops[k].P[ma]) {
                             c[1] = k;
                             global_m1 = ma;
                             if (DEBUG) {
-                                printf("[2] SET m1 to %d\n", global_m1);
+                                printf("[3] SET m1 to %d\n", global_m1);
                             }
-                            Ucomp = (c[0] > 0 && shops[k].g[ma] == shops[c[0]].g[global_m0]) ? candidate : 0.0;
-                            c.erase(c.begin() + k);
+                            Ucomp = (shops[k].g[ma] == shops[c[0]].g[global_m0]) ? candidate : 0.0;
+                            c.erase(c.begin() + idx);
                         }
                     }
                 }
@@ -740,12 +737,10 @@ private:
                         global_m0 = ma;
                         global_m1 = mb;
                         if (DEBUG) {
-                            printf("[3] SET m1 to %d\n", global_m1);
+                            printf("[4] SET m1 to %d\n", global_m1);
                         }
                         c[0] = a;
                         c[1] = b;
-                        c.erase(c.begin() + a);
-                        c.erase(c.begin() + b);
                     }
                 }
             }
@@ -908,7 +903,7 @@ private:
     void print_traders() const {
         std::cout << "Traders:" << std::endl;
         for (size_t i = 1; i < traders.size(); ++i) {
-            std::cout << "Trader " << i << ": " << traders[i].to_string() << std::endl;
+            std::cout << traders[i].to_string() << std::endl;
         }
     }
 
