@@ -93,6 +93,15 @@ public:
     bool provides(int good) const {
         return g[0] == good || g[1] == good;
     }
+
+    void clear() {
+        active = 0;
+        g[0] = g[1] = 0;
+        owner = 0;
+        P[0] = P[1] = 0.0;
+        y[0] = y[1] = 0.0;
+        tr[0] = tr[1] = 0.0;
+    }
 };
 
 class Trader {
@@ -341,7 +350,8 @@ private:
     void lineup() {
         // random permutation of 1..m
         std::vector<int> start(m + 1);
-        for (int i = 1; i <= m; ++i) start[i] = i;
+        for (int i = 1; i <= m; ++i)
+            start[i] = i;
         for (int j = 1; j <= m; ++j) {
             int k = rng.uniform_int(m - j + 1) + 1;
             line[j] = start[k];
@@ -475,22 +485,23 @@ private:
             }
         }
         // exit if unprofitable
-        for (int k = 1; k <= K; ++k) if (shops[k].active) {
-            bool unprof0 = (shops[k].y[0] - shops[k].P[1] * shops[k].y[1] - overhead_f(shops[k].g[0]) <= 0.0);
-            bool unprof1 = (shops[k].y[1] - shops[k].P[0] * shops[k].y[0] - overhead_f(shops[k].g[1]) <= 0.0);
-            if ((unprof0 || unprof1) && rng.uniform01_inclusive() <= theta) {
-                int own = shops[k].owner;
-                shops[k] = Shop{};
-                shops[k].idx = k;
-                NS--;
-                if (own > 0) traders[own].familyshop = 0;
+        for (Shop& shop: shops) {
+            if (shop.active) {
+                bool unprof0 = (shop.y[0] - shop.P[1] * shop.y[1] - overhead_f(shop.g[0]) <= 0.0);
+                bool unprof1 = (shop.y[1] - shop.P[0] * shop.y[0] - overhead_f(shop.g[1]) <= 0.0);
+                if ((unprof0 || unprof1) && rng.uniform01_inclusive() <= theta) {
+                    if (shop.owner) {
+                        traders[shop.owner].familyshop = 0;
+                    }
+                    shop.clear();
+                    NS--;
 
-                // sever links
-                for (Trader& trader: traders) 
-                    trader.sever_links(shops[k]);
+                    // sever links
+                    for (Trader& trader: traders)
+                        trader.sever_links(shop);
+                }
             }
         }
-
 
         print_debug("Weekly trade and exit completed");
     }
@@ -498,16 +509,20 @@ private:
     // Update targets adaptively and recompute posted prices
     void weekly_update_prices() {
         if (DEBUG) {
-            for (int k = 1; k < K; ++k) if (shops[k].active) {
-                printf("Shop %d: tr0=%.2f tr1=%.2f\n", k, shops[k].tr[0], shops[k].tr[1]);
+            for (Shop& shop: shops) {
+                if (shop.active) {
+                    printf("Shop %d: tr0=%.2f tr1=%.2f\n", shop.idx, shop.tr[0], shop.tr[1]);
+                }
             }
         }
-        for (int k = 1; k <= K; ++k) if (shops[k].active) {
-            for (int h = 0; h < 2; ++h) {
-                shops[k].tr[h] += alpha * (shops[k].y[h] - shops[k].tr[h]);
+        for (Shop& shop: shops) {
+            if (shop.active) {
+                for (int h = 0; h < 2; ++h) {
+                    shop.tr[h] += alpha * (shop.y[h] - shop.tr[h]);
+                }
+                shop.P[0] = priceF(shop.tr[0], shop.tr[1], overhead_f(shop.g[1]));
+                shop.P[1] = priceF(shop.tr[1], shop.tr[0], overhead_f(shop.g[0]));
             }
-            shops[k].P[0] = priceF(shops[k].tr[0], shops[k].tr[1], overhead_f(shops[k].g[1]));
-            shops[k].P[1] = priceF(shops[k].tr[1], shops[k].tr[0], overhead_f(shops[k].g[0]));
         }
     }
 
@@ -852,7 +867,7 @@ private:
         rmse();
 
         Csurp = 0.0;
-        for (int r = 1; r <= m; ++r) Csurp += utility(traders[r]);
+        for (Trader& trader: traders) Csurp += utility(trader);
 
         Psurp = 0.0;
         Nshop = 0;
