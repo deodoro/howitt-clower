@@ -524,7 +524,7 @@ private:
 
         // Test with a comrade
         int fr = comrade(traders[r]);
-        double Ucomp = u_sample(fr);
+        double Ucomp = u_sample(traders[fr]);
         double U = 0.0;
         // direct or indirect reachability check through fr’s links
         if (traders[fr].d == traders[r].d) U = P0;
@@ -539,7 +539,7 @@ private:
         if (U < Ucomp) {
             U = 0;
             fr = soulmate(traders[r]);
-            Ucomp = u_sample(fr);
+            Ucomp = u_sample(traders[fr]);
             U = 0.0;
             if (traders[fr].s == traders[r].s) U = P0;
             else {
@@ -564,7 +564,7 @@ private:
         U = 0.0;
         int k = 1 + rng.uniform_int(std::max(1, numcons[traders[r].s]) - 1);
         fr = consumes[traders[r].s][k - 1];
-        Ucomp = u_sample(fr);
+        Ucomp = u_sample(traders[fr]);
         U = 0.0;
         if (traders[fr].s == traders[r].d) {
             U = P1;
@@ -579,7 +579,7 @@ private:
         if (U < Ucomp) {
             int k = 1 + rng.uniform_int(std::max(1, numprod[traders[r].d]) - 1);
             fr = produces[traders[r].d][k - 1];
-            Ucomp = u_sample(fr);
+            Ucomp = u_sample(traders[fr]);
             U = 0.0;
             if (traders[fr].d == traders[r].s) {
                 U = P1;
@@ -622,25 +622,23 @@ private:
         return fr;
     }
 
-    double u_sample(int fr) {
+    double u_sample(const Trader& trader) {
         // attainable consumption for fr via current links
         double X = 0.0;
-        int a = traders[fr].sell;
-        int b = traders[fr].buy;
-        int m0 = (shops[a].g[0] == traders[fr].s);
-        int m1 = (shops[b].g[0] == traders[fr].d);
+        Shop& sell_shop = shops[trader.sell];
+        Shop& buy_shop = shops[trader.buy];
+        int m0 = (sell_shop.g[0] == trader.s);
+        int m1 = (buy_shop.g[0] == trader.d);
         global_m0 = m0;
         global_m1 = m1;
         if (DEBUG) {
             printf("[1] SET m1 to %d\n", global_m1);
         }
-        if (a > 0) {
-            if (shops[a].g[m0] == traders[fr].d) {
-                X = shops[a].P[1 - m0];
-            } else if (b > 0) {
-                if (shops[a].g[m0] == shops[b].g[m1]) {
-                    X = shops[a].P[1 - m0] * shops[b].P[m1];
-                }
+        if (sell_shop.g[m0] == trader.d) {
+            X = sell_shop.P[1 - m0];
+        } else {
+            if (sell_shop.g[m0] == buy_shop.g[m1]) {
+                X = sell_shop.P[1 - m0] * buy_shop.P[m1];
             }
         }
 
