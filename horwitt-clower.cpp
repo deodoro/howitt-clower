@@ -108,9 +108,9 @@ public:
     static constexpr int FirstSlope = 16;
     static constexpr int LastSlope  = 18;
 
-    static constexpr int n      = 4;   // goods
-    static constexpr int bsize  = 2;   // each (i!=j) type count
-    static constexpr int K      = 4;  // shop locations
+    static constexpr int n      = 10;   // goods
+    static constexpr int bsize  = 24;   // each (i!=j) type count
+    static constexpr int K      = 200;  // shop locations
 
     // static constexpr int n      = 10;   // goods
     // static constexpr int bsize  = 24;   // each (i!=j) type count
@@ -669,6 +669,7 @@ private:
                     bestbarter = k;
                     Ubarter = val;
                     c.erase(c.begin() + idx);
+                    --idx;
                 }
             }
         }
@@ -691,6 +692,7 @@ private:
                         global_m0 = ma;
                         Ucomp = (shops[k].g[ma] == shops[c[1]].g[global_m1]) ? candidate : 0.0;
                         c.erase(c.begin() + idx);
+                        --idx;
                     }
                 }
             }
@@ -708,6 +710,7 @@ private:
                             }
                             Ucomp = (shops[k].g[ma] == shops[c[0]].g[global_m0]) ? candidate : 0.0;
                             c.erase(c.begin() + idx);
+                            --idx;
                         }
                     }
                 }

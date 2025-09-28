@@ -45,9 +45,9 @@
 
 // Core model sizes (match the paper’s large-scale experiments by setting
 // n=10, bsize=24, K=200; each run is T weeks long)
-#define n 4     // Number of goods
-#define bsize 2 // Number of each type of person
-#define K 4    // Number of store locations
+#define n 10    // Number of goods
+#define bsize 24 // Number of each type of person
+#define K 200    // Number of store locations
 // #define n 10     // Number of goods
 // #define bsize 24 // Number of each type of person
 // #define K 200    // Number of store locations
