@@ -290,8 +290,10 @@ private:
                     traders[r].s = i;
                     traders[r].d = j;
                     traders[r].q = (traders[r].s > traders[r].d);
-                    numprod[i]++; produces[i].push_back(r);
-                    numcons[j]++; consumes[j].push_back(r);
+                    numprod[i]++;
+                    numcons[j]++;
+                    produces[i].push_back(r);
+                    consumes[j].push_back(r);
                 }
             }
         }
