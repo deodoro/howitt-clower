@@ -42,7 +42,7 @@ public:
     double get_price(int side, bool opposite = false) const;
     void update_prices(double C, std::function<double(int)> overhead_f);
     void update_targets(double alpha);
-    void update_targets(double targ0, double targ1);
+    void set_targets(double targ0, double targ1);
     bool is_profitable(std::function<double(int)> overhead = nullptr) const;
     void reset_weekly_incomes();
 };

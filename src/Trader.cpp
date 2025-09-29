@@ -25,7 +25,7 @@
 extern PCG32 rng;
 
 std::string Trader::to_string() const {
-    return "Trader{s=" + std::to_string(supplies) + ", d=" + std::to_string(demands) + ", q=" + std::to_string(q) +
+    return "Trader{s=" + std::to_string(get_supplies()) + ", d=" + std::to_string(get_demands()) + ", q=" + std::to_string(q) +
            ", sh=[" + std::to_string(seller_idx) + "," + std::to_string(buyer_idx) + "], familyshop=" + std::to_string(familyshop) + "}";
 }
 
@@ -73,4 +73,32 @@ double Trader::utility(std::vector<Shop>& shops) const {
         }
     }
     return X;
+}
+
+bool Trader::open_shop(Shop &shop)
+{
+    if (shop.active) {
+        return false;
+    }
+    else {
+        shop.active = 1;
+        shop.g[1 - q] = demands;
+        shop.g[q]     = supplies;
+        // owner links
+        seller_idx = shop.idx;
+        buyer_idx = 0;
+        familyshop = shop.idx;
+        shop.owner = idx;
+        return true;
+    }
+}
+
+void Trader::set_supplies(int s) {
+    supplies = s;
+    q = (supplies > demands);
+}
+
+void Trader::set_demands(int d) {
+    demands = d;
+    q = (supplies > demands);
 }

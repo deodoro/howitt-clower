@@ -81,7 +81,7 @@ void Shop::update_targets(double alpha) {
     tr[1] += alpha * (y[1] - tr[1]);
 }
 
-void Shop::update_targets(double targ0, double targ1) {
+void Shop::set_targets(double targ0, double targ1) {
     tr[0] = targ0;
     tr[1] = targ1;
 }
