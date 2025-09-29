@@ -27,9 +27,11 @@
 #include <numeric>
 #include <string>
 #include <iostream>
+#include <functional>
 #include <assert.h>
 
 #define DEBUG 0
+
 struct PCG32 {
     uint64_t state{0};
     uint64_t inc{0}; // must be odd
@@ -117,12 +119,27 @@ public:
             return y[g[0] == side];
     }
 
+    void add_income(int side, double val, bool opposite=false) {
+        int idx;
+        if (opposite)
+            idx = g[0] != side;
+        else
+            idx = g[0] == side;
+        y[idx] += val;
+    }
+
     double get_price(int side, bool opposite=false) const {
         if (opposite)
             return P[g[0] != side];
         else
             return P[g[0] == side];
-    }};
+    }
+
+    // overhead is a pointer to a  function that returns a double given an integer
+    bool is_profitable(std::function<double(int)> overhead = nullptr) const {
+        return (y[0] - P[1] * y[1] - (overhead ? overhead(g[0]) : 0.0)) > 0 && (y[1] - P[0] * y[0] - (overhead ? overhead(g[1]) : 0.0)) > 0;
+    }
+};
 
 class Trader {
 public:
@@ -151,6 +168,8 @@ public:
     static constexpr int numruns   = 1;
     static constexpr int FirstSlope = 16;
     static constexpr int LastSlope  = 18;
+    static constexpr double f1     = 0.0;
+
 
     static constexpr int n      = 10;   // goods
     static constexpr int bsize  = 24;   // each (i!=j) type count
@@ -165,7 +184,6 @@ public:
     static constexpr double alpha  = 0.25;
     static constexpr double theta  = 0.01;
     static constexpr double C      = 5.0;
-    static constexpr double f1     = 0.0;
     static constexpr int persist   = 10;
 
     static constexpr int T       = 20000; // weeks
@@ -307,9 +325,16 @@ private:
     PCG32 rng;
 
     // Helpers that mirror macro logic
-    double overhead_f(int i) const {
-        return f1 + (i - 1) * slope;
+    // double overhead_f(int i) const {
+    //     return f1 + (i - 1) * slope;
+    // }
+
+    std::function<double(int)> make_overhead(double f1, double slope) {
+        return [f1, slope](int i) -> double {
+            return f1 + (i - 1) * slope;
+        };
     }
+
     double priceF(double tr0, double tr1, double f_other) const {
         if (DEBUG) {
             printf("priceF %.2f %.2f %.2f\n", tr0, tr1, f_other);
@@ -384,6 +409,7 @@ private:
 
     // Entry process: potential entrepreneur tries to open a shop
     void weekly_entry() {
+        auto overhead_f = make_overhead(f1, slope);
         int r = rng.uniform_int(m) + 1; // prospective owner
         if (NS < K && traders[r].familyshop == 0) {
             ResearchResults ok = research(r);
@@ -394,13 +420,13 @@ private:
                         shop.active = 1;
                         shop.g[1 - traders[r].q] = traders[r].d;
                         shop.g[traders[r].q]     = traders[r].s;
-        
+
                         // initialize prices - targets are taken from previous research
                         shop.tr[0] = ok.targ0;
                         shop.tr[1] = ok.targ1;
                         shop.P[0]  = priceF(shop.tr[0], shop.tr[1], overhead_f(shop.g[1]));
                         shop.P[1]  = priceF(shop.tr[1], shop.tr[0], overhead_f(shop.g[0]));
-        
+
                         // owner links
                         traders[r].seller_idx = shop.idx;
                         traders[r].buyer_idx = 0;
@@ -495,20 +521,18 @@ private:
                 int b = trader.buyer_idx;
                 if (shops[a].get_good(trader.s) == trader.d) {
                     // direct barter
-                    shops[a].y[shops[a].g[0] != trader.s] += 1.0;
+                    shops[a].add_income(trader.s, 1.0, true);
                 } else if (b > 0 && shops[a].get_good(trader.s) == shops[b].get_good(trader.d)) {
                     // indirect via common intermediary
-                    shops[a].y[shops[a].g[0] != trader.s] += 1.0;
-                    shops[b].y[(shops[b].g[0] == trader.d)] += shops[a].P[shops[a].g[0] != trader.s];
+                    shops[a].add_income(trader.s, 1.0, true);
+                    shops[b].add_income(trader.d, shops[a].get_price(trader.s, true));
                 }
             }
         }
         // exit if unprofitable
         for (Shop& shop: shops) {
             if (shop.active) {
-                bool unprof0 = (shop.y[0] - shop.P[1] * shop.y[1] - overhead_f(shop.g[0]) <= 0.0);
-                bool unprof1 = (shop.y[1] - shop.P[0] * shop.y[0] - overhead_f(shop.g[1]) <= 0.0);
-                if ((unprof0 || unprof1) && rng.uniform01_inclusive() <= theta) {
+                if ((!shop.is_profitable(make_overhead(f1, slope))) && rng.uniform01_inclusive() <= theta) {
                     if (shop.owner) {
                         traders[shop.owner].familyshop = 0;
                     }
@@ -527,6 +551,7 @@ private:
 
     // Update targets adaptively and recompute posted prices
     void weekly_update_prices() {
+        auto overhead_f = make_overhead(f1, slope);
         if (DEBUG) {
             for (Shop& shop: shops) {
                 if (shop.active) {
@@ -550,6 +575,7 @@ private:
     ResearchResults research(int idx) {
         ResearchResults res;
         Trader& trader = traders[idx];
+        auto overhead_f = make_overhead(f1, slope);
         // trial targets
         res.targ0 = rng.uniform_int(xMax) + 1.0;
         res.targ1 = rng.uniform_int(xMax) + 1.0;
@@ -861,6 +887,7 @@ private:
     }
 
     void calc2() {
+        auto overhead_f = make_overhead(f1, slope);
         if (monetary == 0) monyear = -1;
         if (fulldev == 0) devyear = -1;
 
