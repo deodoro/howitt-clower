@@ -54,44 +54,59 @@ Simulation::Simulation() {
 }
 
 void Simulation::run_all() {
+    // Record the start time of the entire simulation
     time(&firstbegin);
+    
+    // Initialize the output file "evol.fil" with headers for evolutionary data
     stream = std::fopen("evol.fil", "w+");
     if (stream) {
         std::fprintf(stream, " run slope dev part mon mtrd usmx Mgd Csur Psur Esur Nsh NS BS RMS_0 RMS_1 dyr myr\n");
         std::fclose(stream);
     }
 
+    // Loop over different slope values for parameter sweeps
     for (int _s = FirstSlope; _s <= LastSlope; _s += 2) {
         slope = _s;
+        
+        // For each slope, run multiple simulation runs
         for (run = 1; run <= numruns; ++run) {
+            // Initialize the run-specific state
             init_run();
             clock_begin = std::clock();
 
+            // Main simulation loop: run for T time steps
             for (t = 1; t <= T; ++t) {
+                // Ensure at least one shop exists before proceeding
                 do {
                     weekly_entry();
                 } while (NS == 0);
+                
+                // Perform weekly activities: matching, trading, exit, and price updates
                 weekly_matching();
                 weekly_trade_and_exit();
                 weekly_update_prices();
 
+                // Periodically report progress and check for monetary equilibrium
                 if (t % (PRINT_LOOP_N * RptPer) == 0) {
                     report(t);
                     monetary = calc1();
                     if (monetary == 1) {
-                        break;
+                        break;  // Exit early if monetary equilibrium is reached
                     }
                 }
             }
 
+            // Calculate final statistics for the run
             calc2();
 
+            // Log timing information
             clock_finish = std::clock();
             std::printf("Run number %d. Time elapsed: %.2f seconds.\n",
                         run,
                         (clock_finish - clock_begin) / (double)CLOCKS_PER_SEC);
             std::printf("Slope equals %-.0f, xMax equals %d\n\n", slope, xMax);
 
+            // Append run results to the output file
             stream = std::fopen("evol.fil", "a");
             if (stream) {
                 std::fprintf(stream,
@@ -101,7 +116,7 @@ void Simulation::run_all() {
                 std::fclose(stream);
             }
 
-            // blank line between runs
+            // Add a blank line between runs in the output file
             stream = std::fopen("evol.fil", "a");
             if (stream) {
                 std::fprintf(stream, "\n");
@@ -109,7 +124,7 @@ void Simulation::run_all() {
             }
         }
 
-        // blank line between slope sweeps
+        // Add blank lines between slope sweeps in the output file
         stream = std::fopen("evol.fil", "a");
         if (stream) {
             std::fprintf(stream, "\n\n n bsiz K xMax lambda alpha theta C Nrun Pst(yr) T RND\n");
@@ -394,14 +409,12 @@ ResearchResults Simulation::research(int idx) {
         int k = 1 + rng.uniform_int(std::max(1, (int)consumes[trader.get_supplies()].size()) - 1);
         Trader& partner = traders[consumes[trader.get_supplies()][k - 1]];
         Ucomp = partner.utility(shops);
-        U = 0.0;
         if (partner.get_supplies() == trader.get_demands()) {
             U = P1;
         } else {
             if (partner.seller_idx > 0) {
-                int m0 = (shops[partner.seller_idx].g[0] == partner.get_supplies());
-                if (shops[partner.seller_idx].g[m0] == trader.get_demands()) 
-                    U = shops[partner.seller_idx].P[1 - m0] * P1;
+                if (shops[partner.seller_idx].get_good(partner.get_supplies()) == trader.get_demands()) 
+                    U = shops[partner.seller_idx].get_price(trader.get_demands()) * P1;
             }
         }
         // Stranger who produces d[r]
@@ -414,9 +427,9 @@ ResearchResults Simulation::research(int idx) {
                 U = P1;
             } else {
                 if (partner.buyer_idx > 0) {
-                    int m1 = (shops[partner.buyer_idx].g[0] == partner.get_demands());
-                    if (shops[partner.buyer_idx].g[m1] == trader.get_supplies()) 
-                    U = P1 * shops[partner.buyer_idx].P[m1];
+                    if (shops[partner.buyer_idx].get_good(partner.get_demands()) == trader.get_supplies())  {
+                        U = P1 * shops[partner.buyer_idx].get_price(partner.get_demands());
+                    }
                 }
             }
             if (U < Ucomp) {
