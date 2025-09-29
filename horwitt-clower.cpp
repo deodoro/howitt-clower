@@ -766,18 +766,20 @@ private:
         // Track which side matches for current c[0] and c[1]
         for (size_t idx = 2; idx < c.size(); ++idx) {
             Shop& shop = shops[c[idx]];
+            Shop& candidate_0 = shops[c[0]];
+            Shop& candidate_1 = shops[c[1]];
             // improve outlet (sell s)
             if (shop.provides(s)) {
                 int ma = (shop.g[0] == s);
-                if ((shop.g[ma] == shops[c[1]].g[global_m1]) || (shops[c[0]].P[1 - global_m0] == 0.0)) {
-                    if (shops[c[0]].P[1 - global_m0] < shop.P[1 - ma]) {
+                if ((shop.get_good(s) == candidate_1.g[global_m1]) || (candidate_0.P[1 - global_m0] == 0.0)) {
+                    if (candidate_0.P[1 - global_m0] < shop.get_price(s, true)) {
                         double candidate = 0;
                         if (c[1] > 0) {
-                            candidate = shop.P[1 - ma] * shops[c[1]].P[1 - global_m0];
+                            candidate = shop.get_price(s, true) * candidate_1.P[1 - global_m1];
                         }
                         c[0] = c[idx];
-                        global_m0 = ma;
-                        Ucomp = (shop.g[ma] == shops[c[1]].g[global_m1]) ? candidate : 0.0;
+                        global_m0 = (shop.g[0] == s);
+                        Ucomp = (shop.g[ma] == candidate_1.g[global_m1]) ? candidate : 0.0;
                         c.erase(c.begin() + idx);
                         --idx;
                     }
@@ -786,16 +788,15 @@ private:
             else {
                 // improve source (buy d)
                 if (shop.provides(d)) {
-                    int ma = (shop.g[0] == d);
-                    if ((shop.g[ma] == shops[c[0]].g[global_m0]) || (shops[c[1]].P[global_m1] == 0.0)) {
-                        if (shops[c[1]].P[global_m1] < shop.P[ma]) {
-                            double candidate = (shops[c[0]].P[1 - global_m0]) * shop.P[ma];
+                    if ((shop.get_good(d) == candidate_0.g[global_m0]) || (candidate_1.P[global_m1] == 0.0)) {
+                        if (candidate_1.P[global_m1] < shop.get_price(d)) {
+                            double candidate = (candidate_0.P[1 - global_m0]) * shop.get_price(d);
                             c[1] = c[idx];
-                            global_m1 = ma;
+                            global_m1 = (shop.g[0] == d);
                             if (DEBUG) {
                                 printf("[3] SET m1 to %d\n", global_m1);
                             }
-                            Ucomp = (shop.g[ma] == shops[c[0]].g[global_m0]) ? candidate : 0.0;
+                            Ucomp = (shop.get_good(d) == candidate_0.g[global_m0]) ? candidate : 0.0;
                             c.erase(c.begin() + idx);
                             --idx;
                         }
