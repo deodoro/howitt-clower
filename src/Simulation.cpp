@@ -424,7 +424,7 @@ ResearchResults Simulation::research(int idx) {
                 if (partner.buyer_idx > 0) {
                     int m1 = (shops[partner.buyer_idx].g[0] == partner.demands);
                     if (shops[partner.buyer_idx].g[m1] == trader.supplies) 
-                        U = P1 * shops[partner.buyer_idx].P[m1];
+                    U = P1 * shops[partner.buyer_idx].P[m1];
                 }
             }
             if (U < Ucomp) {
@@ -466,8 +466,6 @@ void Simulation::try_barter(Trader& trader, std::vector<int>& c, int& bestbarter
 void Simulation::try_one(const Trader& trader, std::vector<int>& c, double& Ucomp) {
     int s = trader.supplies;
     int d = trader.demands;
-    int m0 = (shops[trader.seller_idx].g[0] == s);
-    int m1 = (shops[trader.buyer_idx].g[0] == d);
     // Track which side matches for current c[0] and c[1]
     for (size_t idx = 2; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
@@ -475,15 +473,14 @@ void Simulation::try_one(const Trader& trader, std::vector<int>& c, double& Ucom
         Shop& candidate_1 = shops[c[1]];
         // improve outlet (sell s)
         if (shop.provides(s)) {
-            if ((shop.get_good(s) == candidate_1.g[m1]) || (candidate_0.P[1 - m0] == 0.0)) {
-                if (candidate_0.P[1 - m0] < shop.get_price(s, true)) {
+            if ((shop.get_good(s) == candidate_1.get_good(d)) || (candidate_0.get_price(s, true) == 0.0)) {
+                if (candidate_0.get_price(s, true) < shop.get_price(s, true)) {
                     double candidate = 0;
                     if (c[1] > 0) {
-                        candidate = shop.get_price(s, true) * candidate_1.P[1 - m1];
+                        candidate = shop.get_price(s, true) * candidate_1.get_price(s, true);
                     }
                     c[0] = c[idx];
-                    m0 = (shop.g[0] == s);
-                    Ucomp = (shop.get_good(s) == candidate_1.g[m1]) ? candidate : 0.0;
+                    Ucomp = (shop.get_good(s) == candidate_1.get_good(d)) ? candidate : 0.0;
                     c.erase(c.begin() + idx);
                     --idx;
                 }
@@ -492,12 +489,11 @@ void Simulation::try_one(const Trader& trader, std::vector<int>& c, double& Ucom
         else {
             // improve source (buy d)
             if (shop.provides(d)) {
-                if ((shop.get_good(d) == candidate_0.g[m0]) || (candidate_1.P[m1] == 0.0)) {
-                    if (candidate_1.P[m1] < shop.get_price(d)) {
-                        double candidate = (candidate_0.P[1 - m0]) * shop.get_price(d);
+                if ((shop.get_good(d) == candidate_0.get_good(s)) || (candidate_1.get_price(d) == 0.0)) {
+                    if (candidate_1.get_price(d) < shop.get_price(d)) {
+                        double candidate = (candidate_0.get_price(s, true)) * shop.get_price(d);
                         c[1] = c[idx];
-                        m1 = (shop.g[0] == d);
-                        Ucomp = (shop.get_good(d) == candidate_0.g[m0]) ? candidate : 0.0;
+                        Ucomp = (shop.get_good(d) == candidate_0.get_good(s)) ? candidate : 0.0;
                         c.erase(c.begin() + idx);
                         --idx;
                     }
