@@ -104,7 +104,6 @@ private:
 
     // Helper methods
     std::function<double(int)> make_overhead(double f1, double slope);
-    double priceF(double tr0, double tr1, double f_other) const;
     void init_static();
     void init_run();
     void lineup();
@@ -116,8 +115,8 @@ private:
     ResearchResults research(int idx);
     void addshop(const Trader& trader, Shop& shop, std::vector<int>& cand);
     void try_barter(Trader& trader, std::vector<int>& c, int& bestbarter, double& Ubarter, double& Ucomp);
-    void try_one(int r, std::vector<int>& c, double& Ucomp);
-    void try_two(int r, std::vector<int>& c, double& Ucomp);
+    void try_one(const Trader& trader, std::vector<int>& c, double& Ucomp);
+    void try_two(const Trader& trader, std::vector<int>& c, double& Ucomp);
     int calc1();
     void calc2();
     void rmse();

@@ -7,6 +7,9 @@ SRCDIR = src
 INCDIR = include
 DISTDIR = dist
 OBJDIR = $(DISTDIR)/obj
+CXXFLAGS += -g -O0
+CFLAGS   += -g -O0
+LDFLAGS  += 
 
 # Files
 TARGET = $(DISTDIR)/howclow_oop

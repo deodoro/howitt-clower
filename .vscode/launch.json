@@ -1,0 +1,41 @@
+{
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "C/C++: (gdb) Debug dist/howclow_oop",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/dist/howclow_oop",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": true,
+      "externalConsole": false,
+
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+
+      "preLaunchTask": "Make: Build project",
+
+      "setupCommands": [
+        { "description": "Enable pretty printing", "text": "-enable-pretty-printing", "ignoreFailures": true },
+        { "description": "Show frame args fully", "text": "set print frame-arguments all", "ignoreFailures": true }
+      ],
+
+      "logging": {
+        "engineLogging": true,          // turn off after it works
+        "trace": true,
+        "traceResponse": true
+      },
+
+      "sourceFileMap": {
+        // If your object files reference a different absolute path, map it to the workspace:
+        // "/home/you/some/old/path": "${workspaceFolder}"
+      },
+
+      "environment": [
+        // for custom libs, uncomment:
+        // { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/dist:${env:LD_LIBRARY_PATH}" }
+      ]
+    }
+  ]
+}
