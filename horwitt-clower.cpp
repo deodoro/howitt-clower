@@ -139,6 +139,19 @@ public:
             return P[g[0] == side];
     }
 
+    void update_prices(double C, std::function<double(int)> overhead_f) {
+        auto priceF = [C](double tr0, double tr1, double f_other) {
+            return (tr1 - f_other - C > 0.0) ? ((tr1 - C - f_other) / tr0) : 0.0;
+        };
+        P[0]  = priceF(tr[0], tr[1], overhead_f(g[1]));
+        P[1]  = priceF(tr[1], tr[0], overhead_f(g[0]));
+    }
+
+    void update_targets(double targ0, double targ1) {
+        tr[0] = targ0;
+        tr[1] = targ1;
+    }
+
     // overhead is a pointer to a  function that returns a double given an integer
     bool is_profitable(std::function<double(int)> overhead = nullptr) const {
         return (y[0] - P[1] * y[1] - (overhead ? overhead(g[0]) : 0.0)) > 0 && (y[1] - P[0] * y[0] - (overhead ? overhead(g[1]) : 0.0)) > 0;
@@ -154,15 +167,15 @@ public:
 class Trader {
 public:
     int idx{0};             // PROVISIONAL: to make the code compatible while it's  refactored
-    int s{0};              // produced good
-    int d{0};              // desired good
+    int supplies{0};              // produced good
+    int demands{0};              // desired good
     int q{0};              // 0 if s<=d else 1 (orders shop's good pair)
     int seller_idx{0};
     int buyer_idx{0};
     int familyshop{0};     // owned shop index (0 if none)
 
     std::string to_string() const {
-        return "Trader{s=" + std::to_string(s) + ", d=" + std::to_string(d) + ", q=" + std::to_string(q) +
+        return "Trader{s=" + std::to_string(supplies) + ", d=" + std::to_string(demands) + ", q=" + std::to_string(q) +
                ", sh=[" + std::to_string(seller_idx) + "," + std::to_string(buyer_idx) + "], familyshop=" + std::to_string(familyshop) + "}";
     }
 
@@ -179,20 +192,38 @@ public:
     */
     int comrade(const std::vector<std::vector<int>>& produces) const {
         // someone else producing s[r] (the same production good)
-        int k = rng.uniform_int(std::max(0, std::max(1, (int)produces[s].size()) - 1));
-        int fr = produces[s][k];
-        if (fr >= idx) fr = produces[s][k+1]; // skip self
+        int k = rng.uniform_int(std::max(0, std::max(1, (int)produces[supplies].size()) - 1));
+        int fr = produces[supplies][k];
+        if (fr >= idx) fr = produces[supplies][k+1]; // skip self
         return fr;
     }
 
     int soulmate(const std::vector<std::vector<int>>& consumes) const {
         // someone else consuming d[r] (the  same consumption good)
-        int k = rng.uniform_int(std::max(0, std::max(1, (int)consumes[d].size()) - 1));
-        int fr = consumes[d][k];
-        if (fr >= idx) fr = consumes[d][k+1]; // skip self
+        int k = rng.uniform_int(std::max(0, std::max(1, (int)consumes[demands].size()) - 1));
+        int fr = consumes[demands][k];
+        if (fr >= idx) fr = consumes[demands][k+1]; // skip self
         return fr;
     }
 
+    double utility(std::vector<Shop>& shops) const {
+        // attainable consumption for r via current links
+        double X = 0.0;
+        if (seller_idx > 0) {
+            Shop& sell_shop = shops[seller_idx];
+            if (sell_shop.get_good(supplies) == demands) {
+                X = sell_shop.get_price(supplies, true);
+            } else {
+                if (buyer_idx > 0) {
+                    Shop& buy_shop = shops[buyer_idx];
+                    if (sell_shop.get_good(supplies) == buy_shop.get_good(demands)) {
+                        X = sell_shop.get_price(supplies, true) * buy_shop.get_price(demands);
+                    }
+                }
+            }
+        }
+        return X;
+    }
 };
 
 class Simulation {
@@ -380,9 +411,9 @@ private:
                 for (int k = 1; k <= bsize; ++k) {
                     ++r;
                     traders[r].idx = r;  // PROVISIONAL: to make the code compatible while it's  refactored
-                    traders[r].s = i;
-                    traders[r].d = j;
-                    traders[r].q = (traders[r].s > traders[r].d);
+                    traders[r].supplies = i;
+                    traders[r].demands = j;
+                    traders[r].q = (traders[r].supplies > traders[r].demands);
                     produces[i].push_back(r);
                     consumes[j].push_back(r);
                 }
@@ -443,15 +474,11 @@ private:
                     if (!shop.active && (&shop != &shops.front())) { // skip index 0
                         NS++;
                         shop.active = 1;
-                        shop.g[1 - traders[r].q] = traders[r].d;
-                        shop.g[traders[r].q]     = traders[r].s;
-
+                        shop.g[1 - traders[r].q] = traders[r].demands;
+                        shop.g[traders[r].q]     = traders[r].supplies;
                         // initialize prices - targets are taken from previous research
-                        shop.tr[0] = ok.targ0;
-                        shop.tr[1] = ok.targ1;
-                        shop.P[0]  = priceF(shop.tr[0], shop.tr[1], overhead_f(shop.g[1]));
-                        shop.P[1]  = priceF(shop.tr[1], shop.tr[0], overhead_f(shop.g[0]));
-
+                        shop.update_targets(ok.targ0, ok.targ1);
+                        shop.update_prices(C, overhead_f);
                         // owner links
                         traders[r].seller_idx = shop.idx;
                         traders[r].buyer_idx = 0;
@@ -476,7 +503,7 @@ private:
         for (int i = 1; i <= m; i++) {
             int r = line[i];
             Trader& trader = traders[r];
-            double U = utility(trader);
+            double U = trader.utility(shops);
             double psearch = (U > 0.0 ? lambda : 1.0);
             // Skip condition: random or already owns a shop
             if (rng.uniform01_inclusive() < psearch && trader.familyshop == 0) {
@@ -502,7 +529,7 @@ private:
                     double Ubarter = 0.0;
 
                     try_barter(trader, cand, bestbarter, Ubarter, Ucomp);
-                    if (cand.size() > 2 && (shops[cand[0]].g[1 - trader.q] != trader.d || shops[cand[0]].P[trader.q] == 0.0)) {
+                    if (cand.size() > 2 && (shops[cand[0]].g[1 - trader.q] != trader.demands || shops[cand[0]].P[trader.q] == 0.0)) {
                         try_one(r, cand, Ucomp);
                     }
                     if (cand.size() > 2) {
@@ -542,13 +569,13 @@ private:
             int a = trader.seller_idx;
             if (a > 0) {
                 int b = trader.buyer_idx;
-                if (shops[a].get_good(trader.s) == trader.d) {
+                if (shops[a].get_good(trader.supplies) == trader.demands) {
                     // direct barter
-                    shops[a].add_income(trader.s, 1.0, true);
-                } else if (b > 0 && shops[a].get_good(trader.s) == shops[b].get_good(trader.d)) {
+                    shops[a].add_income(trader.supplies, 1.0, true);
+                } else if (b > 0 && shops[a].get_good(trader.supplies) == shops[b].get_good(trader.demands)) {
                     // indirect via common intermediary
-                    shops[a].add_income(trader.s, 1.0, true);
-                    shops[b].add_income(trader.d, shops[a].get_price(trader.s, true));
+                    shops[a].add_income(trader.supplies, 1.0, true);
+                    shops[b].add_income(trader.demands, shops[a].get_price(trader.supplies, true));
                 }
             }
         }
@@ -603,20 +630,20 @@ private:
         res.targ0 = rng.uniform_int(xMax) + 1.0;
         res.targ1 = rng.uniform_int(xMax) + 1.0;
 
-        double P0 = priceF(res.targ0, res.targ1, overhead_f(trader.d));
-        double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.s));
+        double P0 = priceF(res.targ0, res.targ1, overhead_f(trader.demands));
+        double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.supplies));
 
         // Test with a comrade
         Trader& partner = traders[trader.comrade(produces)];
-        double Ucomp = u_sample(partner);
+        double Ucomp = partner.utility(shops);
         double U = 0.0;
         // direct or indirect reachability check through fr’s links
-        if (partner.d == trader.d) U = P0;
+        if (partner.demands == trader.demands) U = P0;
         else {
             int sh1 = partner.buyer_idx;
             if (sh1 > 0) {
-                int m1 = (shops[sh1].g[0] == partner.d);
-                if (shops[sh1].g[m1] == trader.d) U = P0 * shops[sh1].P[m1];
+                int m1 = (shops[sh1].g[0] == partner.demands);
+                if (shops[sh1].g[m1] == trader.demands) U = P0 * shops[sh1].P[m1];
             }
         }
         // Test with a soulmate
@@ -624,14 +651,14 @@ private:
             U = 0;
             Trader& partner = traders[trader.soulmate(consumes)];
             // partner = traders[fr];
-            Ucomp = u_sample(partner);
+            Ucomp = partner.utility(shops);
             U = 0.0;
-            if (partner.s == trader.s) {
+            if (partner.supplies == trader.supplies) {
                 U = P0;
             } else {
                 if (partner.seller_idx > 0) {
-                    int m0 = (shops[partner.seller_idx].g[0] == partner.s);
-                    if (shops[partner.seller_idx].g[m0] == trader.s) U = shops[partner.seller_idx].P[1 - m0] * P0;
+                    int m0 = (shops[partner.seller_idx].g[0] == partner.supplies);
+                    if (shops[partner.seller_idx].g[m0] == trader.supplies) U = shops[partner.seller_idx].P[1 - m0] * P0;
                 }
             }
             if (U < Ucomp) {
@@ -648,30 +675,30 @@ private:
         // Stranger who likes s[r]
         {
             U = 0.0;
-            int k = 1 + rng.uniform_int(std::max(1, (int)consumes[trader.s].size()) - 1);
-            Trader &partner = traders[consumes[trader.s][k - 1]];
-            Ucomp = u_sample(partner);
+            int k = 1 + rng.uniform_int(std::max(1, (int)consumes[trader.supplies].size()) - 1);
+            Trader &partner = traders[consumes[trader.supplies][k - 1]];
+            Ucomp = partner.utility(shops);
             U = 0.0;
-            if (partner.s == trader.d) {
+            if (partner.supplies == trader.demands) {
                 U = P1;
             } else {
                 if (partner.seller_idx > 0) {
-                    int m0 = (shops[partner.seller_idx].g[0] == partner.s);
-                    if (shops[partner.seller_idx].g[m0] == trader.d) U = shops[partner.seller_idx].P[1 - m0] * P1;
+                    int m0 = (shops[partner.seller_idx].g[0] == partner.supplies);
+                    if (shops[partner.seller_idx].g[m0] == trader.demands) U = shops[partner.seller_idx].P[1 - m0] * P1;
                 }
             }
             // Stranger who produces d[r]
             if (U < Ucomp) {
-                int k = 1 + rng.uniform_int(std::max(1, (int)produces[trader.d].size()) - 1);
-                Trader& partner = traders[produces[trader.d][k - 1]];
-                Ucomp = u_sample(partner);
+                int k = 1 + rng.uniform_int(std::max(1, (int)produces[trader.demands].size()) - 1);
+                Trader& partner = traders[produces[trader.demands][k - 1]];
+                Ucomp = partner.utility(shops);
                 U = 0.0;
-                if (partner.d == trader.s) {
+                if (partner.demands == trader.supplies) {
                     U = P1;
                 } else {
                     if (partner.buyer_idx > 0) {
-                        int m1 = (shops[partner.buyer_idx].g[0] == partner.d);
-                        if (shops[partner.buyer_idx].g[m1] == trader.s) U = P1 * shops[partner.buyer_idx].P[m1];
+                        int m1 = (shops[partner.buyer_idx].g[0] == partner.demands);
+                        if (shops[partner.buyer_idx].g[m1] == trader.supplies) U = P1 * shops[partner.buyer_idx].P[m1];
                     }
                 }
                 if (U < Ucomp) {
@@ -684,45 +711,8 @@ private:
         return res;
     }
 
-    double u_sample(const Trader& trader) {
-        // attainable consumption for fr via current links
-        double X = 0.0;
-        Shop& sell_shop = shops[trader.seller_idx];
-        Shop& buy_shop = shops[trader.buyer_idx];
-        int m0 = (sell_shop.g[0] == trader.s);
-        int m1 = (buy_shop.g[0] == trader.d);
-        if (sell_shop.g[m0] == trader.d) {
-            X = sell_shop.P[1 - m0];
-        } else {
-            if (sell_shop.g[m0] == buy_shop.g[m1]) {
-                X = sell_shop.P[1 - m0] * buy_shop.P[m1];
-            }
-        }
-
-        return X;
-    }
-
-    double utility(const Trader& trader) {
-        // attainable consumption for r via current links
-        double X = 0.0;
-        int a = trader.seller_idx;
-        int b = trader.buyer_idx;
-        int m0 = (shops[a].g[0] == trader.s);
-        int m1 = (shops[b].g[0] == trader.d);
-        if (a > 0) {
-            if (shops[a].g[m0] == trader.d) {
-                X = shops[a].P[1 - m0];
-            } else if (b > 0) {
-                if (shops[a].g[m0] == shops[b].g[m1]) {
-                    X = shops[a].P[1 - m0] * shops[b].P[m1];
-                }
-            }
-        }
-        return X;
-    }
-
     void addshop(const Trader& trader, Shop& shop, std::vector<int>& cand) {
-        if (shop.active && (shop.provides(trader.s) || shop.provides(trader.d))) {
+        if (shop.active && (shop.provides(trader.supplies) || shop.provides(trader.demands))) {
             if (std::find(cand.begin(), cand.end(), shop.idx) == cand.end()) {
                 cand.push_back(shop.idx);
             }
@@ -735,7 +725,7 @@ private:
         // iterate candidates from index 2 onward
         for (size_t idx = 2; idx < c.size(); ++idx) {
             Shop& shop = shops[c[idx]];
-            if (shop.provides(trader.s) && shop.provides(trader.d)) {
+            if (shop.provides(trader.supplies) && shop.provides(trader.demands)) {
                 double val = shop.P[trader.q];
                 if (val > std::max(Ucomp, Ubarter)) {
                     bestbarter = shop.idx;
@@ -748,8 +738,8 @@ private:
     }
 
     void try_one(int r, std::vector<int>& c, double& Ucomp) {
-        int s = traders[r].s;
-        int d = traders[r].d;
+        int s = traders[r].supplies;
+        int d = traders[r].demands;
         int m0 = (shops[traders[r].seller_idx].g[0] == s);
         int m1 = (shops[traders[r].buyer_idx].g[0] == d);
         // Track which side matches for current c[0] and c[1]
@@ -796,7 +786,7 @@ private:
     }
 
     void try_two(int r, std::vector<int>& c, double& Ucomp) {
-        int s = traders[r].s, d = traders[r].d;
+        int s = traders[r].supplies, d = traders[r].demands;
 
         for (size_t ia = 2; ia < c.size(); ++ia) {
             int a = c[ia];
@@ -829,10 +819,10 @@ private:
             if (trader.seller_idx > 0) {
                 int a = trader.seller_idx;
                 int b = trader.buyer_idx;
-                int ma = (shops[a].g[0] == trader.s);
-                int mb = (b > 0 && shops[b].g[0] == trader.d);
+                int ma = (shops[a].g[0] == trader.supplies);
+                int mb = (b > 0 && shops[b].g[0] == trader.demands);
 
-                part += (shops[a].g[ma] == trader.d) ||
+                part += (shops[a].g[ma] == trader.demands) ||
                         (shops[a].g[ma] == shops[b].g[mb]);
 
                 if (b > 0 && shops[a].g[ma] == shops[b].g[mb]) {
@@ -898,7 +888,7 @@ private:
         rmse();
 
         Csurp = 0.0;
-        for (Trader& trader: traders) Csurp += utility(trader);
+        for (Trader& trader: traders) Csurp += trader.utility(shops);
 
         Psurp = 0.0;
         Nshop = 0;
