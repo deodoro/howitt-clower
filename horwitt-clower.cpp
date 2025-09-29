@@ -102,7 +102,27 @@ public:
         y[0] = y[1] = 0.0;
         tr[0] = tr[1] = 0.0;
     }
-};
+
+    int get_good(int side, bool opposite=false) const {
+        if (opposite)
+            return g[g[0] != side];
+        else
+            return g[g[0] == side];
+    }
+
+    double get_income(int side, bool opposite=false) const {
+        if (opposite)
+            return y[g[0] != side];
+        else
+            return y[g[0] == side];
+    }
+
+    double get_price(int side, bool opposite=false) const {
+        if (opposite)
+            return P[g[0] != side];
+        else
+            return P[g[0] == side];
+    }};
 
 class Trader {
 public:
@@ -110,18 +130,18 @@ public:
     int s{0};              // produced good
     int d{0};              // desired good
     int q{0};              // 0 if s<=d else 1 (orders shop's good pair)
-    int seller{0};
-    int buyer{0};
+    int seller_idx{0};
+    int buyer_idx{0};
     int familyshop{0};     // owned shop index (0 if none)
 
     std::string to_string() const {
         return "Trader{s=" + std::to_string(s) + ", d=" + std::to_string(d) + ", q=" + std::to_string(q) +
-               ", sh=[" + std::to_string(seller) + "," + std::to_string(buyer) + "], familyshop=" + std::to_string(familyshop) + "}";
+               ", sh=[" + std::to_string(seller_idx) + "," + std::to_string(buyer_idx) + "], familyshop=" + std::to_string(familyshop) + "}";
     }
 
     void sever_links(Shop& shop) {
-        if (seller == shop.idx) seller = 0;
-        if (buyer == shop.idx) buyer = 0;
+        if (seller_idx == shop.idx) seller_idx = 0;
+        if (buyer_idx == shop.idx) buyer_idx = 0;
     }
 };
 
@@ -335,8 +355,8 @@ private:
         NS = 0;
 
         for (Trader& trader : traders) {
-            trader.seller = 0;
-            trader.buyer = 0;
+            trader.seller_idx = 0;
+            trader.buyer_idx = 0;
             trader.familyshop = 0;
         }
         int i = 0;
@@ -382,8 +402,8 @@ private:
                         shop.P[1]  = priceF(shop.tr[1], shop.tr[0], overhead_f(shop.g[0]));
         
                         // owner links
-                        traders[r].seller = shop.idx;
-                        traders[r].buyer = 0;
+                        traders[r].seller_idx = shop.idx;
+                        traders[r].buyer_idx = 0;
                         traders[r].familyshop = shop.idx;
                         shop.owner = r;
                         break;
@@ -413,15 +433,15 @@ private:
                 // candidate initialization with current links
                 std::vector<int> cand;
                 cand.reserve(8);
-                cand.push_back(trader.seller); // c[0]
-                cand.push_back(trader.buyer); // c[1]
+                cand.push_back(trader.seller_idx); // c[0]
+                cand.push_back(trader.buyer_idx); // c[1]
 
                 // add friend outlets/sources and one random shop
                 Trader& comrade_ = traders[comrade(trader)];
-                addshop(comrade_, shops[comrade_.seller], cand);
+                addshop(comrade_, shops[comrade_.seller_idx], cand);
 
                 Trader& soulmate_ = traders[soulmate(trader)];
-                addshop(soulmate_, shops[soulmate_.buyer], cand);
+                addshop(soulmate_, shops[soulmate_.buyer_idx], cand);
 
                 addshop(trader, shops[rng.uniform_int(K) + 1], cand);
 
@@ -439,12 +459,12 @@ private:
                     }
 
                     if (Ucomp < Ubarter && bestbarter > 0) {
-                        trader.seller = bestbarter;
-                        trader.buyer = 0;
+                        trader.seller_idx = bestbarter;
+                        trader.buyer_idx = 0;
                     } else {
                         // adopt c[0], c[1] as improved chain if any
-                        trader.seller = cand[0];
-                        trader.buyer = cand[1];
+                        trader.seller_idx = cand[0];
+                        trader.buyer_idx = cand[1];
                     }
                 }
             }
@@ -470,19 +490,16 @@ private:
         }
         // tally incomes from adopted relationships
         for (Trader& trader : traders) {
-            int a = trader.seller;
+            int a = trader.seller_idx;
             if (a > 0) {
-                int b = trader.buyer;
-                int ma = (shops[a].g[0] == trader.s);
-                int mb = (shops[b].g[0] == trader.d);
-
-                if (shops[a].g[ma] == trader.d) {
+                int b = trader.buyer_idx;
+                if (shops[a].get_good(trader.s) == trader.d) {
                     // direct barter
-                    shops[a].y[1 - ma] += 1.0;
-                } else if (b > 0 && shops[a].g[ma] == shops[b].g[mb]) {
+                    shops[a].y[shops[a].g[0] != trader.s] += 1.0;
+                } else if (b > 0 && shops[a].get_good(trader.s) == shops[b].get_good(trader.d)) {
                     // indirect via common intermediary
-                    shops[a].y[1 - ma] += 1.0;
-                    shops[b].y[mb]     += shops[a].P[1 - ma];
+                    shops[a].y[shops[a].g[0] != trader.s] += 1.0;
+                    shops[b].y[(shops[b].g[0] == trader.d)] += shops[a].P[shops[a].g[0] != trader.s];
                 }
             }
         }
@@ -547,7 +564,7 @@ private:
         // direct or indirect reachability check through fr’s links
         if (partner.d == trader.d) U = P0;
         else {
-            int sh1 = partner.buyer;
+            int sh1 = partner.buyer_idx;
             if (sh1 > 0) {
                 int m1 = (shops[sh1].g[0] == partner.d);
                 if (shops[sh1].g[m1] == trader.d) U = P0 * shops[sh1].P[m1];
@@ -563,9 +580,9 @@ private:
             if (partner.s == trader.s) {
                 U = P0;
             } else {
-                if (partner.seller > 0) {
-                    int m0 = (shops[partner.seller].g[0] == partner.s);
-                    if (shops[partner.seller].g[m0] == trader.s) U = shops[partner.seller].P[1 - m0] * P0;
+                if (partner.seller_idx > 0) {
+                    int m0 = (shops[partner.seller_idx].g[0] == partner.s);
+                    if (shops[partner.seller_idx].g[m0] == trader.s) U = shops[partner.seller_idx].P[1 - m0] * P0;
                 }
             }
             if (U < Ucomp) {
@@ -589,9 +606,9 @@ private:
             if (partner.s == trader.d) {
                 U = P1;
             } else {
-                if (partner.seller > 0) {
-                    int m0 = (shops[partner.seller].g[0] == partner.s);
-                    if (shops[partner.seller].g[m0] == trader.d) U = shops[partner.seller].P[1 - m0] * P1;
+                if (partner.seller_idx > 0) {
+                    int m0 = (shops[partner.seller_idx].g[0] == partner.s);
+                    if (shops[partner.seller_idx].g[m0] == trader.d) U = shops[partner.seller_idx].P[1 - m0] * P1;
                 }
             }
             // Stranger who produces d[r]
@@ -603,9 +620,9 @@ private:
                 if (partner.d == trader.s) {
                     U = P1;
                 } else {
-                    if (partner.buyer > 0) {
-                        int m1 = (shops[partner.buyer].g[0] == partner.d);
-                        if (shops[partner.buyer].g[m1] == trader.s) U = P1 * shops[partner.buyer].P[m1];
+                    if (partner.buyer_idx > 0) {
+                        int m1 = (shops[partner.buyer_idx].g[0] == partner.d);
+                        if (shops[partner.buyer_idx].g[m1] == trader.s) U = P1 * shops[partner.buyer_idx].P[m1];
                     }
                 }
                 if (U < Ucomp) {
@@ -643,8 +660,8 @@ private:
     double u_sample(const Trader& trader) {
         // attainable consumption for fr via current links
         double X = 0.0;
-        Shop& sell_shop = shops[trader.seller];
-        Shop& buy_shop = shops[trader.buyer];
+        Shop& sell_shop = shops[trader.seller_idx];
+        Shop& buy_shop = shops[trader.buyer_idx];
         int m0 = (sell_shop.g[0] == trader.s);
         int m1 = (buy_shop.g[0] == trader.d);
         global_m0 = m0;
@@ -666,8 +683,8 @@ private:
     double utility(const Trader& trader) {
         // attainable consumption for r via current links
         double X = 0.0;
-        int a = trader.seller;
-        int b = trader.buyer;
+        int a = trader.seller_idx;
+        int b = trader.buyer_idx;
         int m0 = (shops[a].g[0] == trader.s);
         int m1 = (shops[b].g[0] == trader.d);
         global_m0 = m0;
@@ -760,7 +777,6 @@ private:
 
     void try_two(int r, std::vector<int>& c, double& Ucomp) {
         int s = traders[r].s, d = traders[r].d;
-        auto side_of = [&](int k, int good)->int { return shops[k].g[0] == good; };
 
         for (size_t ia = 2; ia < c.size(); ++ia) {
             int a = c[ia];
@@ -769,8 +785,8 @@ private:
                     if (ia == ib) continue;
                     int b = c[ib];
                     if (shops[b].provides(d)) {
-                        int ma = side_of(a, s);
-                        int mb = side_of(b, d);
+                        int ma = shops[a].g[0] == s;
+                        int mb = shops[b].g[0] == d;
                         // common intermediary condition
                         if (shops[a].g[ma] == shops[b].g[mb]) {
                             double val = shops[a].P[1 - ma] * shops[b].P[mb];
@@ -797,9 +813,9 @@ private:
         std::fill(usingmoney.begin(), usingmoney.end(), 0.0);
 
         for (Trader& trader : traders) {
-            if (trader.seller > 0) {
-                int a = trader.seller;
-                int b = trader.buyer;
+            if (trader.seller_idx > 0) {
+                int a = trader.seller_idx;
+                int b = trader.buyer_idx;
                 int ma = (shops[a].g[0] == trader.s);
                 int mb = (b > 0 && shops[b].g[0] == trader.d);
 
