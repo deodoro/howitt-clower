@@ -321,20 +321,10 @@ void Simulation::weekly_trade_and_exit() {
 // Update targets adaptively and recompute posted prices
 void Simulation::weekly_update_prices() {
     auto overhead_f = make_overhead(f1, slope);
-    if (DEBUG) {
-        for (Shop& shop: shops) {
-            if (shop.active) {
-                printf("Shop %d: tr0=%.2f tr1=%.2f\n", shop.idx, shop.tr[0], shop.tr[1]);
-            }
-        }
-    }
     for (Shop& shop: shops) {
         if (shop.active) {
-            for (int h = 0; h < 2; ++h) {
-                shop.tr[h] += alpha * (shop.y[h] - shop.tr[h]);
-            }
-            shop.P[0] = priceF(shop.tr[0], shop.tr[1], overhead_f(shop.g[1]));
-            shop.P[1] = priceF(shop.tr[1], shop.tr[0], overhead_f(shop.g[0]));
+            shop.update_targets(alpha);
+            shop.update_prices(C, overhead_f);
         }
     }
 }

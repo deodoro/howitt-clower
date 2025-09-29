@@ -8,3 +8,4 @@ cpp.txt
 cpp_2.txt
 howclow_oop
 *.o
+dist/**

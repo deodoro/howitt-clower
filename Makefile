@@ -1,26 +1,38 @@
+# Compiler and flags
 CXX = g++
-CXXFLAGS = -std=gnu++17 -O2 -pipe -Wall -Wextra
-TARGET = howclow_oop
-SOURCES = main.cpp PCG32.cpp Shop.cpp Trader.cpp Simulation.cpp
-OBJECTS = $(SOURCES:.cpp=.o)
-HEADERS = PCG32.h Shop.h Trader.h Simulation.h ResearchResults.h
+CXXFLAGS = -std=gnu++17 -O2 -pipe -Wall -Wextra -Iinclude
 
-.PHONY: all clean
+# Directories
+SRCDIR = src
+INCDIR = include
+DISTDIR = dist
+OBJDIR = $(DISTDIR)/obj
 
-all: $(TARGET)
+# Files
+TARGET = $(DISTDIR)/howclow_oop
+SOURCES = $(wildcard $(SRCDIR)/*.cpp)
+OBJECTS = $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+HEADERS = $(wildcard $(INCDIR)/*.h)
+
+.PHONY: all clean dirs
+
+all: dirs $(TARGET)
+
+dirs:
+	@mkdir -p $(DISTDIR) $(OBJDIR)
 
 $(TARGET): $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
-%.o: %.cpp $(HEADERS)
+$(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 clean:
-	rm -f $(OBJECTS) $(TARGET)
+	rm -rf $(DISTDIR)
 
-# Dependencies
-main.o: main.cpp Simulation.h
-PCG32.o: PCG32.cpp PCG32.h
-Shop.o: Shop.cpp Shop.h
-Trader.o: Trader.cpp Trader.h Shop.h PCG32.h
-Simulation.o: Simulation.cpp Simulation.h PCG32.h Shop.h Trader.h ResearchResults.h
+# Specific dependencies
+$(OBJDIR)/main.o: $(SRCDIR)/main.cpp $(INCDIR)/Simulation.h
+$(OBJDIR)/PCG32.o: $(SRCDIR)/PCG32.cpp $(INCDIR)/PCG32.h
+$(OBJDIR)/Shop.o: $(SRCDIR)/Shop.cpp $(INCDIR)/Shop.h
+$(OBJDIR)/Trader.o: $(SRCDIR)/Trader.cpp $(INCDIR)/Trader.h $(INCDIR)/Shop.h $(INCDIR)/PCG32.h
+$(OBJDIR)/Simulation.o: $(SRCDIR)/Simulation.cpp $(INCDIR)/Simulation.h $(INCDIR)/PCG32.h $(INCDIR)/Shop.h $(INCDIR)/Trader.h $(INCDIR)/ResearchResults.h

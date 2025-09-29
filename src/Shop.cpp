@@ -57,6 +57,11 @@ void Shop::update_prices(double C, std::function<double(int)> overhead_f) {
     P[1] = priceF(tr[1], tr[0], overhead_f(g[0]));
 }
 
+void Shop::update_targets(double alpha) {
+    tr[0] += alpha * (y[0] - tr[0]);
+    tr[1] += alpha * (y[1] - tr[1]);
+}
+
 void Shop::update_targets(double targ0, double targ1) {
     tr[0] = targ0;
     tr[1] = targ1;
