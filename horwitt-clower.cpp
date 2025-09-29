@@ -316,9 +316,6 @@ private:
     // Derived/utility
     static constexpr int PRINT_LOOP_N = 6;
 
-    int global_m0; // HACK NECESSARY TO MAKE IT COMPATIBLE WITH FORMER VERSION
-    int global_m1; // HACK NECESSARY TO MAKE IT COMPATIBLE WITH FORMER VERSION
-
     double slope{16.0};
 
     // State
@@ -393,8 +390,6 @@ private:
         }
         // Theoretical max number of "money traders": bsize*(n-2)*(n-1)
         Fmon = bsize * (n - 2.0) * (n - 1.0);
-        global_m0 = 0;
-        global_m1 = 0;
     }
 
     void init_run() {
@@ -696,12 +691,6 @@ private:
         Shop& buy_shop = shops[trader.buyer_idx];
         int m0 = (sell_shop.g[0] == trader.s);
         int m1 = (buy_shop.g[0] == trader.d);
-        global_m0 = m0;
-        global_m1 = m1;
-        last_seen =  trader.idx;
-        if (DEBUG) {
-            printf("[1] SET m1 to %d\n", global_m1);
-        }
         if (sell_shop.g[m0] == trader.d) {
             X = sell_shop.P[1 - m0];
         } else {
@@ -720,12 +709,6 @@ private:
         int b = trader.buyer_idx;
         int m0 = (shops[a].g[0] == trader.s);
         int m1 = (shops[b].g[0] == trader.d);
-        global_m0 = m0;
-        global_m1 = m1;
-        last_seen = trader.idx;
-        if (DEBUG) {
-            printf("[2] SET m1 to %d\n", global_m1);
-        }
         if (a > 0) {
             if (shops[a].g[m0] == trader.d) {
                 X = shops[a].P[1 - m0];
@@ -827,12 +810,6 @@ private:
                             double val = shops[a].get_price(s, true) * shops[b].get_price(d);
                             if (Ucomp < val) {
                                 Ucomp = val;
-                                global_m0 = shops[a].g[0] == s;
-                                global_m1 = shops[b].g[0] == d;
-                                last_seen = r;
-                                if (DEBUG) {
-                                    printf("[4] SET m1 to %d\n", global_m1);
-                                }
                                 c[0] = a;
                                 c[1] = b;
                             }
