@@ -69,6 +69,8 @@ struct PCG32 {
         return double(1 + x)/1000.0;
     }
 };
+// RNG
+static PCG32 rng;
 
 struct ResearchResults {
     double targ0;
@@ -139,6 +141,12 @@ public:
     bool is_profitable(std::function<double(int)> overhead = nullptr) const {
         return (y[0] - P[1] * y[1] - (overhead ? overhead(g[0]) : 0.0)) > 0 && (y[1] - P[0] * y[0] - (overhead ? overhead(g[1]) : 0.0)) > 0;
     }
+
+    void reset_weekly_incomes() {
+        if (active) {
+            y[0] = y[1] = 0.0;
+        }
+    }
 };
 
 class Trader {
@@ -160,6 +168,29 @@ public:
         if (seller_idx == shop.idx) seller_idx = 0;
         if (buyer_idx == shop.idx) buyer_idx = 0;
     }
+
+    /*
+     NOTE: ChatGPT says:
+     Checking fr >= r is wrong: it skips any trader with id >= r (not just self) and can bias selection.
+     The current index math (k+1) can go out of range when k is the last index.
+     Simpler, correct approach: pick a random index in the full vector; if it equals r and size>1, pick the next (or wrap) — this guarantees a different trader without bias and avoids bounds errors.
+    */
+    int comrade(const std::vector<std::vector<int>>& produces) const {
+        // someone else producing s[r] (the same production good)
+        int k = rng.uniform_int(std::max(0, std::max(1, (int)produces[s].size()) - 1));
+        int fr = produces[s][k];
+        if (fr >= idx) fr = produces[s][k+1]; // skip self
+        return fr;
+    }
+
+    int soulmate(const std::vector<std::vector<int>>& consumes) const {
+        // someone else consuming d[r] (the  same consumption good)
+        int k = rng.uniform_int(std::max(0, std::max(1, (int)consumes[d].size()) - 1));
+        int fr = consumes[d][k];
+        if (fr >= idx) fr = consumes[d][k+1]; // skip self
+        return fr;
+    }
+
 };
 
 class Simulation {
@@ -321,9 +352,6 @@ private:
     std::clock_t clock_begin{}, clock_finish{};
     std::FILE* stream{nullptr};
 
-    // RNG
-    PCG32 rng;
-
     // Helpers that mirror macro logic
     // double overhead_f(int i) const {
     //     return f1 + (i - 1) * slope;
@@ -454,8 +482,7 @@ private:
             double U = utility(trader);
             double psearch = (U > 0.0 ? lambda : 1.0);
             // Skip condition: random or already owns a shop
-            double rr = rng.uniform01_inclusive();
-            if (rr < psearch && trader.familyshop == 0) {
+            if (rng.uniform01_inclusive() < psearch && trader.familyshop == 0) {
                 // candidate initialization with current links
                 std::vector<int> cand;
                 cand.reserve(8);
@@ -463,10 +490,11 @@ private:
                 cand.push_back(trader.buyer_idx); // c[1]
 
                 // add friend outlets/sources and one random shop
-                Trader& comrade_ = traders[comrade(trader)];
+                // Trader& comrade_ = traders[comrade(trader)];
+                Trader& comrade_ = traders[trader.comrade(produces)];
                 addshop(comrade_, shops[comrade_.seller_idx], cand);
 
-                Trader& soulmate_ = traders[soulmate(trader)];
+                Trader& soulmate_ = traders[trader.soulmate(consumes)];
                 addshop(soulmate_, shops[soulmate_.buyer_idx], cand);
 
                 addshop(trader, shops[rng.uniform_int(K) + 1], cand);
@@ -510,9 +538,7 @@ private:
 
         // reset shop weekly incomes
         for (Shop& shop : shops) {
-            if (shop.active) {
-                shop.y[0] = shop.y[1] = 0.0;
-            }
+            shop.reset_weekly_incomes();
         }
         // tally incomes from adopted relationships
         for (Trader& trader : traders) {
@@ -584,7 +610,7 @@ private:
         double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.s));
 
         // Test with a comrade
-        Trader& partner = traders[comrade(trader)];
+        Trader& partner = traders[trader.comrade(produces)];
         double Ucomp = u_sample(partner);
         double U = 0.0;
         // direct or indirect reachability check through fr’s links
@@ -599,7 +625,7 @@ private:
         // Test with a soulmate
         if (U < Ucomp) {
             U = 0;
-            Trader& partner = traders[soulmate(trader)];
+            Trader& partner = traders[trader.soulmate(consumes)];
             // partner = traders[fr];
             Ucomp = u_sample(partner);
             U = 0.0;
@@ -659,28 +685,6 @@ private:
         }
         res.enter = 1;
         return res;
-    }
-
-    /*
-     NOTE: ChatGPT says:
-     Checking fr >= r is wrong: it skips any trader with id >= r (not just self) and can bias selection.
-     The current index math (k+1) can go out of range when k is the last index.
-     Simpler, correct approach: pick a random index in the full vector; if it equals r and size>1, pick the next (or wrap) — this guarantees a different trader without bias and avoids bounds errors.
-    */
-    int comrade(const Trader& trader) {
-        // someone else producing s[r] (the same production good)
-        int k = rng.uniform_int(std::max(0, std::max(1, (int)produces[trader.s].size()) - 1));
-        int fr = produces[trader.s][k];
-        if (fr >= trader.idx) fr = produces[trader.s][k+1]; // skip self
-        return fr;
-    }
-
-    int soulmate(const Trader& trader) {
-        // someone else consuming d[r] (the  same consumption good)
-        int k = rng.uniform_int(std::max(0, std::max(1, (int)consumes[trader.d].size()) - 1));
-        int fr = consumes[trader.d][k];
-        if (fr >= trader.idx) fr = consumes[trader.d][k+1]; // skip self
-        return fr;
     }
 
     double u_sample(const Trader& trader) {
