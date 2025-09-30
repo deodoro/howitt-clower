@@ -9,11 +9,6 @@
 //   Over time, entry/search/trade/exit/price-updating can lead to a
 //   “monetary” phase where one commodity becomes the universal intermediary.
 //
-// Note:
-//   Per your request, only comments were added. All original code lines,
-//   macros, constants, function bodies, and formatting remain unchanged.
-//   You can diff against your original to verify: only `// ...` lines
-//   were inserted.
 // -----------------------------------------------------------------------------
 
 // HowClow.cpp.
@@ -263,7 +258,6 @@ int main()
             fr = soulmate(); // Friend with same consumption good → use their source
             addshop(sh[1][fr]);
             addshop(RANDOM_N(K) + 1); // One random shop (stranger)
-            // NOTE: extra is set within addshop!!!
             if (extra)
             { // If any candidates were found, compare options
               Ucomp = U;

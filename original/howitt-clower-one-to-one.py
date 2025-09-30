@@ -7,19 +7,6 @@ compare states **week-by-week**. This Python program mirrors the original C++
 implementation’s data layout (1-based indexing), RNG (PCG32), control flow,
 and update rules. Printing matches the C++ program’s status lines.
 
-Notes
------
-- Arrays are sized with +1 and indexed from 1 like the C++ code.
-- PCG32 is implemented to match `pcg32_next`/`pcg32_seed`. RANDOM_N(x) uses `% x`.
-- The `F`, `f`, pricing, entry (including `Research()`), matching, trade,
-  exit, target updates, RMSE diagnostics are carried over verbatim.
-- The C++ snippet you pasted includes a debug `exit(0)` in the weekly loop.
-  That would stop after the first print; here it is **not** executed by default.
-  You can enable it with `DEBUG_EXIT_AFTER_PRINT=True` to reproduce that exact
-  behavior; keep it False for full runs.
-- Optional weekly snapshotting is provided (disabled by default) to compare
-  states per week. When enabled, it writes compact CSV rows to `/mnt/data`.
-
 Tested assumptions
 ------------------
 - Uses default parameters from the snippet (T=1000, slope in {16,18}, etc.).

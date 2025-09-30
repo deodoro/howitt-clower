@@ -53,7 +53,9 @@ public:
 
     // Getters for shop pointers
     Shop* get_buyer_shop() const { return buyer_shop; }
+    void set_buyer_shop(Shop* shop);
     Shop* get_seller_shop() const { return seller_shop; }
+    void set_seller_shop(Shop* shop);
     Shop* get_family_shop() const { return family_shop; }
 
     // Set shops reference
@@ -72,7 +74,8 @@ public:
 
     std::string to_string() const;
     void sever_links(Shop& shop);
-    int comrade(const std::vector<std::vector<int>>& produces) const;
+    int any_comrade(const std::vector<std::vector<int>>& produces) const;
+    int trade_comrade(const std::vector<std::vector<int>>& produces) const;
     int soulmate(const std::vector<std::vector<int>>& consumes) const;
     double utility(std::vector<Shop>& shops) const;
     bool allows_barter_with(const Shop& shop) const;

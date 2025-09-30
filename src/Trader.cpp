@@ -41,11 +41,17 @@ void Trader::sever_links(Shop& shop) {
  The current index math (k+1) can go out of range when k is the last index.
  Simpler, correct approach: pick a random index in the full vector; if it equals r and size>1, pick the next (or wrap) — this guarantees a different trader without bias and avoids bounds errors.
 */
-int Trader::comrade(const std::vector<std::vector<int>>& produces) const {
+int Trader::any_comrade(const std::vector<std::vector<int>>& produces) const {
     // someone else producing s[r] (the same production good)
     int k = rng.uniform_int(std::max(0, std::max(1, (int)produces[supplies].size()) - 1));
     int fr = produces[supplies][k];
     if (fr >= idx) fr = produces[supplies][k+1]; // skip self
+    return fr;
+}
+
+int Trader::trade_comrade(const std::vector<std::vector<int>>& produces) const {
+    int fr = any_comrade(produces);
+    // if (fr == buyer_idx || fr == seller_idx) return 0;
     return fr;
 }
 
@@ -122,4 +128,12 @@ bool Trader::wants_to_trade_in(int good) {
 
 bool Trader::wants_to_trade_out(int good) {
     return supplies == good;
+}
+
+void Trader::set_buyer_shop(Shop* shop) { 
+    buyer_shop = shop; buyer_idx = shop ? shop->idx : 0; 
+}
+
+void Trader::set_seller_shop(Shop* shop) { 
+    seller_shop = shop; seller_idx = shop ? shop->idx : 0; 
 }

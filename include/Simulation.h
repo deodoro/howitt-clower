@@ -30,6 +30,15 @@
 #include <cstdio>
 #include <functional>
 
+struct MatchEvaluation {
+    double Ucomp = 0.0;
+    double Ubarter = 0.0;
+
+    Shop *barter = nullptr;
+    Shop *candidate_0 = nullptr;
+    Shop *candidate_1 = nullptr;
+};
+
 class Simulation {
 public:
     // Configuration constants (mirror attached code)
@@ -117,9 +126,9 @@ private:
     Trader &random_producer(int good);
     Shop &random_shop();
     void addshop(const Trader *trader, Shop *shop, std::vector<int> &cand);
-    void try_barter(Trader& trader, std::vector<int>& c, int& bestbarter, double& Ubarter, double& Ucomp);
-    void try_one(const Trader& trader, std::vector<int>& c, double& Ucomp);
-    void try_two(const Trader& trader, std::vector<int>& c, double& Ucomp);
+    void try_barter(Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
+    void try_one(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
+    void try_two(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
     int calc1();
     void calc2();
     void rmse();
