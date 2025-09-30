@@ -70,11 +70,11 @@ private:
     // State
     std::vector<Trader> traders;
     std::vector<Shop> shops;
+    std::vector<Trader*> trader_line; // Weekly lineup - permutation of traders
 
     std::vector<std::vector<int>> produces; // by good i: trader ids producing i
     std::vector<std::vector<int>> consumes; // by good j: trader ids desiring j
 
-    std::vector<int> line; // weekly lineup (permutation of traders)
     std::vector<double> usingmoney; // per good
     std::vector<double> Pinv; // SME inverse retail per good
     std::vector<double> vol[2], avp[2];

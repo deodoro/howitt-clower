@@ -102,3 +102,7 @@ void Trader::set_demands(int d) {
     demands = d;
     q = (supplies > demands);
 }
+
+bool Trader::is_compatible_to(const Shop& shop) const {
+    return shop.is_active() && shop.provides(supplies) && shop.provides(demands);
+}

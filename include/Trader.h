@@ -48,6 +48,7 @@ public:
     int comrade(const std::vector<std::vector<int>>& produces) const;
     int soulmate(const std::vector<std::vector<int>>& consumes) const;
     double utility(std::vector<Shop>& shops) const;
+    bool is_compatible_to(const Shop& shop) const;
     bool open_shop(Shop& shop);
 
 private:

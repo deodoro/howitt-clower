@@ -45,6 +45,7 @@ public:
     void set_targets(double targ0, double targ1);
     bool is_profitable(std::function<double(int)> overhead = nullptr) const;
     void reset_weekly_incomes();
+    bool is_active() const { return active == 1; }
 };
 
 #endif // SHOP_H

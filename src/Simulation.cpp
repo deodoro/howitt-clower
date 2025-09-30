@@ -43,7 +43,6 @@ Simulation::Simulation() {
     shops.resize(K + 1);   // 1-based
     produces.assign(n + 1, {});
     consumes.assign(n + 1, {});
-    line.resize(m + 1, 0);
     usingmoney.assign(n + 1, 0.0);
     Pinv.assign(n + 1, 0.0);
     for (int h = 0; h < 2; ++h) {
@@ -194,6 +193,8 @@ void Simulation::init_run() {
 /* NOTE: Line is generated only at the beginning of the run. Should it be randomized? */
 void Simulation::lineup() {
     // random permutation of 1..m
+    std::vector<int> line;
+    line.resize(m + 1, 0);
     std::vector<int> start(m + 1);
     for (int i = 1; i <= m; ++i)
         start[i] = i;
@@ -203,6 +204,10 @@ void Simulation::lineup() {
         for (int i = k; i <= m - j; ++i) {
             start[i] = start[i + 1];
         }
+    }
+    trader_line.clear();
+    for (int i = 0; i < m; ++i) {
+        trader_line.push_back(&traders[line[i + 1]]);
     }
 }
 
@@ -230,14 +235,8 @@ void Simulation::weekly_entry() {
 
 // Matching: agents sample a small set of shops and adopt best links
 void Simulation::weekly_matching() {
-    if (DEBUG) {
-        std::cout << "line: ";
-        for (int i = 0; i <m; i++)
-            std::cout << line[i + 1] << " ";
-        std::cout << std::endl;
-    }
-    for (int i = 1; i <= m; i++) {
-        Trader& trader = traders[line[i]];
+    for (Trader* trader_p : trader_line) {
+        Trader& trader = *trader_p;
         double U = trader.utility(shops);
         double psearch = (U > 0.0 ? lambda : 1.0);
         // Skip condition: random or already owns a shop
@@ -456,7 +455,7 @@ void Simulation::try_barter(Trader& trader, std::vector<int>& c, int& bestbarter
     // iterate candidates from index 2 onward
     for (size_t idx = 2; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
-        if (shop.provides(trader.get_supplies()) && shop.provides(trader.get_demands())) {
+        if (trader.is_compatible_to(shop)) {
             double val = shop.get_price(trader.get_supplies(), true);
             if (val > std::max(Ucomp, Ubarter)) {
                 bestbarter = shop.idx;
