@@ -193,26 +193,6 @@ void Simulation::init_run() {
     lineup();
 }
 
-/* NOTE: Line is generated only at the beginning of the run. Should it be randomized? */
-void Simulation::lineup() {
-    // random permutation of 1..m
-    int line[m + 1];
-    int start[m + 1];
-    for (int i = 1; i <= m; ++i)
-        start[i] = i;
-    for (int j = 1; j <= m; ++j) {
-        int k = rng.uniform_int(m - j + 1) + 1;
-        line[j] = start[k];
-        for (int i = k; i <= m - j; ++i) {
-            start[i] = start[i + 1];
-        }
-    }
-    trader_line.clear();
-    for (int i = 0; i < m; ++i) {
-        trader_line.push_back(&traders[line[i + 1]]);
-    }
-}
-
 // Entry process: potential entrepreneur tries to open a shop
 void Simulation::weekly_entry() {
     auto overhead_f = make_overhead(f1, slope);
@@ -257,7 +237,7 @@ void Simulation::weekly_matching() {
             Trader& soulmate_ = traders[trader.soulmate(consumes)];
             addshop(&soulmate_, soulmate_.get_buyer_shop(), cand);
 
-            addshop(&trader, &shops[rng.uniform_int(K) + 1], cand);
+            addshop(&trader, &random_shop(), cand);
 
             if (cand.size() > 2) {
                 double Ucomp = U;
@@ -265,7 +245,7 @@ void Simulation::weekly_matching() {
                 double Ubarter = 0.0;
 
                 try_barter(trader, cand, bestbarter, Ubarter, Ucomp);
-                if (cand.size() > 2 && (shops[cand[0]].get_good(trader.get_supplies()) != trader.get_demands() || shops[cand[0]].get_price(trader.get_supplies(), true) == 0.0)) {
+                if (cand.size() > 2 && (shops[cand[0]].get_good(trader.get_supplies()) != trader.get_demands() || shops[cand[0]].get_price_supply(trader.get_supplies()) == 0.0)) {
                     try_one(trader, cand, Ucomp);
                 }
                 if (cand.size() > 2) {
@@ -312,7 +292,7 @@ void Simulation::weekly_trade_and_exit() {
                 if (shop_b && shop_a->get_good(trader.get_supplies()) == shop_b->get_good(trader.get_demands())) {
                         // indirect via common intermediary
                         shop_a->add_income(trader.get_supplies(), 1.0, true);
-                        shop_b->add_income(trader.get_demands(), shop_a->get_price(trader.get_supplies(), true));
+                        shop_b->add_income(trader.get_demands(), shop_a->get_price_supply(trader.get_supplies()));
                 }
             }
         }
@@ -346,35 +326,32 @@ void Simulation::weekly_update_prices() {
 // Research process for a prospective owner r
 // Should return an object ResearchResults, with targ0 and targ1 set as the local variables, and enter set as the return value of the function
 ResearchResults Simulation::research(int idx) {
-    ResearchResults res;
     Trader& trader = traders[idx];
+    
     auto overhead_f = make_overhead(f1, slope);
-    // trial targets
-    res.targ0 = rng.uniform_int(xMax) + 1.0;
-    res.targ1 = rng.uniform_int(xMax) + 1.0;
-
     auto priceF = [this](double tr0, double tr1, double f_other) {
         return (tr1 - f_other - C > 0.0) ? ((tr1 - C - f_other) / tr0) : 0.0;
     };
-
+    
+    // Prepare targets and compute prices
+    ResearchResults res{rng.uniform_int(xMax) + 1.0, rng.uniform_int(xMax) + 1.0, 0};
     double P0 = priceF(res.targ0, res.targ1, overhead_f(trader.get_demands()));
     double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.get_supplies()));
 
     // Test with a comrade
     Trader& partner = traders[trader.comrade(produces)];
-    double Ucomp = partner.utility(shops);
     double U = 0.0;
+    double Ucomp = partner.utility(shops);
     // direct or indirect reachability check through fr's links
     if (trader.wants_to_trade_in(partner.get_demands())) {
         U = P0;
     } else {
         if (partner.get_buyer_shop() && trader.wants_to_trade_in(partner.get_buyer_shop()->get_good(partner.get_demands()))) {
-            U = P0 * partner.get_buyer_shop()->get_price(partner.get_demands());
+            U = partner.get_buyer_shop()->get_price(partner.get_demands()) * P0;
         }
     }
     // Test with a soulmate
     if (U < Ucomp) {
-        U = 0;
         Trader& partner = traders[trader.soulmate(consumes)];
         // partner = traders[fr];
         Ucomp = partner.utility(shops);
@@ -383,7 +360,7 @@ ResearchResults Simulation::research(int idx) {
             U = P0;
         } else {
             if (partner.get_seller_shop() && trader.wants_to_trade_out(partner.get_seller_shop()->get_good(partner.get_supplies()))) {
-                U = partner.get_seller_shop()->get_price(partner.get_supplies(), true) * P0;
+                U = partner.get_seller_shop()->get_price_supply(partner.get_supplies()) * P0;
             }
         }
         if (U < Ucomp) {
@@ -392,16 +369,9 @@ ResearchResults Simulation::research(int idx) {
         }
     }
 
-    /*
-    NOTE: random choices here look funky. I tried to remove the +1 -1,
-    but random number sequence changes for reasons I cannot explain.
-    I assume this is wrong. It's kept for now for comparison with former
-    results, but it should be removed */
-    // Stranger who likes s[r]
     {
         U = 0.0;
-        int k = 1 + rng.uniform_int(std::max(1, (int)consumes[trader.get_supplies()].size()) - 1);
-        Trader& partner = traders[consumes[trader.get_supplies()][k - 1]];
+        Trader& partner = random_consumer(trader.get_supplies());
         Ucomp = partner.utility(shops);
         if (trader.wants_to_trade_in(partner.get_supplies())) {
             U = P1;
@@ -412,8 +382,7 @@ ResearchResults Simulation::research(int idx) {
         }
         // Stranger who produces d[r]
         if (U < Ucomp) {
-            int k = 1 + rng.uniform_int(std::max(1, (int)produces[trader.get_demands()].size()) - 1);
-            Trader& partner = traders[produces[trader.get_demands()][k - 1]];
+            Trader& partner = random_producer(trader.get_demands());
             Ucomp = partner.utility(shops);
             U = 0.0;
             if (trader.wants_to_trade_out(partner.get_demands())) {
@@ -433,11 +402,45 @@ ResearchResults Simulation::research(int idx) {
     return res;
 }
 
+Trader& Simulation::random_consumer(int good) {
+    int k = 1 + rng.uniform_int(std::max(1, (int)consumes[good].size()) - 1);
+    return traders[consumes[good][k - 1]];
+}
+
+Trader& Simulation::random_producer(int good) {
+    int k = 1 + rng.uniform_int(std::max(1, (int)produces[good].size()) - 1);
+    return traders[produces[good][k - 1]];
+}
+
+Shop& Simulation::random_shop() {
+    return shops[rng.uniform_int(K) + 1];
+}
+
 void Simulation::addshop(const Trader* trader, Shop* shop, std::vector<int>& cand) {
     if (shop && shop->active && trader->is_compatible_with(shop)) {
         if (std::find(cand.begin(), cand.end(), shop->idx) == cand.end()) {
             cand.push_back(shop->idx);
         }
+    }
+}
+
+/* NOTE: Line is generated only at the beginning of the run. Should it be randomized? */
+void Simulation::lineup() {
+    // random permutation of 1..m
+    int line[m + 1];
+    int start[m + 1];
+    for (int i = 1; i <= m; ++i)
+        start[i] = i;
+    for (int j = 1; j <= m; ++j) {
+        int k = rng.uniform_int(m - j + 1) + 1;
+        line[j] = start[k];
+        for (int i = k; i <= m - j; ++i) {
+            start[i] = start[i + 1];
+        }
+    }
+    trader_line.clear();
+    for (int i = 0; i < m; ++i) {
+        trader_line.push_back(&traders[line[i + 1]]);
     }
 }
 
@@ -448,7 +451,7 @@ void Simulation::try_barter(Trader& trader, std::vector<int>& c, int& bestbarter
     for (size_t idx = 2; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
         if (trader.allows_barter_with(shop)) {
-            double val = shop.get_price(trader.get_supplies(), true);
+            double val = shop.get_price_supply(trader.get_supplies());
             if (val > std::max(Ucomp, Ubarter)) {
                 bestbarter = shop.idx;
                 Ubarter = val;
@@ -469,14 +472,12 @@ void Simulation::try_one(const Trader& trader, std::vector<int>& c, double& Ucom
         Shop& candidate_1 = shops[c[1]];
         // improve outlet (sell s)
         if (shop.provides(s)) {
-            if ((shop.get_good(s) == candidate_1.get_good(d)) || (candidate_0.get_price(s, true) == 0.0)) {
-                if (candidate_0.get_price(s, true) < shop.get_price(s, true)) {
-                    double candidate = 0;
-                    if (c[1] > 0) {
-                        candidate = shop.get_price(s, true) * candidate_1.get_price(s, true);
+            if ((shop.get_good(s) == candidate_1.get_good(d)) || (candidate_0.get_price_supply(s) == 0.0)) {
+                if (candidate_0.get_price_supply(s) < shop.get_price_supply(s)) {
+                    if (shop.get_good(s) == candidate_1.get_good(d)) {
+                        Ucomp = shop.get_price_supply(s) * candidate_1.get_price_supply(s);
                     }
                     c[0] = c[idx];
-                    Ucomp = (shop.get_good(s) == candidate_1.get_good(d)) ? candidate : 0.0;
                     c.erase(c.begin() + idx);
                     --idx;
                 }
@@ -487,9 +488,10 @@ void Simulation::try_one(const Trader& trader, std::vector<int>& c, double& Ucom
             if (shop.provides(d)) {
                 if ((shop.get_good(d) == candidate_0.get_good(s)) || (candidate_1.get_price(d) == 0.0)) {
                     if (candidate_1.get_price(d) < shop.get_price(d)) {
-                        double candidate = (candidate_0.get_price(s, true)) * shop.get_price(d);
+                        if (shop.get_good(d) == candidate_0.get_good(s)) {
+                            Ucomp = (candidate_0.get_price_supply(s) * shop.get_price(d));
+                        }
                         c[1] = c[idx];
-                        Ucomp = (shop.get_good(d) == candidate_0.get_good(s)) ? candidate : 0.0;
                         c.erase(c.begin() + idx);
                         --idx;
                     }
@@ -509,7 +511,7 @@ void Simulation::try_two(const Trader& trader, std::vector<int>& c, double& Ucom
                 if (shops[b].provides(trader.get_demands())) {
                     // common intermediary condition
                     if (shops[a].get_good(trader.get_supplies()) == shops[b].get_good(trader.get_demands())) {
-                        double val = shops[a].get_price(trader.get_supplies(), true) * shops[b].get_price(trader.get_demands());
+                        double val = shops[a].get_price_supply(trader.get_supplies()) * shops[b].get_price(trader.get_demands());
                         if (Ucomp < val) {
                             Ucomp = val;
                             c[0] = a;

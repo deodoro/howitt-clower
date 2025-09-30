@@ -38,10 +38,7 @@ void Shop::clear() {
     tr[0] = tr[1] = 0.0;
 }
 
-int Shop::get_good(int side, bool opposite) const {
-    if (opposite)
-        return g[g[0] != side];
-    else
+int Shop::get_good(int side) const {
         return g[g[0] == side];
 }
 
@@ -61,11 +58,12 @@ void Shop::add_income(int side, double val, bool opposite) {
     y[idx] += val;
 }
 
-double Shop::get_price(int side, bool opposite) const {
-    if (opposite)
-        return P[g[0] != side];
-    else
-        return P[g[0] == side];
+double Shop::get_price(int side) const {
+    return P[g[0] == side];
+}
+
+double Shop::get_price_supply(int side) const {
+    return P[g[0] != side];
 }
 
 void Shop::update_prices(double C, std::function<double(int)> overhead_f) {

@@ -63,12 +63,12 @@ double Trader::utility(std::vector<Shop>& shops) const {
     if (get_seller_idx() > 0) {
         Shop& sell_shop = shops[get_seller_idx()];
         if (sell_shop.get_good(supplies) == demands) {
-            X = sell_shop.get_price(supplies, true);
+            X = sell_shop.get_price_supply(supplies);
         } else {
             if (get_buyer_idx() > 0) {
                 Shop& buy_shop = shops[get_buyer_idx()];
                 if (sell_shop.get_good(supplies) == buy_shop.get_good(demands)) {
-                    X = sell_shop.get_price(supplies, true) * buy_shop.get_price(demands);
+                    X = sell_shop.get_price_supply(supplies) * buy_shop.get_price(demands);
                 }
             }
         }

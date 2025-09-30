@@ -36,10 +36,11 @@ public:
     std::string to_string() const;
     bool provides(int good) const;
     void clear();
-    int get_good(int side, bool opposite = false) const;
+    int get_good(int side) const;
     double get_income(int side, bool opposite = false) const;
     void add_income(int side, double val, bool opposite = false);
-    double get_price(int side, bool opposite = false) const;
+    double get_price(int side) const;
+    double get_price_supply(int side) const;
     void update_prices(double C, std::function<double(int)> overhead_f);
     void update_targets(double alpha);
     void set_targets(double targ0, double targ1);

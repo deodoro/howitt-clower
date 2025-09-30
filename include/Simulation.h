@@ -113,6 +113,9 @@ private:
     void weekly_trade_and_exit();
     void weekly_update_prices();
     ResearchResults research(int idx);
+    Trader &random_consumer(int good);
+    Trader &random_producer(int good);
+    Shop &random_shop();
     void addshop(const Trader *trader, Shop *shop, std::vector<int> &cand);
     void try_barter(Trader& trader, std::vector<int>& c, int& bestbarter, double& Ubarter, double& Ucomp);
     void try_one(const Trader& trader, std::vector<int>& c, double& Ucomp);
