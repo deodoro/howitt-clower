@@ -67,13 +67,18 @@ public:
     void set_supplies(int s);
     void set_demands(int d);
 
+    bool is_compatible_with(const Shop &shop) const;
+    bool is_compatible_with(const Shop *shop) const;
+
     std::string to_string() const;
     void sever_links(Shop& shop);
     int comrade(const std::vector<std::vector<int>>& produces) const;
     int soulmate(const std::vector<std::vector<int>>& consumes) const;
     double utility(std::vector<Shop>& shops) const;
-    bool is_compatible_to(const Shop& shop) const;
-    bool open_shop(Shop& shop);
+    bool allows_barter_with(const Shop& shop) const;
+    bool wants_to_trade_in(int good);
+    bool wants_to_trade_out(int good);
+    bool open_shop(Shop &shop);
 
 private:
     int supplies{0};        // produced good

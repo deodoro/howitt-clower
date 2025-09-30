@@ -242,7 +242,7 @@ void Simulation::weekly_matching() {
         double U = trader.utility(shops);
         double psearch = (U > 0.0 ? lambda : 1.0);
         // Skip condition: random or already owns a shop
-        if (rng.uniform01_inclusive() < psearch && trader.get_familyshop() == 0) {
+        if (rng.uniform01_inclusive() < psearch && trader.get_family_shop() == nullptr) {
             // candidate initialization with current links
             std::vector<int> cand;
             cand.reserve(8);
@@ -304,11 +304,11 @@ void Simulation::weekly_trade_and_exit() {
     for (Trader& trader : traders) {
         Shop *shop_a = trader.get_seller_shop();
         if (shop_a) {
-            Shop* shop_b = trader.get_buyer_shop();
             if (shop_a->get_good(trader.get_supplies()) == trader.get_demands()) {
                 // direct barter
                 shop_a->add_income(trader.get_supplies(), 1.0, true);
             } else {
+                Shop* shop_b = trader.get_buyer_shop();
                 if (shop_b && shop_a->get_good(trader.get_supplies()) == shop_b->get_good(trader.get_demands())) {
                         // indirect via common intermediary
                         shop_a->add_income(trader.get_supplies(), 1.0, true);
@@ -322,8 +322,7 @@ void Simulation::weekly_trade_and_exit() {
         if (shop.active) {
             if ((!shop.is_profitable(make_overhead(f1, slope))) && rng.uniform01_inclusive() <= theta) {
                 // sever links
-                for (Trader& trader: traders)
-                    trader.sever_links(shop);
+                for (Trader& trader: traders) { trader.sever_links(shop); }
                 shop.clear();
                 NS--;
             }
@@ -366,13 +365,11 @@ ResearchResults Simulation::research(int idx) {
     double Ucomp = partner.utility(shops);
     double U = 0.0;
     // direct or indirect reachability check through fr's links
-    if (partner.get_demands() == trader.get_demands()) {
+    if (trader.wants_to_trade_in(partner.get_demands())) {
         U = P0;
     } else {
-        if (partner.get_buyer_idx() > 0) {
-            if (shops[partner.get_buyer_idx()].get_good(partner.get_demands()) == trader.get_demands()) {
-                U = P0 * shops[partner.get_buyer_idx()].get_price(partner.get_demands());
-            }
+        if (partner.get_buyer_shop() && trader.wants_to_trade_in(partner.get_buyer_shop()->get_good(partner.get_demands()))) {
+            U = P0 * partner.get_buyer_shop()->get_price(partner.get_demands());
         }
     }
     // Test with a soulmate
@@ -382,13 +379,11 @@ ResearchResults Simulation::research(int idx) {
         // partner = traders[fr];
         Ucomp = partner.utility(shops);
         U = 0.0;
-        if (partner.get_supplies() == trader.get_supplies()) {
+        if (trader.wants_to_trade_out(partner.get_supplies())) {
             U = P0;
         } else {
-            if (partner.get_seller_idx() > 0) {
-                if (shops[partner.get_seller_idx()].get_good(partner.get_supplies()) == trader.get_supplies()) {
-                    U = shops[partner.get_seller_idx()].get_price(partner.get_supplies(), true) * P0;
-                }
+            if (partner.get_seller_shop() && trader.wants_to_trade_out(partner.get_seller_shop()->get_good(partner.get_supplies()))) {
+                U = partner.get_seller_shop()->get_price(partner.get_supplies(), true) * P0;
             }
         }
         if (U < Ucomp) {
@@ -408,12 +403,11 @@ ResearchResults Simulation::research(int idx) {
         int k = 1 + rng.uniform_int(std::max(1, (int)consumes[trader.get_supplies()].size()) - 1);
         Trader& partner = traders[consumes[trader.get_supplies()][k - 1]];
         Ucomp = partner.utility(shops);
-        if (partner.get_supplies() == trader.get_demands()) {
+        if (trader.wants_to_trade_in(partner.get_supplies())) {
             U = P1;
         } else {
-            if (partner.get_seller_idx() > 0) {
-                if (shops[partner.get_seller_idx()].get_good(partner.get_supplies()) == trader.get_demands()) 
-                    U = shops[partner.get_seller_idx()].get_price(trader.get_demands()) * P1;
+            if (partner.get_seller_shop() && trader.wants_to_trade_in(partner.get_seller_shop()->get_good(partner.get_supplies()))) {
+                U = partner.get_seller_shop()->get_price(trader.get_demands()) * P1;
             }
         }
         // Stranger who produces d[r]
@@ -422,13 +416,11 @@ ResearchResults Simulation::research(int idx) {
             Trader& partner = traders[produces[trader.get_demands()][k - 1]];
             Ucomp = partner.utility(shops);
             U = 0.0;
-            if (partner.get_demands() == trader.get_supplies()) {
+            if (trader.wants_to_trade_out(partner.get_demands())) {
                 U = P1;
             } else {
-                if (partner.get_buyer_idx() > 0) {
-                    if (shops[partner.get_buyer_idx()].get_good(partner.get_demands()) == trader.get_supplies())  {
-                        U = P1 * shops[partner.get_buyer_idx()].get_price(partner.get_demands());
-                    }
+                if (partner.get_buyer_shop() && trader.wants_to_trade_out(partner.get_buyer_shop()->get_good(partner.get_demands()))) {
+                    U = P1 * partner.get_buyer_shop()->get_price(partner.get_demands());
                 }
             }
             if (U < Ucomp) {
@@ -442,7 +434,7 @@ ResearchResults Simulation::research(int idx) {
 }
 
 void Simulation::addshop(const Trader* trader, Shop* shop, std::vector<int>& cand) {
-    if (shop && shop->active && (shop->provides(trader->get_supplies()) || shop->provides(trader->get_demands()))) {
+    if (shop && shop->active && trader->is_compatible_with(shop)) {
         if (std::find(cand.begin(), cand.end(), shop->idx) == cand.end()) {
             cand.push_back(shop->idx);
         }
@@ -455,7 +447,7 @@ void Simulation::try_barter(Trader& trader, std::vector<int>& c, int& bestbarter
     // iterate candidates from index 2 onward
     for (size_t idx = 2; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
-        if (trader.is_compatible_to(shop)) {
+        if (trader.allows_barter_with(shop)) {
             double val = shop.get_price(trader.get_supplies(), true);
             if (val > std::max(Ucomp, Ubarter)) {
                 bestbarter = shop.idx;

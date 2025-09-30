@@ -104,6 +104,22 @@ void Trader::set_demands(int d) {
     q = (supplies > demands);
 }
 
-bool Trader::is_compatible_to(const Shop& shop) const {
+bool Trader::is_compatible_with(const Shop& shop) const {
+    return shop.is_active() && (shop.provides(supplies) || shop.provides(demands));
+}
+
+bool Trader::is_compatible_with(const Shop* shop) const {
+    return shop->is_active() && (shop->provides(supplies) || shop->provides(demands));
+}
+
+bool Trader::allows_barter_with(const Shop& shop) const {
     return shop.is_active() && shop.provides(supplies) && shop.provides(demands);
+}
+
+bool Trader::wants_to_trade_in(int good) {
+    return demands == good;
+}
+
+bool Trader::wants_to_trade_out(int good) {
+    return supplies == good;
 }
