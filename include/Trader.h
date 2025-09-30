@@ -31,7 +31,6 @@ class Trader {
 public:
     int idx{0};             // PROVISIONAL: to make the code compatible while it's refactored
     int q{0};               // 0 if s<=d else 1 (orders shop's good pair)
-    int familyshop{0};      // owned shop index (0 if none)
 
     // Getters and setters for buyer_idx and seller_idx
     int get_buyer_idx() const { return buyer_idx; }
@@ -45,9 +44,17 @@ public:
         seller_shop = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr; 
     }
 
+    // Getters and setters for familyshop
+    int get_familyshop() const { return familyshop; }
+    void set_familyshop(int idx) { 
+        familyshop = idx; 
+        family_shop = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr; 
+    }
+
     // Getters for shop pointers
     Shop* get_buyer_shop() const { return buyer_shop; }
     Shop* get_seller_shop() const { return seller_shop; }
+    Shop* get_family_shop() const { return family_shop; }
 
     // Set shops reference
     void set_shops(std::vector<Shop>* s) { shops_ref = s; }
@@ -73,9 +80,11 @@ private:
     int demands{0};         // desired good
     int buyer_idx{0};
     int seller_idx{0};
+    int familyshop{0};      // owned shop index (0 if none)
     std::vector<Shop>* shops_ref{nullptr};
     Shop* buyer_shop{nullptr};
     Shop* seller_shop{nullptr};
+    Shop* family_shop{nullptr};
 };
 
 #endif // TRADER_H
