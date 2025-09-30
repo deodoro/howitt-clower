@@ -26,12 +26,12 @@ extern PCG32 rng;
 
 std::string Trader::to_string() const {
     return "Trader{s=" + std::to_string(get_supplies()) + ", d=" + std::to_string(get_demands()) + ", q=" + std::to_string(q) +
-           ", sh=[" + std::to_string(seller_idx) + "," + std::to_string(buyer_idx) + "], familyshop=" + std::to_string(familyshop) + "}";
+           ", sh=[" + std::to_string(get_seller_idx()) + "," + std::to_string(get_buyer_idx()) + "], familyshop=" + std::to_string(familyshop) + "}";
 }
 
 void Trader::sever_links(Shop& shop) {
-    if (seller_idx == shop.idx) seller_idx = 0;
-    if (buyer_idx == shop.idx) buyer_idx = 0;
+    if (get_seller_idx() == shop.idx) set_seller_idx(0);
+    if (get_buyer_idx() == shop.idx) set_buyer_idx(0);
 }
 
 /*
@@ -59,13 +59,13 @@ int Trader::soulmate(const std::vector<std::vector<int>>& consumes) const {
 double Trader::utility(std::vector<Shop>& shops) const {
     // attainable consumption for r via current links
     double X = 0.0;
-    if (seller_idx > 0) {
-        Shop& sell_shop = shops[seller_idx];
+    if (get_seller_idx() > 0) {
+        Shop& sell_shop = shops[get_seller_idx()];
         if (sell_shop.get_good(supplies) == demands) {
             X = sell_shop.get_price(supplies, true);
         } else {
-            if (buyer_idx > 0) {
-                Shop& buy_shop = shops[buyer_idx];
+            if (get_buyer_idx() > 0) {
+                Shop& buy_shop = shops[get_buyer_idx()];
                 if (sell_shop.get_good(supplies) == buy_shop.get_good(demands)) {
                     X = sell_shop.get_price(supplies, true) * buy_shop.get_price(demands);
                 }
@@ -85,8 +85,8 @@ bool Trader::open_shop(Shop &shop)
         shop.g[1 - q] = demands;
         shop.g[q]     = supplies;
         // owner links
-        seller_idx = shop.idx;
-        buyer_idx = 0;
+        set_seller_idx(shop.idx);
+        set_buyer_idx(0);
         familyshop = shop.idx;
         shop.owner = idx;
         return true;
