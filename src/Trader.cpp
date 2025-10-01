@@ -51,7 +51,6 @@ int Trader::any_comrade(const std::vector<std::vector<int>>& produces) const {
 
 int Trader::trade_comrade(const std::vector<std::vector<int>>& produces) const {
     int fr = any_comrade(produces);
-    // if (fr == buyer_idx || fr == seller_idx) return 0;
     return fr;
 }
 

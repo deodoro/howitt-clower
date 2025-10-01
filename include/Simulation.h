@@ -121,7 +121,7 @@ private:
     void report_trader(Trader const& trader);
     void weekly_trade_and_exit();
     void weekly_update_prices();
-    ResearchResults research(int idx);
+    ResearchResults research(Trader& trader);
     Trader &random_consumer(int good);
     Trader &random_producer(int good);
     Shop &random_shop();

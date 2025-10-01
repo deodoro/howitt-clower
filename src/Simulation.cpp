@@ -200,7 +200,7 @@ void Simulation::weekly_entry() {
     int r = rng.uniform_int(m) + 1; // prospective owner
     Trader&  trader = traders[r];
     if (NS < K && trader.get_familyshop() == 0) {
-        ResearchResults ok = research(r);
+        ResearchResults ok = research(trader);
         if (ok.enter > 0) {
             for (Shop& shop : shops) {
                 if (!shop.active && (&shop != &shops.front())) { // skip index 0
@@ -239,12 +239,14 @@ void Simulation::weekly_matching() {
             cand.push_back(trader.get_buyer_idx()); // c[1]
 
             // add friend outlets/sources and one random shop
-            // Trader& comrade_ = traders[comrade(trader)];
             Trader& comrade_ = traders[trader.trade_comrade(produces)];
-            addshop(&comrade_, comrade_.get_seller_shop(), cand);
+            /*
+            NOTE: I added comrade_ as a friend outlet by mistake, and it worked. Why?
+            */
+            addshop(&trader, comrade_.get_seller_shop(), cand);
 
             Trader& soulmate_ = traders[trader.soulmate(consumes)];
-            addshop(&soulmate_, soulmate_.get_buyer_shop(), cand);
+            addshop(&trader, soulmate_.get_buyer_shop(), cand);
 
             addshop(&trader, &random_shop(), cand);
 
@@ -328,9 +330,7 @@ void Simulation::weekly_update_prices() {
 
 // Research process for a prospective owner r
 // Should return an object ResearchResults, with targ0 and targ1 set as the local variables, and enter set as the return value of the function
-ResearchResults Simulation::research(int idx) {
-    Trader& trader = traders[idx];
-    
+ResearchResults Simulation::research(Trader& trader) {
     auto overhead_f = make_overhead(f1, slope);
     auto priceF = [this](double tr0, double tr1, double f_other) {
         return (tr1 - f_other - C > 0.0) ? ((tr1 - C - f_other) / tr0) : 0.0;
@@ -427,9 +427,9 @@ Shop& Simulation::random_shop() {
 void Simulation::addshop(const Trader* trader, Shop* shop, std::vector<int>& cand) {
     if (shop && shop->active && trader->is_compatible_with(shop)) {
         if (std::find(cand.begin(), cand.end(), shop->idx) == cand.end()) {
-            // if (!(shop->idx != trader->get_buyer_idx() && shop->idx != trader->get_seller_idx())) {
-            //     printf("hit!\n");
-            // }
+            if (!(shop->idx != trader->get_buyer_idx() && shop->idx != trader->get_seller_idx())) {
+                printf("hit!\n");
+            }
             cand.push_back(shop->idx);
         }
     }
