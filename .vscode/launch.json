@@ -36,6 +36,78 @@
         // for custom libs, uncomment:
         // { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/dist:${env:LD_LIBRARY_PATH}" }
       ]
+    },
+    {
+      "name": "C/C++: (gdb) Debug dist/test_research",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/dist/test_research",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": true,
+      "externalConsole": false,
+
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+
+      "preLaunchTask": "Make: Build testResearch",
+
+      "setupCommands": [
+        { "description": "Enable pretty printing", "text": "-enable-pretty-printing", "ignoreFailures": true },
+        { "description": "Show frame args fully", "text": "set print frame-arguments all", "ignoreFailures": true }
+      ],
+
+      "logging": {
+        "engineLogging": true,          // turn off after it works
+        "trace": true,
+        "traceResponse": true
+      },
+
+      "sourceFileMap": {
+        // If your object files reference a different absolute path, map it to the workspace:
+        // "/home/you/some/old/path": "${workspaceFolder}"
+      },
+
+      "environment": [
+        // for custom libs, uncomment:
+        // { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/dist:${env:LD_LIBRARY_PATH}" }
+      ]
+    },
+    {
+      "name": "C/C++: (gdb) Debug dist/test_match",
+      "type": "cppdbg",
+      "request": "launch",
+      "program": "${workspaceFolder}/dist/test_match",
+      "args": [],
+      "cwd": "${workspaceFolder}",
+      "stopAtEntry": true,
+      "externalConsole": false,
+
+      "MIMode": "gdb",
+      "miDebuggerPath": "/usr/bin/gdb",
+
+      "preLaunchTask": "Make: Build testMatch",
+
+      "setupCommands": [
+        { "description": "Enable pretty printing", "text": "-enable-pretty-printing", "ignoreFailures": true },
+        { "description": "Show frame args fully", "text": "set print frame-arguments all", "ignoreFailures": true }
+      ],
+
+      "logging": {
+        "engineLogging": true,          // turn off after it works
+        "trace": true,
+        "traceResponse": true
+      },
+
+      "sourceFileMap": {
+        // If your object files reference a different absolute path, map it to the workspace:
+        // "/home/you/some/old/path": "${workspaceFolder}"
+      },
+
+      "environment": [
+        // for custom libs, uncomment:
+        // { "name": "LD_LIBRARY_PATH", "value": "${workspaceFolder}/dist:${env:LD_LIBRARY_PATH}" }
+      ]
     }
   ]
 }

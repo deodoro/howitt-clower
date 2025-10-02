@@ -17,11 +17,12 @@ struct MatchEvaluation {
     Shop* candidate_1 = nullptr;
 };
 
-class TestResearch {
+class TestMatch {
 public:
-    TestResearch(std::vector<Trader>& traders, std::vector<Shop>& shops, std::vector<std::vector<int>>& produces, std::vector<std::vector<int>>& consumes, int m, int K, double f1, double slope, double xMax, double C);
+    TestMatch(std::vector<Trader>& traders, std::vector<Shop>& shops, std::vector<std::vector<int>>& produces, std::vector<std::vector<int>>& consumes, int m, int K, double f1, double slope, double xMax, double C);
 
-    ResearchResults research(Trader& trader);
+    std::vector <MatchEvaluation> *weekly_matching(std::vector<Trader*> trader_line, std::vector<Shop> &shops);
+
     Trader& random_consumer(int good);
     Trader& random_producer(int good);
     Shop& random_shop();

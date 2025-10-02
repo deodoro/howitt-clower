@@ -19,6 +19,40 @@
         },
         {
             "type": "shell",
+            "label": "Make: Build testResearch",
+            "command": "make",
+            "args": ["test"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Build the project using Makefile"
+        },
+        {
+            "type": "shell",
+            "label": "Make: Build testMatch",
+            "command": "make",
+            "args": ["test-match"],
+            "options": {
+                "cwd": "${workspaceFolder}"
+            },
+            "problemMatcher": [
+                "$gcc"
+            ],
+            "group": {
+                "kind": "build",
+                "isDefault": true
+            },
+            "detail": "Build the project using Makefile"
+        },
+        {
+            "type": "shell",
             "label": "Make: Clean project",
             "command": "make",
             "args": ["clean"],

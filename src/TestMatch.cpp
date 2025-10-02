@@ -1,15 +1,17 @@
-#include "TestResearch.h"
+#include "TestMatch.h"
 #include <algorithm>
 #include <iostream>
 #include <vector>
 #include <cstdio>
 #include <cstddef>
+#include <stack>
 #include "PCG32.h"
 
 PCG32 rng;
+static constexpr double lambda = 0.05;
 
 // Constructor
-TestResearch::TestResearch(std::vector<Trader> &traders, std::vector<Shop> &shops, std::vector<std::vector<int>> &produces, std::vector<std::vector<int>> &consumes, int m, int K, double f1, double slope, double xMax, double C)
+TestMatch::TestMatch(std::vector<Trader> &traders, std::vector<Shop> &shops, std::vector<std::vector<int>> &produces, std::vector<std::vector<int>> &consumes, int m, int K, double f1, double slope, double xMax, double C)
     : traders(traders), shops(shops), produces(produces), consumes(consumes), m(m), K(K), f1(f1), slope(slope), xMax(xMax), C(C)
 {
     ::rng.seed(12345, 67890);
@@ -23,131 +25,93 @@ std::function<double(int)> make_overhead(double f1, double slope)
         return f1 + (i - 1) * slope;
     };
 }
-// Research process for a prospective owner r
-// Should return an object ResearchResults, with targ0 and targ1 set as the local variables, and enter set as the return value of the function
-ResearchResults TestResearch::research(Trader &trader)
-{
 
-    auto overhead_f = make_overhead(f1, slope);
-    auto priceF = [this](double tr0, double tr1, double f_other)
-    {
-        return (tr1 - f_other - C > 0.0) ? ((tr1 - C - f_other) / tr0) : 0.0;
-    };
+// Matching: agents sample a small set of shops and adopt best links
+std::vector <MatchEvaluation>* TestMatch::weekly_matching(std::vector<Trader*> trader_line, std::vector<Shop> &shops) {
+    std::vector <MatchEvaluation>* response = new std::vector <MatchEvaluation>();
 
-    // Prepare targets and compute prices
-    ResearchResults res{rng.uniform_int(xMax) + 1.0, rng.uniform_int(xMax) + 1.0, 0};
-    double P0 = priceF(res.targ0, res.targ1, overhead_f(trader.get_demands()));
-    double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.get_supplies()));
+    for (Trader* trader_p : trader_line) {
+        Trader& trader = *trader_p;
+        double U = trader.utility(shops);
+        double psearch = (U > 0.0 ? lambda : 1.0);
+        // Skip condition: random or already owns a shop
+        if (rng.uniform01_inclusive() < psearch && trader.get_family_shop() == nullptr) {
+            struct MatchEvaluation eval;
+            eval.Ucomp = U;
+            eval.candidate_0 = trader.get_seller_shop();
+            eval.candidate_1 = trader.get_buyer_shop();
+            // candidate initialization with current links
+            std::stack<Shop*> cand_stack;
+            cand_stack.push(trader.get_seller_shop());
+            cand_stack.push(trader.get_buyer_shop());
+            
+            std::vector<int> cand;
+            cand.reserve(8);
+            cand.push_back(trader.get_seller_idx()); // c[0]
+            cand.push_back(trader.get_buyer_idx()); // c[1]
 
-    /*
-        NOTE: Should be checking if comrade is same buyer or seller shop.
-        Since these are conditions for trading, TestResearch is considering
-        non-matching roles as potential trade partners.
-    */
-    // Test with a comrade
-    Trader &partner = this->traders[trader.any_comrade(this->produces)];
-    double U = 0.0;
-    double Ucomp = partner.utility(this->shops);
-    // direct or indirect reachability check through fr's links
-    if (trader.wants_to_trade_in(partner.get_demands()))
-    {
-        U = P0;
-    }
-    else
-    {
-        if (partner.get_buyer_shop() && trader.wants_to_trade_in(partner.get_buyer_shop()->get_good(partner.get_demands())))
-        {
-            U = partner.get_buyer_shop()->get_price(partner.get_demands()) * P0;
-        }
-    }
-    // Test with a soulmate
-    if (U < Ucomp)
-    {
-        Trader &partner = this->traders[trader.soulmate(this->consumes)];
-        // partner = traders[fr];
-        Ucomp = partner.utility(this->shops);
-        U = 0.0;
-        if (trader.wants_to_trade_out(partner.get_supplies()))
-        {
-            U = P0;
-        }
-        else
-        {
-            if (partner.get_seller_shop() && trader.wants_to_trade_out(partner.get_seller_shop()->get_good(partner.get_supplies())))
-            {
-                U = partner.get_seller_shop()->get_price_supply(partner.get_supplies()) * P0;
-            }
-        }
-        if (U < Ucomp)
-        {
-            res.enter = 0;
-            return res;
-        }
-    }
+            // add friend outlets/sources and one random shop
+            Trader& comrade_ = traders[trader.trade_comrade(produces)];
+            /*
+            NOTE: I added comrade_ as a friend outlet by mistake, and it worked. Why?
+            */
+            addshop(&trader, comrade_.get_seller_shop(), cand);
 
-    {
-        U = 0.0;
-        Trader &partner = random_consumer(trader.get_supplies());
-        Ucomp = partner.utility(this->shops);
-        if (trader.wants_to_trade_in(partner.get_supplies()))
-        {
-            U = P1;
-        }
-        else
-        {
-            if (partner.get_seller_shop() && trader.wants_to_trade_in(partner.get_seller_shop()->get_good(partner.get_supplies())))
-            {
-                U = partner.get_seller_shop()->get_price(trader.get_demands()) * P1;
-            }
-        }
-        // Stranger who produces d[r]
-        if (U < Ucomp)
-        {
-            Trader &partner = random_producer(trader.get_demands());
-            Ucomp = partner.utility(this->shops);
-            U = 0.0;
-            if (trader.wants_to_trade_out(partner.get_demands()))
-            {
-                U = P1;
-            }
-            else
-            {
-                if (partner.get_buyer_shop() && trader.wants_to_trade_out(partner.get_buyer_shop()->get_good(partner.get_demands())))
-                {
-                    U = P1 * partner.get_buyer_shop()->get_price(partner.get_demands());
+            Trader& soulmate_ = traders[trader.soulmate(consumes)];
+            addshop(&trader, soulmate_.get_buyer_shop(), cand);
+
+            addshop(&trader, &random_shop(), cand);
+
+            if (cand.size() > 2) {
+                try_barter(trader, cand, eval);
+                if ((shops[cand[0]].get_good(trader.get_supplies()) != trader.get_demands() || shops[cand[0]].get_price_supply(trader.get_supplies()) == 0.0)) {
+                    try_one(trader, cand, eval);
+                }
+                try_two(trader, cand, eval);
+
+                if (eval.Ucomp < eval.Ubarter && eval.barter != nullptr) {
+                    trader.set_buyer_shop(nullptr);
+                    trader.set_seller_shop(eval.barter);
+                } else {
+                    // adopt c[0], c[1] as improved chain if any
+                    trader.set_seller_shop(eval.candidate_0);
+                    trader.set_buyer_shop(eval.candidate_1);
                 }
             }
-            if (U < Ucomp)
-            {
-                res.enter = 0;
-                return res;
-            }
+
+            struct MatchEvaluation* temp = new MatchEvaluation(eval);
+            temp->barter = eval.barter;
+            temp->candidate_0 = eval.candidate_0;
+            temp->candidate_1 = eval.candidate_1;
+            temp->Ubarter = eval.Ubarter;
+            temp->Ucomp = eval.Ucomp;
+            response->push_back(*temp);
         }
     }
-    res.enter = 1;
-    return res;
+    return response;
 }
 
-Trader &TestResearch::random_consumer(int good)
+
+Trader &TestMatch::random_consumer(int good)
 {
     auto &vec = this->consumes[good];
     int idx = rng.uniform_int(vec.size());
     return this->traders[vec[idx]];
 }
 
-Trader &TestResearch::random_producer(int good)
+Trader &TestMatch::random_producer(int good)
 {
     auto &vec = this->produces[good];
     int idx = rng.uniform_int(vec.size());
     return this->traders[vec[idx]];
 }
 
-Shop &TestResearch::random_shop()
+Shop &TestMatch::random_shop()
 {
     return this->shops[rng.uniform_int(this->K) + 1];
 }
 
-void TestResearch::addshop(const Trader *trader, Shop *shop, std::vector<int> &cand)
+void TestMatch::addshop(const Trader *trader, Shop *shop, std::vector<int> &cand)
 {
     if (shop && shop->active && trader->is_compatible_with(shop))
     {
@@ -162,7 +126,7 @@ void TestResearch::addshop(const Trader *trader, Shop *shop, std::vector<int> &c
     }
 }
 
-void TestResearch::lineup()
+void TestMatch::lineup()
 {
     // random permutation of 1..m
     int line[this->m + 1];
@@ -185,7 +149,7 @@ void TestResearch::lineup()
     }
 }
 
-void TestResearch::try_barter(Trader &trader, std::vector<int> &c, struct MatchEvaluation &eval)
+void TestMatch::try_barter(Trader &trader, std::vector<int> &c, struct MatchEvaluation &eval)
 {
     // iterate candidates from index 2 onward
     for (size_t idx = 2; idx < c.size(); ++idx)
@@ -205,7 +169,7 @@ void TestResearch::try_barter(Trader &trader, std::vector<int> &c, struct MatchE
     }
 }
 
-void TestResearch::try_one(const Trader &trader, std::vector<int> &c, struct MatchEvaluation &eval)
+void TestMatch::try_one(const Trader &trader, std::vector<int> &c, struct MatchEvaluation &eval)
 {
     int s = trader.get_supplies();
     int d = trader.get_demands();
@@ -257,7 +221,7 @@ void TestResearch::try_one(const Trader &trader, std::vector<int> &c, struct Mat
     }
 }
 
-void TestResearch::try_two(const Trader &trader, std::vector<int> &c, struct MatchEvaluation &eval)
+void TestMatch::try_two(const Trader &trader, std::vector<int> &c, struct MatchEvaluation &eval)
 {
     for (size_t ia = 2; ia < c.size(); ++ia)
     {
@@ -362,13 +326,13 @@ int main()
     consumes[2] = {1, 6}; // need 2
     consumes[3] = {4, 5}; // need 3
 
-    // --- TestResearch with parameters to exercise overhead & entry calculus ---
+    // --- TestMatch with parameters to exercise overhead & entry calculus ---
     // m = number of active trader slots (use 6), K = 4 shops, f1 & slope control overhead,
     // xMax bounds random target draws, C is fixed cost.
     int m = 6, K = 4;
     double f1 = 0.05, slope = 0.25, xMax = 10.0, C = 0.40;
 
-    TestResearch test(traders, shops, produces, consumes, m, K, f1, slope, xMax, C);
+    TestMatch test(traders, shops, produces, consumes, m, K, f1, slope, xMax, C);
 
     // --- Execute research across a suite of traders to hit diverse branches ---
     // Expectation:
@@ -376,12 +340,15 @@ int main()
     //  - t4 vs t3 exercises "soulmate" branch
     //  - t5/t6 exercise random consumer/producer fallbacks
     //  - inactive shop(4) ensures compatibility filter
+    std::vector<Trader*> trader_line {&traders[1], &traders[2], &traders[3], &traders[4], &traders[5], &traders[6]};
+
     for (int tid : {1, 2, 3, 4, 5, 6})
     {
-        ResearchResults res = test.research(traders[tid]);
-        std::cout << "[t" << tid << "] enter=" << res.enter
-                  << " targ0=" << res.targ0
-                  << " targ1=" << res.targ1 << "\n";
+        std::vector<MatchEvaluation>* res = test.weekly_matching(trader_line, shops);
+        int i  = 0;
+        for (const auto& eval : *res) {
+            std::cout << "[t" << i++ << "].Ucomp=" << eval.Ucomp << "\n";
+        }
     }
 
     return 0;

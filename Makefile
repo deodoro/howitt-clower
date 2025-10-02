@@ -13,18 +13,39 @@ LDFLAGS  +=
 
 # Files
 TARGET = $(DISTDIR)/howclow_oop
-SOURCES = $(wildcard $(SRCDIR)/*.cpp)
+TEST_RES_TARGET = $(DISTDIR)/test_research
+TEST_MATCH_TARGET = $(DISTDIR)/test_match
+
+# Files
+TARGET = $(DISTDIR)/howclow_oop
+SOURCES = $(filter-out $(SRCDIR)/TestResearch.cpp $(SRCDIR)/TestMatch.cpp, $(wildcard $(SRCDIR)/*.cpp))
+TEST_RES_SOURCES = $(SRCDIR)/TestResearch.cpp
+TEST_MATCH_SOURCES = $(SRCDIR)/TestMatch.cpp
 OBJECTS = $(SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o)
+TEST_RES_OBJECTS = $(TEST_RES_SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o) $(OBJDIR)/PCG32.o $(OBJDIR)/Shop.o $(OBJDIR)/Trader.o
+TEST_MATCH_OBJECTS = $(TEST_MATCH_SOURCES:$(SRCDIR)/%.cpp=$(OBJDIR)/%.o) $(OBJDIR)/PCG32.o $(OBJDIR)/Shop.o $(OBJDIR)/Trader.o
 HEADERS = $(wildcard $(INCDIR)/*.h)
 
-.PHONY: all clean dirs
+.PHONY: all clean dirs test both
 
 all: dirs $(TARGET)
+
+both: dirs $(TARGET) $(TEST_RES_TARGET) $(TEST_MATCH_TARGET)
+
+test: dirs $(TEST_RES_TARGET)
+
+test-match: dirs $(TEST_MATCH_TARGET)
 
 dirs:
 	@mkdir -p $(DISTDIR) $(OBJDIR)
 
 $(TARGET): $(OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(TEST_RES_TARGET): $(TEST_RES_OBJECTS)
+	$(CXX) $(CXXFLAGS) -o $@ $^
+
+$(TEST_MATCH_TARGET): $(TEST_MATCH_OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 
 $(OBJDIR)/%.o: $(SRCDIR)/%.cpp $(HEADERS)
