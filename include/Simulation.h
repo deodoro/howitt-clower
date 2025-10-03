@@ -89,7 +89,7 @@ private:
     std::vector<double> vol[2], avp[2];
 
     // run-scoped variables
-    int NS{0};        // active shops
+    int NumberOfShops{0};        // active shops
     int BS{0};        // active non-money shops
     int devyear{-1};
     int monyear{-1};
@@ -118,16 +118,16 @@ private:
     void lineup();
     void weekly_entry();
     std::vector <MatchEvaluation>* weekly_matching();
-    void report_trader(Trader const& trader);
+    void report_trader(Trader const* trader);
     void weekly_trade_and_exit();
     void weekly_update_prices();
     ResearchResults research(Trader& trader);
     Trader &random_consumer(int good);
     Trader &random_producer(int good);
     Shop &random_shop();
-    void try_barter(Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
-    void try_one(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
-    void try_two(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
+    void try_barter(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval);
+    void try_one(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval);
+    void try_two(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval);
     int calc1();
     void calc2();
     void rmse();

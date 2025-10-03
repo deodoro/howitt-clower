@@ -36,7 +36,6 @@
 
 #define DEBUG 0
 #define CONTAINS(_COLLECTION, _ITEM)  (std::find(_COLLECTION.begin(), _COLLECTION.end(), _ITEM) != _COLLECTION.end())
-#define IDX_BASE 0
  // Global RNG instance
 PCG32 rng;
 
@@ -83,7 +82,7 @@ void Simulation::run_all() {
                 // Ensure at least one shop exists before proceeding
                 do {
                     weekly_entry();
-                } while (NS == 0);
+                } while (NumberOfShops == 0);
 
                 // Perform weekly activities: matching, trading, exit, and price updates
                 weekly_matching();
@@ -116,7 +115,7 @@ void Simulation::run_all() {
                 std::fprintf(stream,
                     "%5d %5.0f %3d %4.0f %3d %4.0f %4.0f %3d %4.0f %6.0f %5.0f %3d %3d %3d %6.3f %6.3f %4d %4d\n",
                     run, slope, fulldev, part, monetary, moneytraders, usingmax,
-                    moneygood, Csurp, Psurp, SurpSME, Nshop, NS, BS, R[0], R[1], devyear, monyear);
+                    moneygood, Csurp, Psurp, SurpSME, Nshop, NumberOfShops, BS, R[0], R[1], devyear, monyear);
                 std::fclose(stream);
             }
 
@@ -184,7 +183,7 @@ void Simulation::init_run() {
 
     clock_begin = std::clock();
     t = 0;
-    NS = 0;
+    NumberOfShops = 0;
 
     for (Trader& trader : traders) {
         trader.set_seller_idx(0);
@@ -205,12 +204,12 @@ void Simulation::weekly_entry() {
     auto overhead_f = make_overhead(f1, slope);
     int r = rng.uniform_int(m) + 1; // prospective owner
     Trader& trader = traders[r];
-    if (NS < K && trader.get_familyshop() == 0) {
+    if (NumberOfShops < K && trader.get_familyshop() == 0) {
         ResearchResults ok = research(trader);
         if (ok.enter > 0) {
             for (Shop& shop : shops) {
                 if (!shop.active && (&shop != &shops.front())) { // skip index 0
-                    NS++;
+                    NumberOfShops++;
                     trader.open_shop(shop);
                     shop.set_targets(ok.targ0, ok.targ1);
                     shop.update_prices(C, overhead_f);
@@ -226,79 +225,68 @@ void Simulation::weekly_entry() {
 std::vector<MatchEvaluation>* Simulation::weekly_matching() {
     std::vector<MatchEvaluation>* response = new std::vector<MatchEvaluation>();
 
-    int i = 0;
-    for (Trader* trader_p : trader_line) {
-        Trader& trader = *trader_p;
-        double U = trader.utility(shops);
+    for (Trader* trader : trader_line) {
+        double U = trader->utility(shops);
         double psearch = (U > 0.0 ? lambda : 1.0);
         // Skip condition: random or already owns a shop
-        if (rng.uniform01_inclusive() < psearch && trader.get_family_shop() == nullptr) {
+        if (rng.uniform01_inclusive() < psearch && trader->get_family_shop() == nullptr) {
             struct MatchEvaluation eval;
             eval.Ucomp = U;
-            eval.candidate_0 = trader.get_seller_shop();
-            eval.candidate_1 = trader.get_buyer_shop();
+            eval.candidate_0 = trader->get_seller_shop();
+            eval.candidate_1 = trader->get_buyer_shop();
             // candidate initialization with current links
 
             std::vector<int> cand;
-            cand.reserve(8);
-            if (IDX_BASE > 0) {
-                cand.push_back(trader.get_seller_idx()); // c[0]
-                cand.push_back(trader.get_buyer_idx());  // c[1]
-            }
-
-            // add friend outlets/sources and one random shop
-            Shop* comrade_shop = traders[trader.trade_comrade(produces)].get_seller_shop();
-            Shop* soulmate_shop = traders[trader.soulmate(consumes)].get_buyer_shop();
-            Shop* random_shop_ptr = &random_shop();
-            std::vector<Shop*> v = {eval.candidate_0, eval.candidate_1};
+            Shop* comrade_shop = traders[trader->trade_comrade(produces)].get_seller_shop(); // same production 
+            Shop* soulmate_shop = traders[trader->soulmate(consumes)].get_buyer_shop(); // same consumption
+            Shop* random_shop_ptr = &random_shop(); // random trader
+            std::vector<Shop*> v = { eval.candidate_0, eval.candidate_1 };
             for (Shop* shop : { comrade_shop, soulmate_shop, random_shop_ptr }) {
-                if (shop && shop->active && trader.is_compatible_with(shop) &&
-                   !CONTAINS(v, shop) && !CONTAINS(cand, shop->idx))
+                if (shop && shop->active && trader->is_compatible_with(shop) && !CONTAINS(v, shop) && !CONTAINS(cand, shop->idx))
                     cand.push_back(shop->idx);
             }
 
-        if (cand.size() > IDX_BASE) {
-            Shop zero;
-            Shop *temp;
-            if (eval.candidate_0 == nullptr)
-                temp = &zero;
-            else
-                temp = eval.candidate_0;
-            try_barter(trader, cand, eval);
-            if ((temp->get_the_other_good(trader.get_supplied_good()) != trader.get_demand_good()) ||
-                (temp->get_price_supply(trader.get_supplied_good()) == 0.0)) {
-                try_one(trader, cand, eval);
-            }
-            try_two(trader, cand, eval);
+            if (cand.size() > 0) {
+                // NOTE: Hack to emulate the fact that the original code addresses the item at  index zero
+                Shop zero;
+                Shop* temp;
+                if (eval.candidate_0 == nullptr)
+                    temp = &zero;
+                else
+                    temp = eval.candidate_0;
+                try_barter(trader, cand, eval);
+                if ((temp->get_the_other_good(trader->get_supplied_good()) != trader->get_demand_good()) ||
+                    (temp->get_price_supply(trader->get_supplied_good()) == 0.0)) {
+                    try_one(trader, cand, eval);
+                }
+                try_two(trader, cand, eval);
 
-            if (eval.Ucomp < eval.Ubarter && eval.barter != nullptr) {
-                trader.set_seller_shop(eval.barter);
-                trader.set_buyer_shop(nullptr);
+                if (eval.Ucomp < eval.Ubarter && eval.barter != nullptr) { // is barter better than trade?
+                    trader->set_seller_shop(eval.barter);
+                    trader->set_buyer_shop(nullptr);
+                }
+                else { // trade wins
+                    trader->set_seller_shop(eval.candidate_0);
+                    trader->set_buyer_shop(eval.candidate_1);
+                }
             }
-            else {
-                // adopt c[0], c[1] as improved chain if any
-                trader.set_seller_shop(eval.candidate_0);
-                trader.set_buyer_shop(eval.candidate_1);
-            }
-            i++;
+
+            struct MatchEvaluation* temp = new MatchEvaluation(eval);
+            temp->barter = eval.barter;
+            temp->candidate_0 = eval.candidate_0;
+            temp->candidate_1 = eval.candidate_1;
+            temp->Ubarter = eval.Ubarter;
+            temp->Ucomp = eval.Ucomp;
+            response->push_back(*temp);
         }
-
-        struct MatchEvaluation* temp = new MatchEvaluation(eval);
-        temp->barter = eval.barter;
-        temp->candidate_0 = eval.candidate_0;
-        temp->candidate_1 = eval.candidate_1;
-        temp->Ubarter = eval.Ubarter;
-        temp->Ucomp = eval.Ucomp;
-        response->push_back(*temp);
+        report_trader(trader);
     }
-    report_trader(trader);
-}
-return response;
+    return response;
 }
 
-void Simulation::report_trader(Trader const& trader) {
+void Simulation::report_trader(Trader const* trader) {
     if (DEBUG) {
-        std::cout << trader.to_string() << std::endl;
+        std::cout << trader->to_string() << std::endl;
     }
 }
 
@@ -339,7 +327,7 @@ void Simulation::weekly_trade_and_exit() {
                     trader.sever_links(shop);
                 }
                 shop.clear();
-                NS--;
+                NumberOfShops--;
             }
         }
     }
@@ -482,12 +470,12 @@ void Simulation::lineup() {
     }
 }
 
-void Simulation::try_barter(Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval) {
+void Simulation::try_barter(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
     // iterate candidates from index 2 onward
-    for (size_t idx = IDX_BASE; idx < c.size(); ++idx) {
+    for (size_t idx = 0; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
-        if (trader.allows_barter_with(shop)) {
-            double val = shop.get_price_supply(trader.get_supplied_good());
+        if (trader->allows_barter_with(shop)) {
+            double val = shop.get_price_supply(trader->get_supplied_good());
             if (val > std::max(eval.Ucomp, eval.Ubarter)) {
                 eval.barter = &shop;
                 eval.Ubarter = val;
@@ -498,11 +486,11 @@ void Simulation::try_barter(Trader& trader, std::vector<int>& c, struct MatchEva
     }
 }
 
-void Simulation::try_one(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval) {
+void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
     Shop zero;
-    int s = trader.get_supplied_good();
-    int d = trader.get_demand_good();
-    for (size_t idx = IDX_BASE; idx < c.size(); ++idx) {
+    int s = trader->get_supplied_good();
+    int d = trader->get_demand_good();
+    for (size_t idx = 0; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
         Shop* candidate_0 = eval.candidate_0 ? eval.candidate_0 : &zero;
         Shop* candidate_1 = eval.candidate_1 ? eval.candidate_1 : &zero;
@@ -541,18 +529,18 @@ void Simulation::try_one(const Trader& trader, std::vector<int>& c, struct Match
     }
 }
 
-void Simulation::try_two(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval) {
-    for (size_t ia = IDX_BASE; ia < c.size(); ++ia) {
+void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
+    for (size_t ia = 0; ia < c.size(); ++ia) {
         int a = c[ia];
-        if (shops[a].provides(trader.get_supplied_good())) {
-            for (size_t ib = IDX_BASE; ib < c.size(); ++ib) {
+        if (shops[a].provides(trader->get_supplied_good())) {
+            for (size_t ib = 0; ib < c.size(); ++ib) {
                 if (ia == ib)
                     continue;
                 int b = c[ib];
-                if (shops[b].provides(trader.get_demand_good())) {
+                if (shops[b].provides(trader->get_demand_good())) {
                     // common intermediary condition
-                    if (shops[a].get_the_other_good(trader.get_supplied_good()) == shops[b].get_the_other_good(trader.get_demand_good())) {
-                        double val = shops[a].get_price_supply(trader.get_supplied_good()) * shops[b].get_price_demand(trader.get_demand_good());
+                    if (shops[a].get_the_other_good(trader->get_supplied_good()) == shops[b].get_the_other_good(trader->get_demand_good())) {
+                        double val = shops[a].get_price_supply(trader->get_supplied_good()) * shops[b].get_price_demand(trader->get_demand_good());
                         if (eval.Ucomp < val) {
                             eval.Ucomp = val;
                             eval.candidate_0 = &shops[a];
@@ -726,7 +714,7 @@ void Simulation::report(int tt) {
         for (int b = 1; b <= 5 && b <= n; ++b) {
             std::printf("%6.0f ", usingmoney[b]);
         }
-        std::printf("%6d %4d\n", (tt == -1 ? t : tt) / 50, NS);
+        std::printf("%6d %4d\n", (tt == -1 ? t : tt) / 50, NumberOfShops);
     }
 }
 
