@@ -125,7 +125,6 @@ private:
     Trader &random_consumer(int good);
     Trader &random_producer(int good);
     Shop &random_shop();
-    void addshop(const Trader *trader, Shop *shop, std::vector<int> &cand);
     void try_barter(Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
     void try_one(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
     void try_two(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval);
