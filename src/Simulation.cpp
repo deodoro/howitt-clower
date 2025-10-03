@@ -36,7 +36,7 @@
 
 #define DEBUG 0
 #define CONTAINS(_COLLECTION, _ITEM)  (std::find(_COLLECTION.begin(), _COLLECTION.end(), _ITEM) != _COLLECTION.end())
-
+#define IDX_BASE 0
  // Global RNG instance
 PCG32 rng;
 
@@ -238,11 +238,13 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
             eval.candidate_0 = trader.get_seller_shop();
             eval.candidate_1 = trader.get_buyer_shop();
             // candidate initialization with current links
-            
+
             std::vector<int> cand;
             cand.reserve(8);
-            cand.push_back(trader.get_seller_idx()); // c[0]
-            cand.push_back(trader.get_buyer_idx());  // c[1]
+            if (IDX_BASE > 0) {
+                cand.push_back(trader.get_seller_idx()); // c[0]
+                cand.push_back(trader.get_buyer_idx());  // c[1]
+            }
 
             // add friend outlets/sources and one random shop
             Shop* comrade_shop = traders[trader.trade_comrade(produces)].get_seller_shop();
@@ -255,10 +257,16 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
                     cand.push_back(shop->idx);
             }
 
-        if (cand.size() > 2) {
+        if (cand.size() > IDX_BASE) {
+            Shop zero;
+            Shop *temp;
+            if (eval.candidate_0 == nullptr)
+                temp = &zero;
+            else
+                temp = eval.candidate_0;
             try_barter(trader, cand, eval);
-            if ((shops[cand[0]].get_the_other_good(trader.get_supplied_good()) != trader.get_demand_good()) ||
-                (shops[cand[0]].get_price_supply(trader.get_supplied_good()) == 0.0)) {
+            if ((temp->get_the_other_good(trader.get_supplied_good()) != trader.get_demand_good()) ||
+                (temp->get_price_supply(trader.get_supplied_good()) == 0.0)) {
                 try_one(trader, cand, eval);
             }
             try_two(trader, cand, eval);
@@ -476,7 +484,7 @@ void Simulation::lineup() {
 
 void Simulation::try_barter(Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval) {
     // iterate candidates from index 2 onward
-    for (size_t idx = 2; idx < c.size(); ++idx) {
+    for (size_t idx = IDX_BASE; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
         if (trader.allows_barter_with(shop)) {
             double val = shop.get_price_supply(trader.get_supplied_good());
@@ -491,10 +499,10 @@ void Simulation::try_barter(Trader& trader, std::vector<int>& c, struct MatchEva
 }
 
 void Simulation::try_one(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval) {
-    Shop zero = Shop();
+    Shop zero;
     int s = trader.get_supplied_good();
     int d = trader.get_demand_good();
-    for (size_t idx = 2; idx < c.size(); ++idx) {
+    for (size_t idx = IDX_BASE; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
         Shop* candidate_0 = eval.candidate_0 ? eval.candidate_0 : &zero;
         Shop* candidate_1 = eval.candidate_1 ? eval.candidate_1 : &zero;
@@ -504,12 +512,12 @@ void Simulation::try_one(const Trader& trader, std::vector<int>& c, struct Match
             if (candidate_0->get_price_supply(s) < shop.get_price_supply(s)) {
                 if ((shop.get_the_other_good(s) == candidate_1->get_the_other_good(d))) {
                     eval.Ucomp = shop.get_price_supply(s) * candidate_1->get_price_supply(s);
-                    eval.candidate_0 = idx > 0 ? &shop : nullptr;
+                    eval.candidate_0 = c[idx] > 0 ? &shop : nullptr;
                     c.erase(c.begin() + idx);
                     --idx;
                 }
                 else if (candidate_0->get_price_supply(s) == 0.0) {
-                    eval.candidate_0 = idx > 0 ? &shop : nullptr;
+                    eval.candidate_0 = c[idx] > 0 ? &shop : nullptr;
                     c.erase(c.begin() + idx);
                     --idx;
                 }
@@ -519,12 +527,12 @@ void Simulation::try_one(const Trader& trader, std::vector<int>& c, struct Match
             if (candidate_1->get_price_demand(d) < shop.get_price_demand(d)) {
                 if ((shop.get_the_other_good(d) == candidate_0->get_the_other_good(s))) {
                     eval.Ucomp = candidate_0->get_price_supply(s) * shop.get_price_demand(d);
-                    eval.candidate_1 = idx > 0 ? &shop : nullptr;
+                    eval.candidate_1 = c[idx] > 0 ? &shop : nullptr;
                     c.erase(c.begin() + idx);
                     --idx;
                 }
                 else if (candidate_1->get_price_demand(d) == 0.0) {
-                    eval.candidate_1 = idx > 0 ? &shop : nullptr;
+                    eval.candidate_1 = c[idx] > 0 ? &shop : nullptr;
                     c.erase(c.begin() + idx);
                     --idx;
                 }
@@ -534,10 +542,10 @@ void Simulation::try_one(const Trader& trader, std::vector<int>& c, struct Match
 }
 
 void Simulation::try_two(const Trader& trader, std::vector<int>& c, struct MatchEvaluation& eval) {
-    for (size_t ia = 2; ia < c.size(); ++ia) {
+    for (size_t ia = IDX_BASE; ia < c.size(); ++ia) {
         int a = c[ia];
         if (shops[a].provides(trader.get_supplied_good())) {
-            for (size_t ib = 2; ib < c.size(); ++ib) {
+            for (size_t ib = IDX_BASE; ib < c.size(); ++ib) {
                 if (ia == ib)
                     continue;
                 int b = c[ib];
