@@ -60,10 +60,11 @@ public:
 
     // Set shops reference
     void set_shops(std::vector<Shop>* s) { shops_ref = s; }
+    void set_traders(std::vector<Trader>* s) { traders_ref = s; }
 
     // Getters
-    int get_supplies() const { return supplies; }
-    int get_demands() const { return demands; }
+    int get_supplied_good() const { return supplies; }
+    int get_demand_good() const { return demands; }
 
     // Setters
     void set_supplies(int s);
@@ -90,6 +91,7 @@ private:
     int seller_idx{0};
     int familyshop{0};      // owned shop index (0 if none)
     std::vector<Shop>* shops_ref{nullptr};
+    std::vector<Trader>* traders_ref{nullptr};
     Shop* buyer_shop{nullptr};
     Shop* seller_shop{nullptr};
     Shop* family_shop{nullptr};

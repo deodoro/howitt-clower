@@ -117,7 +117,7 @@ private:
     void init_run();
     void lineup();
     void weekly_entry();
-    void weekly_matching();
+    std::vector <MatchEvaluation>* weekly_matching();
     void report_trader(Trader const& trader);
     void weekly_trade_and_exit();
     void weekly_update_prices();

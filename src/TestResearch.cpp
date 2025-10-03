@@ -36,8 +36,8 @@ ResearchResults TestResearch::research(Trader &trader)
 
     // Prepare targets and compute prices
     ResearchResults res{rng.uniform_int(xMax) + 1.0, rng.uniform_int(xMax) + 1.0, 0};
-    double P0 = priceF(res.targ0, res.targ1, overhead_f(trader.get_demands()));
-    double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.get_supplies()));
+    double P0 = priceF(res.targ0, res.targ1, overhead_f(trader.get_supplied_good()));
+    double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.get_supplied_good()));
 
     /*
         NOTE: Should be checking if comrade is same buyer or seller shop.
@@ -49,15 +49,15 @@ ResearchResults TestResearch::research(Trader &trader)
     double U = 0.0;
     double Ucomp = partner.utility(this->shops);
     // direct or indirect reachability check through fr's links
-    if (trader.wants_to_trade_in(partner.get_demands()))
+    if (trader.wants_to_trade_in(partner.get_supplied_good()))
     {
         U = P0;
     }
     else
     {
-        if (partner.get_buyer_shop() && trader.wants_to_trade_in(partner.get_buyer_shop()->get_good(partner.get_demands())))
+        if (partner.get_buyer_shop() && trader.wants_to_trade_in(partner.get_buyer_shop()->get_the_other_good(partner.get_supplied_good())))
         {
-            U = partner.get_buyer_shop()->get_price(partner.get_demands()) * P0;
+            U = partner.get_buyer_shop()->get_price_demand(partner.get_supplied_good()) * P0;
         }
     }
     // Test with a soulmate
@@ -67,15 +67,15 @@ ResearchResults TestResearch::research(Trader &trader)
         // partner = traders[fr];
         Ucomp = partner.utility(this->shops);
         U = 0.0;
-        if (trader.wants_to_trade_out(partner.get_supplies()))
+        if (trader.wants_to_trade_out(partner.get_supplied_good()))
         {
             U = P0;
         }
         else
         {
-            if (partner.get_seller_shop() && trader.wants_to_trade_out(partner.get_seller_shop()->get_good(partner.get_supplies())))
+            if (partner.get_seller_shop() && trader.wants_to_trade_out(partner.get_seller_shop()->get_the_other_good(partner.get_supplied_good())))
             {
-                U = partner.get_seller_shop()->get_price_supply(partner.get_supplies()) * P0;
+                U = partner.get_seller_shop()->get_price_supply(partner.get_supplied_good()) * P0;
             }
         }
         if (U < Ucomp)
@@ -87,34 +87,34 @@ ResearchResults TestResearch::research(Trader &trader)
 
     {
         U = 0.0;
-        Trader &partner = random_consumer(trader.get_supplies());
+        Trader &partner = random_consumer(trader.get_supplied_good());
         Ucomp = partner.utility(this->shops);
-        if (trader.wants_to_trade_in(partner.get_supplies()))
+        if (trader.wants_to_trade_in(partner.get_supplied_good()))
         {
             U = P1;
         }
         else
         {
-            if (partner.get_seller_shop() && trader.wants_to_trade_in(partner.get_seller_shop()->get_good(partner.get_supplies())))
+            if (partner.get_seller_shop() && trader.wants_to_trade_in(partner.get_seller_shop()->get_the_other_good(partner.get_supplied_good())))
             {
-                U = partner.get_seller_shop()->get_price(trader.get_demands()) * P1;
+                U = partner.get_seller_shop()->get_price_demand(trader.get_supplied_good()) * P1;
             }
         }
         // Stranger who produces d[r]
         if (U < Ucomp)
         {
-            Trader &partner = random_producer(trader.get_demands());
+            Trader &partner = random_producer(trader.get_supplied_good());
             Ucomp = partner.utility(this->shops);
             U = 0.0;
-            if (trader.wants_to_trade_out(partner.get_demands()))
+            if (trader.wants_to_trade_out(partner.get_supplied_good()))
             {
                 U = P1;
             }
             else
             {
-                if (partner.get_buyer_shop() && trader.wants_to_trade_out(partner.get_buyer_shop()->get_good(partner.get_demands())))
+                if (partner.get_buyer_shop() && trader.wants_to_trade_out(partner.get_buyer_shop()->get_the_other_good(partner.get_supplied_good())))
                 {
-                    U = P1 * partner.get_buyer_shop()->get_price(partner.get_demands());
+                    U = P1 * partner.get_buyer_shop()->get_price_demand(partner.get_supplied_good());
                 }
             }
             if (U < Ucomp)
@@ -193,7 +193,7 @@ void TestResearch::try_barter(Trader &trader, std::vector<int> &c, struct MatchE
         Shop &shop = this->shops[c[idx]];
         if (trader.allows_barter_with(shop))
         {
-            double val = shop.get_price_supply(trader.get_supplies());
+            double val = shop.get_price_supply(trader.get_supplied_good());
             if (val > std::max(eval.Ucomp, eval.Ubarter))
             {
                 eval.barter = &shop;
@@ -207,8 +207,8 @@ void TestResearch::try_barter(Trader &trader, std::vector<int> &c, struct MatchE
 
 void TestResearch::try_one(const Trader &trader, std::vector<int> &c, struct MatchEvaluation &eval)
 {
-    int s = trader.get_supplies();
-    int d = trader.get_demands();
+    int s = trader.get_supplied_good();
+    int d = trader.get_supplied_good();
     // Track which side matches for current c[0] and c[1]
     for (size_t idx = 2; idx < c.size(); ++idx)
     {
@@ -218,11 +218,11 @@ void TestResearch::try_one(const Trader &trader, std::vector<int> &c, struct Mat
         // improve outlet (sell s)
         if (shop.provides(s))
         {
-            if ((shop.get_good(s) == candidate_1.get_good(d)) || (candidate_0.get_price_supply(s) == 0.0))
+            if ((shop.get_the_other_good(s) == candidate_1.get_the_other_good(d)) || (candidate_0.get_price_supply(s) == 0.0))
             {
                 if (candidate_0.get_price_supply(s) < shop.get_price_supply(s))
                 {
-                    if (shop.get_good(s) == candidate_1.get_good(d))
+                    if (shop.get_the_other_good(s) == candidate_1.get_the_other_good(d))
                     {
                         eval.Ucomp = shop.get_price_supply(s) * candidate_1.get_price_supply(s);
                     }
@@ -238,13 +238,13 @@ void TestResearch::try_one(const Trader &trader, std::vector<int> &c, struct Mat
             // improve source (buy d)
             if (shop.provides(d))
             {
-                if ((shop.get_good(d) == candidate_0.get_good(s)) || (candidate_1.get_price(d) == 0.0))
+                if ((shop.get_the_other_good(d) == candidate_0.get_the_other_good(s)) || (candidate_1.get_price_demand(d) == 0.0))
                 {
-                    if (candidate_1.get_price(d) < shop.get_price(d))
+                    if (candidate_1.get_price_demand(d) < shop.get_price_demand(d))
                     {
-                        if (shop.get_good(d) == candidate_0.get_good(s))
+                        if (shop.get_the_other_good(d) == candidate_0.get_the_other_good(s))
                         {
-                            eval.Ucomp = (candidate_0.get_price_supply(s) * shop.get_price(d));
+                            eval.Ucomp = (candidate_0.get_price_supply(s) * shop.get_price_demand(d));
                         }
                         c[1] = c[idx];
                         eval.candidate_1 = &shop;
@@ -262,19 +262,19 @@ void TestResearch::try_two(const Trader &trader, std::vector<int> &c, struct Mat
     for (size_t ia = 2; ia < c.size(); ++ia)
     {
         int a = c[ia];
-        if (this->shops[a].provides(trader.get_supplies()))
+        if (this->shops[a].provides(trader.get_supplied_good()))
         {
             for (size_t ib = 2; ib < c.size(); ++ib)
             {
                 if (ia == ib)
                     continue;
                 int b = c[ib];
-                if (this->shops[b].provides(trader.get_demands()))
+                if (this->shops[b].provides(trader.get_supplied_good()))
                 {
                     // common intermediary condition
-                    if (this->shops[a].get_good(trader.get_supplies()) == this->shops[b].get_good(trader.get_demands()))
+                    if (this->shops[a].get_the_other_good(trader.get_supplied_good()) == this->shops[b].get_the_other_good(trader.get_supplied_good()))
                     {
-                        double val = this->shops[a].get_price_supply(trader.get_supplies()) * this->shops[b].get_price(trader.get_demands());
+                        double val = this->shops[a].get_price_supply(trader.get_supplied_good()) * this->shops[b].get_price_demand(trader.get_supplied_good());
                         if (eval.Ucomp < val)
                         {
                             eval.Ucomp = val;

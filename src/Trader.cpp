@@ -25,7 +25,7 @@
 extern PCG32 rng;
 
 std::string Trader::to_string() const {
-    return "Trader{s=" + std::to_string(get_supplies()) + ", d=" + std::to_string(get_demands()) + ", q=" + std::to_string(q) +
+    return "Trader{s=" + std::to_string(get_supplied_good()) + ", d=" + std::to_string(get_supplied_good()) + ", q=" + std::to_string(q) +
            ", sh=[" + std::to_string(get_seller_idx()) + "," + std::to_string(get_buyer_idx()) + "], familyshop=" + std::to_string(get_familyshop()) + "}";
 }
 
@@ -51,7 +51,11 @@ int Trader::any_comrade(const std::vector<std::vector<int>>& produces) const {
 
 int Trader::trade_comrade(const std::vector<std::vector<int>>& produces) const {
     int fr = any_comrade(produces);
-    return fr;
+    // Trader trader = (*traders_ref)[fr];
+    // if (trader.get_supplies() == supplies)
+    //     return 0;
+    // else
+        return fr;
 }
 
 int Trader::soulmate(const std::vector<std::vector<int>>& consumes) const {
@@ -67,13 +71,13 @@ double Trader::utility(std::vector<Shop>& shops) const {
     double X = 0.0;
     if (get_seller_idx() > 0) {
         Shop& sell_shop = shops[get_seller_idx()];
-        if (sell_shop.get_good(supplies) == demands) {
+        if (sell_shop.get_the_other_good(supplies) == demands) {
             X = sell_shop.get_price_supply(supplies);
         } else {
             if (get_buyer_idx() > 0) {
                 Shop& buy_shop = shops[get_buyer_idx()];
-                if (sell_shop.get_good(supplies) == buy_shop.get_good(demands)) {
-                    X = sell_shop.get_price_supply(supplies) * buy_shop.get_price(demands);
+                if (sell_shop.get_the_other_good(supplies) == buy_shop.get_the_other_good(demands)) {
+                    X = sell_shop.get_price_supply(supplies) * buy_shop.get_price_demand(demands);
                 }
             }
         }

@@ -666,6 +666,9 @@ void tryOne(void)
     if ((g[0][c[a]] == s[r]) || (g[1][c[a]] == s[r]))
     {
       ma = (g[0][c[a]] == s[r]);
+      // assert(c[0] != 0 && c[1] != 0);
+      // NOTE: No bounds checking for address c[0] and c[1],
+      // sometimes they are zero. Is this correct or a coincidence?
       if ((g[ma][c[a]] == g[m1][c[1]]) || (P[1 - m0][c[0]] == 0))
       {
         if (P[1 - m0][c[0]] < P[1 - ma][c[a]])

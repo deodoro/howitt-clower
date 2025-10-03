@@ -38,7 +38,7 @@ void Shop::clear() {
     tr[0] = tr[1] = 0.0;
 }
 
-int Shop::get_good(int side) const {
+int Shop::get_the_other_good(int side) const {
         return g[g[0] == side];
 }
 
@@ -58,7 +58,7 @@ void Shop::add_income(int side, double val, bool opposite) {
     y[idx] += val;
 }
 
-double Shop::get_price(int side) const {
+double Shop::get_price_demand(int side) const {
     return P[g[0] == side];
 }
 
