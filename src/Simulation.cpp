@@ -205,8 +205,9 @@ void Simulation::init_run() {
     t = 0;
     NumberOfShops = 0;
 
+    // TODO: Traders can be static, since it is a full set, but Shops could be a dynamic set.
     for (Trader& trader : traders) {
-        trader.set_seller_idx(0);
+        trader.set_outlet_idx(0);
         trader.set_buyer_idx(0);
         trader.set_familyshop(0);
     }
@@ -258,13 +259,13 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
         if (rng.uniform01_inclusive() < psearch && trader->get_family_shop() == nullptr) {
             struct MatchEvaluation eval;
             eval.Ucomp = U;
-            eval.candidate_seller = trader->get_seller_shop();
-            eval.candidate_buyer = trader->get_buyer_shop();
+            eval.candidate_seller = trader->get_outlet();
+            eval.candidate_buyer = trader->get_source();
             // candidate initialization with current links
 
             std::vector<int> cand;
-            Shop* comrade_shop = traders[trader->trade_comrade(produces)].get_seller_shop(); // same production
-            Shop* soulmate_shop = traders[trader->soulmate(consumes)].get_buyer_shop(); // same consumption
+            Shop* comrade_shop = traders[trader->trade_comrade(produces)].get_outlet(); // same production
+            Shop* soulmate_shop = traders[trader->soulmate(consumes)].get_source(); // same consumption
             Shop* random_shop_ptr = &random_shop(); // random trader
             std::vector<Shop*> v = { eval.candidate_seller, eval.candidate_buyer };
             for (Shop* shop : { comrade_shop, soulmate_shop, random_shop_ptr }) {
@@ -288,12 +289,12 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
                 try_two(trader, cand, eval);
 
                 if (eval.Ucomp < eval.Ubarter && eval.barter != nullptr) { // is barter better than trade?
-                    trader->set_seller_shop(eval.barter);
-                    trader->set_buyer_shop(nullptr);
+                    trader->set_outlet(eval.barter);
+                    trader->set_source(nullptr);
                 }
                 else { // trade wins
-                    trader->set_seller_shop(eval.candidate_seller);
-                    trader->set_buyer_shop(eval.candidate_buyer);
+                    trader->set_outlet(eval.candidate_seller);
+                    trader->set_source(eval.candidate_buyer);
                 }
             }
 
@@ -329,14 +330,14 @@ void Simulation::weekly_trade_and_exit() {
     }
     // tally incomes from adopted relationships
     for (Trader& trader : traders) {
-        Shop* shop_a = trader.get_seller_shop();
+        Shop* shop_a = trader.get_outlet();
         if (shop_a) {
             if (shop_a->get_the_other_good(trader.get_supplied_good()) == trader.get_demand_good()) {
                 // direct barter
                 shop_a->add_income(trader.get_supplied_good(), 1.0, true);
             }
             else {
-                Shop* shop_b = trader.get_buyer_shop();
+                Shop* shop_b = trader.get_source();
                 if (shop_b && shop_a->get_the_other_good(trader.get_supplied_good()) == shop_b->get_the_other_good(trader.get_demand_good())) {
                     // indirect via common intermediary
                     shop_a->add_income(trader.get_supplied_good(), 1.0, true);
@@ -376,6 +377,7 @@ void Simulation::weekly_update_prices() {
     }
 }
 
+// NOTE: why is it that traders researched are not the same as traders matched later? If it's a random/statistical thing, should it be a larger sample?
 // NOTE: is this process supposed to be paired two by two?
 // Research process for a prospective owner r
 // Should return an object ResearchResults, with targ0 and targ1 set as the local variables, and enter set as the return value of the function
@@ -405,9 +407,9 @@ ResearchResults Simulation::research(Trader& trader) {
         U = P0;
     }
     else {
-        if (partner.get_buyer_shop() &&
-            trader.wants_to_trade_in(partner.get_buyer_shop()->get_the_other_good(partner.get_demand_good()))) {
-            U = partner.get_buyer_shop()->get_price_demand(partner.get_demand_good()) * P0;
+        if (partner.get_source() &&
+            trader.wants_to_trade_in(partner.get_source()->get_the_other_good(partner.get_demand_good()))) {
+            U = partner.get_source()->get_price_demand(partner.get_demand_good()) * P0;
         }
     }
 
@@ -420,9 +422,9 @@ ResearchResults Simulation::research(Trader& trader) {
             U = P0;
         }
         else {
-            if (partner2.get_seller_shop() &&
-                trader.wants_to_trade_out(partner2.get_seller_shop()->get_the_other_good(partner2.get_supplied_good()))) {
-                U = partner2.get_seller_shop()->get_price_supply(partner2.get_supplied_good()) * P0;
+            if (partner2.get_outlet() &&
+                trader.wants_to_trade_out(partner2.get_outlet()->get_the_other_good(partner2.get_supplied_good()))) {
+                U = partner2.get_outlet()->get_price_supply(partner2.get_supplied_good()) * P0;
             }
         }
         if (U < Ucomp) {
@@ -438,9 +440,9 @@ ResearchResults Simulation::research(Trader& trader) {
             U = P1;
         }
         else {
-            if (partner3.get_seller_shop() &&
-                trader.wants_to_trade_in(partner3.get_seller_shop()->get_the_other_good(partner3.get_supplied_good()))) {
-                U = partner3.get_seller_shop()->get_price_demand(trader.get_demand_good()) * P1;
+            if (partner3.get_outlet() &&
+                trader.wants_to_trade_in(partner3.get_outlet()->get_the_other_good(partner3.get_supplied_good()))) {
+                U = partner3.get_outlet()->get_price_demand(trader.get_demand_good()) * P1;
             }
         }
     }
@@ -454,9 +456,9 @@ ResearchResults Simulation::research(Trader& trader) {
             U = P1;
         }
         else {
-            if (partner4.get_buyer_shop() &&
-                trader.wants_to_trade_out(partner4.get_buyer_shop()->get_the_other_good(partner4.get_demand_good()))) {
-                U = P1 * partner4.get_buyer_shop()->get_price_demand(partner4.get_demand_good());
+            if (partner4.get_source() &&
+                trader.wants_to_trade_out(partner4.get_source()->get_the_other_good(partner4.get_demand_good()))) {
+                U = P1 * partner4.get_source()->get_price_demand(partner4.get_demand_good());
             }
         }
         if (U < Ucomp) {
@@ -607,8 +609,8 @@ int Simulation::calc1() {
     std::fill(usingmoney.begin(), usingmoney.end(), 0.0);
 
     for (Trader& trader : traders) {
-        if (trader.get_seller_idx() > 0) {
-            int a = trader.get_seller_idx();
+        if (trader.get_outlet_idx() > 0) {
+            int a = trader.get_outlet_idx();
             int b = trader.get_buyer_idx();
             int ma = (shops[a].g[0] == trader.get_supplied_good());
             int mb = (b > 0 && shops[b].g[0] == trader.get_demand_good());

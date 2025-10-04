@@ -40,16 +40,16 @@ TestMatch::weekly_matching(std::vector<Trader*> trader_line,
 			trader.get_family_shop() == nullptr) {
 			struct MatchEvaluation eval;
 			eval.Ucomp = U;
-			eval.candidate_seller = trader.get_seller_shop();
-			eval.candidate_buyer = trader.get_buyer_shop();
+			eval.candidate_seller = trader.get_outlet();
+			eval.candidate_buyer = trader.get_source();
 			// candidate initialization with current links
 			std::stack<Shop*> cand_stack;
-			cand_stack.push(trader.get_seller_shop());
-			cand_stack.push(trader.get_buyer_shop());
+			cand_stack.push(trader.get_outlet());
+			cand_stack.push(trader.get_source());
 
 			std::vector<int> cand;
 			cand.reserve(8);
-			cand.push_back(trader.get_seller_idx()); // c[0]
+			cand.push_back(trader.get_outlet_idx()); // c[0]
 			cand.push_back(trader.get_buyer_idx());  // c[1]
 
 			// add friend outlets/sources and one random shop
@@ -59,10 +59,10 @@ TestMatch::weekly_matching(std::vector<Trader*> trader_line,
 			NOTE: I added comrade_ as a friend outlet by mistake, and it worked. Why?
 			*/
 			// if (comrade_idx != 0)
-			addshop(&trader, comrade_.get_seller_shop(), cand);
+			addshop(&trader, comrade_.get_outlet(), cand);
 
 			Trader& soulmate_ = traders[trader.soulmate(consumes)];
-			addshop(&trader, soulmate_.get_buyer_shop(), cand);
+			addshop(&trader, soulmate_.get_source(), cand);
 
 			// Shop* random = &random_shop();
 			Shop* random = &shops[1];
@@ -79,13 +79,13 @@ TestMatch::weekly_matching(std::vector<Trader*> trader_line,
 				try_two(trader, cand, eval);
 
 				if (eval.Ucomp < eval.Ubarter && eval.barter != nullptr) {
-					trader.set_buyer_shop(nullptr);
-					trader.set_seller_shop(eval.barter);
+					trader.set_source(nullptr);
+					trader.set_outlet(eval.barter);
 				}
 				else {
 					// adopt c[0], c[1] as improved chain if any
-					trader.set_seller_shop(eval.candidate_seller);
-					trader.set_buyer_shop(eval.candidate_buyer);
+					trader.set_outlet(eval.candidate_seller);
+					trader.set_source(eval.candidate_buyer);
 				}
 			}
 
@@ -122,7 +122,7 @@ void TestMatch::addshop(const Trader* trader, Shop* shop,
 	if (shop && shop->active && trader->is_compatible_with(shop)) {
 		if (std::find(cand.begin(), cand.end(), shop->idx) == cand.end()) {
 			if (!(shop->idx != trader->get_buyer_idx() &&
-				shop->idx != trader->get_seller_idx())) {
+				shop->idx != trader->get_outlet_idx())) {
 				printf("hit!\n");
 			}
 			cand.push_back(shop->idx);

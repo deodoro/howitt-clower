@@ -51,18 +51,18 @@ public:
      */
     void set_buyer_idx(int idx) {
         buyer_idx = idx;
-        buyer_shop = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
+        source = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
     }
     /**
      * Get the index of the seller shop.
      */
-    int get_seller_idx() const { return seller_idx; }
+    int get_outlet_idx() const { return seller_idx; }
     /**
      * Set the index of the seller shop and update the pointer.
      */
-    void set_seller_idx(int idx) {
+    void set_outlet_idx(int idx) {
         seller_idx = idx;
-        seller_shop = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
+        outlet = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
     }
 
     /**
@@ -80,19 +80,19 @@ public:
     /**
      * Get the pointer to the buyer shop.
      */
-    Shop* get_buyer_shop() const { return buyer_shop; }
+    Shop* get_source() const { return source; }
     /**
      * Set the pointer to the buyer shop and update the index.
      */
-    void set_buyer_shop(Shop* shop);
+    void set_source(Shop* shop);
     /**
      * Get the pointer to the seller shop.
      */
-    Shop* get_seller_shop() const { return seller_shop; }
+    Shop* get_outlet() const { return outlet; }
     /**
      * Set the pointer to the seller shop and update the index.
      */
-    void set_seller_shop(Shop* shop);
+    void set_outlet(Shop* shop);
     /**
      * Get the pointer to the family shop (owned shop).
      */
@@ -186,8 +186,9 @@ private:
     // TODO: dependencies to shops and trades must be broken
     std::vector<Shop>* shops_ref{nullptr};
     std::vector<Trader>* traders_ref{nullptr};
-    Shop* buyer_shop{nullptr};
-    Shop* seller_shop{nullptr};
+    // TODO: confirm if outlet/source are the in same direction as in the paper
+    Shop* source{nullptr};
+    Shop* outlet{nullptr};
     Shop* family_shop{nullptr};
 };
 

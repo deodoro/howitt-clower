@@ -28,13 +28,13 @@ std::string Trader::to_string() const {
     // Returns a string representation of the trader's state for debugging.
     // Simulation rule: Each trader is defined by their supply and demand goods, shop links, and family shop status.
     return "Trader{s=" + std::to_string(get_supplied_good()) + ", d=" + std::to_string(get_supplied_good()) + ", q=" + std::to_string(q) +
-           ", sh=[" + std::to_string(get_seller_idx()) + "," + std::to_string(get_buyer_idx()) + "], familyshop=" + std::to_string(get_familyshop()) + "}";
+           ", sh=[" + std::to_string(get_outlet_idx()) + "," + std::to_string(get_buyer_idx()) + "], familyshop=" + std::to_string(get_familyshop()) + "}";
 }
 
 void Trader::sever_links(Shop& shop) {
     // Simulation rule: Traders sever links to shops that become inactive or unprofitable.
     if (familyshop &&  get_familyshop() == shop.idx) set_familyshop(0);
-    if (seller_idx && get_seller_idx() == shop.idx) set_seller_idx(0);
+    if (seller_idx && get_outlet_idx() == shop.idx) set_outlet_idx(0);
     if (buyer_idx && get_buyer_idx() == shop.idx) set_buyer_idx(0);
 }
 
@@ -73,8 +73,8 @@ double Trader::utility() const {
     // Direct barter: If the seller shop offers the demanded good, utility is its price.
     // Indirect trade: If a buyer shop is linked and goods match, utility is the product of prices along the trade path.
     double X = 0.0;
-    if (get_seller_idx() > 0) {
-        Shop& sell_shop = shops_ref->at(get_seller_idx());
+    if (get_outlet_idx() > 0) {
+        Shop& sell_shop = shops_ref->at(get_outlet_idx());
         if (sell_shop.get_the_other_good(supplies) == demands) {
             X = sell_shop.get_price_supply(supplies);
         } else {
@@ -100,7 +100,7 @@ bool Trader::open_shop(Shop &shop)
         shop.g[1 - q] = demands;
         shop.g[q]     = supplies;
         // owner links
-        set_seller_idx(shop.idx);
+        set_outlet_idx(shop.idx);
         set_buyer_idx(0);
         set_familyshop(shop.idx);
         shop.owner = idx;
@@ -145,12 +145,12 @@ bool Trader::wants_to_trade_out(int good) {
     return supplies == good;
 }
 
-void Trader::set_buyer_shop(Shop* shop) {
+void Trader::set_source(Shop* shop) {
     // Simulation rule: Sets the buyer shop pointer and index for the trader.
-    buyer_shop = shop; buyer_idx = shop ? shop->idx : 0;
+    source = shop; buyer_idx = shop ? shop->idx : 0;
 }
 
-void Trader::set_seller_shop(Shop* shop) {
+void Trader::set_outlet(Shop* shop) {
     // Simulation rule: Sets the seller shop pointer and index for the trader.
-    seller_shop = shop; seller_idx = shop ? shop->idx : 0;
+    outlet = shop; seller_idx = shop ? shop->idx : 0;
 }

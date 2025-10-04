@@ -55,9 +55,9 @@ ResearchResults TestResearch::research(Trader &trader)
     }
     else
     {
-        if (partner.get_buyer_shop() && trader.wants_to_trade_in(partner.get_buyer_shop()->get_the_other_good(partner.get_supplied_good())))
+        if (partner.get_source() && trader.wants_to_trade_in(partner.get_source()->get_the_other_good(partner.get_supplied_good())))
         {
-            U = partner.get_buyer_shop()->get_price_demand(partner.get_supplied_good()) * P0;
+            U = partner.get_source()->get_price_demand(partner.get_supplied_good()) * P0;
         }
     }
     // Test with a soulmate
@@ -73,9 +73,9 @@ ResearchResults TestResearch::research(Trader &trader)
         }
         else
         {
-            if (partner.get_seller_shop() && trader.wants_to_trade_out(partner.get_seller_shop()->get_the_other_good(partner.get_supplied_good())))
+            if (partner.get_outlet() && trader.wants_to_trade_out(partner.get_outlet()->get_the_other_good(partner.get_supplied_good())))
             {
-                U = partner.get_seller_shop()->get_price_supply(partner.get_supplied_good()) * P0;
+                U = partner.get_outlet()->get_price_supply(partner.get_supplied_good()) * P0;
             }
         }
         if (U < Ucomp)
@@ -95,9 +95,9 @@ ResearchResults TestResearch::research(Trader &trader)
         }
         else
         {
-            if (partner.get_seller_shop() && trader.wants_to_trade_in(partner.get_seller_shop()->get_the_other_good(partner.get_supplied_good())))
+            if (partner.get_outlet() && trader.wants_to_trade_in(partner.get_outlet()->get_the_other_good(partner.get_supplied_good())))
             {
-                U = partner.get_seller_shop()->get_price_demand(trader.get_supplied_good()) * P1;
+                U = partner.get_outlet()->get_price_demand(trader.get_supplied_good()) * P1;
             }
         }
         // Stranger who produces d[r]
@@ -112,9 +112,9 @@ ResearchResults TestResearch::research(Trader &trader)
             }
             else
             {
-                if (partner.get_buyer_shop() && trader.wants_to_trade_out(partner.get_buyer_shop()->get_the_other_good(partner.get_supplied_good())))
+                if (partner.get_source() && trader.wants_to_trade_out(partner.get_source()->get_the_other_good(partner.get_supplied_good())))
                 {
-                    U = P1 * partner.get_buyer_shop()->get_price_demand(partner.get_supplied_good());
+                    U = P1 * partner.get_source()->get_price_demand(partner.get_supplied_good());
                 }
             }
             if (U < Ucomp)
@@ -153,7 +153,7 @@ void TestResearch::addshop(const Trader *trader, Shop *shop, std::vector<int> &c
     {
         if (std::find(cand.begin(), cand.end(), shop->idx) == cand.end())
         {
-            if (!(shop->idx != trader->get_buyer_idx() && shop->idx != trader->get_seller_idx()))
+            if (!(shop->idx != trader->get_buyer_idx() && shop->idx != trader->get_outlet_idx()))
             {
                 printf("hit!\n");
             }
