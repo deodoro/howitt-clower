@@ -99,9 +99,10 @@ void Simulation::run_all() {
 
                 // Periodically report progress and check for monetary equilibrium
                 if (t % (PRINT_LOOP_N * RptPer) == 0) {
-                    report(t);
                     monetary = calc1();
+                    report(t);
                     if (monetary == 1) {
+                        printf("Monetary equilibrium reached\n");
                         break; // Exit early if monetary equilibrium is reached
                     }
                 }
