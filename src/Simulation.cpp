@@ -226,7 +226,7 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
     std::vector<MatchEvaluation>* response = new std::vector<MatchEvaluation>();
 
     for (Trader* trader : trader_line) {
-        double U = trader->utility(shops);
+        double U = trader->utility();
         double psearch = (U > 0.0 ? lambda : 1.0);
         // Skip condition: random or already owns a shop
         if (rng.uniform01_inclusive() < psearch && trader->get_family_shop() == nullptr) {
@@ -359,15 +359,12 @@ ResearchResults Simulation::research(Trader& trader) {
     double P0 = priceF(res.targ0, res.targ1, overhead_f(trader.get_demand_good()));
     double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.get_supplied_good()));
 
-    /*
-        NOTE: Should be checking if comrade is same buyer or seller shop.
-        Since these are conditions for trading, simulation is considering
-        non-matching roles as potential trade partners.
-    */
+    bool enter = true;
+
     // Test with a comrade
     Trader& partner = traders[trader.any_comrade(produces)];
     double U = 0.0;
-    double Ucomp = partner.utility(shops);
+    double Ucomp = partner.utility();
     // direct or indirect reachability check through fr's links
     if (trader.wants_to_trade_in(partner.get_demand_good())) {
         U = P0;
@@ -378,61 +375,59 @@ ResearchResults Simulation::research(Trader& trader) {
             U = partner.get_buyer_shop()->get_price_demand(partner.get_demand_good()) * P0;
         }
     }
-    // Test with a soulmate
     if (U < Ucomp) {
-        Trader& partner = traders[trader.soulmate(consumes)];
-        // partner = traders[fr];
-        Ucomp = partner.utility(shops);
+        // Test with a soulmate
+        Trader& partner2 = traders[trader.soulmate(consumes)];
+        Ucomp = partner2.utility();
         U = 0.0;
-        if (trader.wants_to_trade_out(partner.get_supplied_good())) {
+        if (trader.wants_to_trade_out(partner2.get_supplied_good())) {
             U = P0;
         }
         else {
-            if (partner.get_seller_shop() &&
-                trader.wants_to_trade_out(partner.get_seller_shop()->get_the_other_good(partner.get_supplied_good()))) {
-                U = partner.get_seller_shop()->get_price_supply(partner.get_supplied_good()) * P0;
+            if (partner2.get_seller_shop() &&
+                trader.wants_to_trade_out(partner2.get_seller_shop()->get_the_other_good(partner2.get_supplied_good()))) {
+                U = partner2.get_seller_shop()->get_price_supply(partner2.get_supplied_good()) * P0;
             }
         }
         if (U < Ucomp) {
-            res.enter = 0;
-            return res;
+            enter = false;
         }
     }
 
-    {
+    if (enter) {
         U = 0.0;
-        Trader& partner = random_consumer(trader.get_supplied_good());
-        Ucomp = partner.utility(shops);
-        if (trader.wants_to_trade_in(partner.get_supplied_good())) {
+        Trader& partner3 = random_consumer(trader.get_supplied_good());
+        Ucomp = partner3.utility();
+        if (trader.wants_to_trade_in(partner3.get_supplied_good())) {
             U = P1;
         }
         else {
-            if (partner.get_seller_shop() &&
-                trader.wants_to_trade_in(partner.get_seller_shop()->get_the_other_good(partner.get_supplied_good()))) {
-                U = partner.get_seller_shop()->get_price_demand(trader.get_demand_good()) * P1;
+            if (partner3.get_seller_shop() &&
+                trader.wants_to_trade_in(partner3.get_seller_shop()->get_the_other_good(partner3.get_supplied_good()))) {
+                U = partner3.get_seller_shop()->get_price_demand(trader.get_demand_good()) * P1;
             }
         }
-        // Stranger who produces d[r]
         if (U < Ucomp) {
-            Trader& partner = random_producer(trader.get_demand_good());
-            Ucomp = partner.utility(shops);
+            // Stranger who produces d[r]
+            Trader& partner4 = random_producer(trader.get_demand_good());
+            Ucomp = partner4.utility();
             U = 0.0;
-            if (trader.wants_to_trade_out(partner.get_demand_good())) {
+            if (trader.wants_to_trade_out(partner4.get_demand_good())) {
                 U = P1;
             }
             else {
-                if (partner.get_buyer_shop() &&
-                    trader.wants_to_trade_out(partner.get_buyer_shop()->get_the_other_good(partner.get_demand_good()))) {
-                    U = P1 * partner.get_buyer_shop()->get_price_demand(partner.get_demand_good());
+                if (partner4.get_buyer_shop() &&
+                    trader.wants_to_trade_out(partner4.get_buyer_shop()->get_the_other_good(partner4.get_demand_good()))) {
+                    U = P1 * partner4.get_buyer_shop()->get_price_demand(partner4.get_demand_good());
                 }
             }
             if (U < Ucomp) {
-                res.enter = 0;
-                return res;
+                enter = false;
             }
         }
     }
-    res.enter = 1;
+
+    res.enter = enter ? 1 : 0;
     return res;
 }
 
@@ -639,7 +634,7 @@ void Simulation::calc2() {
 
     Csurp = 0.0;
     for (Trader& trader : traders)
-        Csurp += trader.utility(shops);
+        Csurp += trader.utility();
 
     Psurp = 0.0;
     Nshop = 0;

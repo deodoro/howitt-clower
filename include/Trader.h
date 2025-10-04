@@ -78,7 +78,7 @@ public:
     int any_comrade(const std::vector<std::vector<int>>& produces) const;
     int trade_comrade(const std::vector<std::vector<int>>& produces) const;
     int soulmate(const std::vector<std::vector<int>>& consumes) const;
-    double utility(std::vector<Shop>& shops) const;
+    double utility() const;
     bool allows_barter_with(const Shop& shop) const;
     bool wants_to_trade_in(int good);
     bool wants_to_trade_out(int good);

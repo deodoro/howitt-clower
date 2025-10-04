@@ -66,16 +66,16 @@ int Trader::soulmate(const std::vector<std::vector<int>>& consumes) const {
     return fr;
 }
 
-double Trader::utility(std::vector<Shop>& shops) const {
+double Trader::utility() const {
     // attainable consumption for r via current links
     double X = 0.0;
     if (get_seller_idx() > 0) {
-        Shop& sell_shop = shops[get_seller_idx()];
+        Shop& sell_shop = shops_ref->at(get_seller_idx());
         if (sell_shop.get_the_other_good(supplies) == demands) {
             X = sell_shop.get_price_supply(supplies);
         } else {
             if (get_buyer_idx() > 0) {
-                Shop& buy_shop = shops[get_buyer_idx()];
+                Shop& buy_shop = shops_ref->at(get_buyer_idx());
                 if (sell_shop.get_the_other_good(supplies) == buy_shop.get_the_other_good(demands)) {
                     X = sell_shop.get_price_supply(supplies) * buy_shop.get_price_demand(demands);
                 }
