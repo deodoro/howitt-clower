@@ -232,15 +232,15 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
         if (rng.uniform01_inclusive() < psearch && trader->get_family_shop() == nullptr) {
             struct MatchEvaluation eval;
             eval.Ucomp = U;
-            eval.candidate_0 = trader->get_seller_shop();
-            eval.candidate_1 = trader->get_buyer_shop();
+            eval.candidate_seller = trader->get_seller_shop();
+            eval.candidate_buyer = trader->get_buyer_shop();
             // candidate initialization with current links
 
             std::vector<int> cand;
-            Shop* comrade_shop = traders[trader->trade_comrade(produces)].get_seller_shop(); // same production 
+            Shop* comrade_shop = traders[trader->trade_comrade(produces)].get_seller_shop(); // same production
             Shop* soulmate_shop = traders[trader->soulmate(consumes)].get_buyer_shop(); // same consumption
             Shop* random_shop_ptr = &random_shop(); // random trader
-            std::vector<Shop*> v = { eval.candidate_0, eval.candidate_1 };
+            std::vector<Shop*> v = { eval.candidate_seller, eval.candidate_buyer };
             for (Shop* shop : { comrade_shop, soulmate_shop, random_shop_ptr }) {
                 if (shop && shop->active && trader->is_compatible_with(shop) && !CONTAINS(v, shop) && !CONTAINS(cand, shop->idx))
                     cand.push_back(shop->idx);
@@ -250,10 +250,10 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
                 // NOTE: Hack to emulate the fact that the original code addresses the item at  index zero
                 Shop zero;
                 Shop* temp;
-                if (eval.candidate_0 == nullptr)
+                if (eval.candidate_seller == nullptr)
                     temp = &zero;
                 else
-                    temp = eval.candidate_0;
+                    temp = eval.candidate_seller;
                 try_barter(trader, cand, eval);
                 if ((temp->get_the_other_good(trader->get_supplied_good()) != trader->get_demand_good()) ||
                     (temp->get_price_supply(trader->get_supplied_good()) == 0.0)) {
@@ -266,15 +266,15 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
                     trader->set_buyer_shop(nullptr);
                 }
                 else { // trade wins
-                    trader->set_seller_shop(eval.candidate_0);
-                    trader->set_buyer_shop(eval.candidate_1);
+                    trader->set_seller_shop(eval.candidate_seller);
+                    trader->set_buyer_shop(eval.candidate_buyer);
                 }
             }
 
             struct MatchEvaluation* temp = new MatchEvaluation(eval);
             temp->barter = eval.barter;
-            temp->candidate_0 = eval.candidate_0;
-            temp->candidate_1 = eval.candidate_1;
+            temp->candidate_seller = eval.candidate_seller;
+            temp->candidate_buyer = eval.candidate_buyer;
             temp->Ubarter = eval.Ubarter;
             temp->Ucomp = eval.Ucomp;
             response->push_back(*temp);
@@ -311,8 +311,6 @@ void Simulation::weekly_trade_and_exit() {
                 if (shop_b && shop_a->get_the_other_good(trader.get_supplied_good()) == shop_b->get_the_other_good(trader.get_demand_good())) {
                     // indirect via common intermediary
                     shop_a->add_income(trader.get_supplied_good(), 1.0, true);
-                    //     return P[g[0] != side];
-                    // P[g[0] == trader.get_supplied_good()] -> P[0] if g[0] ==
                     shop_b->add_income(trader.get_demand_good(), shop_a->get_price_supply(trader.get_supplied_good()));
                 }
             }
@@ -346,6 +344,7 @@ void Simulation::weekly_update_prices() {
     }
 }
 
+// NOTE: is this process supposed to be paired two by two?
 // Research process for a prospective owner r
 // Should return an object ResearchResults, with targ0 and targ1 set as the local variables, and enter set as the return value of the function
 ResearchResults Simulation::research(Trader& trader) {
@@ -364,6 +363,7 @@ ResearchResults Simulation::research(Trader& trader) {
     // Test with a comrade
     Trader& partner = traders[trader.any_comrade(produces)];
     double U = 0.0;
+    // NOTE: why partner utility not own?
     double Ucomp = partner.utility();
     // direct or indirect reachability check through fr's links
     if (trader.wants_to_trade_in(partner.get_demand_good())) {
@@ -375,6 +375,7 @@ ResearchResults Simulation::research(Trader& trader) {
             U = partner.get_buyer_shop()->get_price_demand(partner.get_demand_good()) * P0;
         }
     }
+
     if (U < Ucomp) {
         // Test with a soulmate
         Trader& partner2 = traders[trader.soulmate(consumes)];
@@ -395,9 +396,9 @@ ResearchResults Simulation::research(Trader& trader) {
     }
 
     if (enter) {
-        U = 0.0;
         Trader& partner3 = random_consumer(trader.get_supplied_good());
         Ucomp = partner3.utility();
+        U = 0.0;
         if (trader.wants_to_trade_in(partner3.get_supplied_good())) {
             U = P1;
         }
@@ -407,23 +408,24 @@ ResearchResults Simulation::research(Trader& trader) {
                 U = partner3.get_seller_shop()->get_price_demand(trader.get_demand_good()) * P1;
             }
         }
+    }
+
+    if (enter && (U < Ucomp)) {
+        // Stranger who produces d[r]
+        Trader& partner4 = random_producer(trader.get_demand_good());
+        Ucomp = partner4.utility();
+        U = 0.0;
+        if (trader.wants_to_trade_out(partner4.get_demand_good())) {
+            U = P1;
+        }
+        else {
+            if (partner4.get_buyer_shop() &&
+                trader.wants_to_trade_out(partner4.get_buyer_shop()->get_the_other_good(partner4.get_demand_good()))) {
+                U = P1 * partner4.get_buyer_shop()->get_price_demand(partner4.get_demand_good());
+            }
+        }
         if (U < Ucomp) {
-            // Stranger who produces d[r]
-            Trader& partner4 = random_producer(trader.get_demand_good());
-            Ucomp = partner4.utility();
-            U = 0.0;
-            if (trader.wants_to_trade_out(partner4.get_demand_good())) {
-                U = P1;
-            }
-            else {
-                if (partner4.get_buyer_shop() &&
-                    trader.wants_to_trade_out(partner4.get_buyer_shop()->get_the_other_good(partner4.get_demand_good()))) {
-                    U = P1 * partner4.get_buyer_shop()->get_price_demand(partner4.get_demand_good());
-                }
-            }
-            if (U < Ucomp) {
-                enter = false;
-            }
+            enter = false;
         }
     }
 
@@ -481,28 +483,27 @@ void Simulation::try_barter(const Trader* trader, std::vector<int>& c, struct Ma
     }
 }
 
+// TODO: replace array for a proper queue
 void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
     Shop zero;
     int s = trader->get_supplied_good();
     int d = trader->get_demand_good();
     for (size_t idx = 0; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
-        Shop* candidate_0 = eval.candidate_0 ? eval.candidate_0 : &zero;
-        Shop* candidate_1 = eval.candidate_1 ? eval.candidate_1 : &zero;
+        Shop* candidate_0 = eval.candidate_seller ? eval.candidate_seller : &zero;
+        Shop* candidate_1 = eval.candidate_buyer ? eval.candidate_buyer : &zero;
 
         // improve outlet (sell s)
         if (shop.provides(s)) {
             if (candidate_0->get_price_supply(s) < shop.get_price_supply(s)) {
                 if ((shop.get_the_other_good(s) == candidate_1->get_the_other_good(d))) {
                     eval.Ucomp = shop.get_price_supply(s) * candidate_1->get_price_supply(s);
-                    eval.candidate_0 = c[idx] > 0 ? &shop : nullptr;
-                    c.erase(c.begin() + idx);
-                    --idx;
+                    eval.candidate_seller = c[idx] > 0 ? &shop : nullptr;
+                    c.erase(c.begin() + idx--); // Remove candidate from queue
                 }
                 else if (candidate_0->get_price_supply(s) == 0.0) {
-                    eval.candidate_0 = c[idx] > 0 ? &shop : nullptr;
-                    c.erase(c.begin() + idx);
-                    --idx;
+                    eval.candidate_seller = c[idx] > 0 ? &shop : nullptr;
+                    c.erase(c.begin() + idx--); // Remove candidate from queue
                 }
             }
         }
@@ -510,14 +511,12 @@ void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct Match
             if (candidate_1->get_price_demand(d) < shop.get_price_demand(d)) {
                 if ((shop.get_the_other_good(d) == candidate_0->get_the_other_good(s))) {
                     eval.Ucomp = candidate_0->get_price_supply(s) * shop.get_price_demand(d);
-                    eval.candidate_1 = c[idx] > 0 ? &shop : nullptr;
-                    c.erase(c.begin() + idx);
-                    --idx;
+                    eval.candidate_buyer = c[idx] > 0 ? &shop : nullptr;
+                    c.erase(c.begin() + idx--);
                 }
                 else if (candidate_1->get_price_demand(d) == 0.0) {
-                    eval.candidate_1 = c[idx] > 0 ? &shop : nullptr;
-                    c.erase(c.begin() + idx);
-                    --idx;
+                    eval.candidate_buyer = c[idx] > 0 ? &shop : nullptr;
+                    c.erase(c.begin() + idx--); // Remove candidate from queue
                 }
             }
         }
@@ -538,8 +537,8 @@ void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct Match
                         double val = shops[a].get_price_supply(trader->get_supplied_good()) * shops[b].get_price_demand(trader->get_demand_good());
                         if (eval.Ucomp < val) {
                             eval.Ucomp = val;
-                            eval.candidate_0 = &shops[a];
-                            eval.candidate_1 = &shops[b];
+                            eval.candidate_seller = &shops[a];
+                            eval.candidate_buyer = &shops[b];
                         }
                     }
                 }

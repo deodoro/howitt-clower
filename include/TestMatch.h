@@ -13,8 +13,8 @@ struct MatchEvaluation {
     double Ucomp = 0.0;
     double Ubarter = 0.0;
     Shop* barter = nullptr;
-    Shop* candidate_0 = nullptr;
-    Shop* candidate_1 = nullptr;
+    Shop* candidate_seller = nullptr;
+    Shop* candidate_buyer = nullptr;
 };
 
 class TestMatch {

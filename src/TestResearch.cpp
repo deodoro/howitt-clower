@@ -227,7 +227,7 @@ void TestResearch::try_one(const Trader &trader, std::vector<int> &c, struct Mat
                         eval.Ucomp = shop.get_price_supply(s) * candidate_1.get_price_supply(s);
                     }
                     c[0] = c[idx];
-                    eval.candidate_0 = &shop;
+                    eval.candidate_seller = &shop;
                     c.erase(c.begin() + idx);
                     --idx;
                 }
@@ -247,7 +247,7 @@ void TestResearch::try_one(const Trader &trader, std::vector<int> &c, struct Mat
                             eval.Ucomp = (candidate_0.get_price_supply(s) * shop.get_price_demand(d));
                         }
                         c[1] = c[idx];
-                        eval.candidate_1 = &shop;
+                        eval.candidate_buyer = &shop;
                         c.erase(c.begin() + idx);
                         --idx;
                     }
@@ -278,8 +278,8 @@ void TestResearch::try_two(const Trader &trader, std::vector<int> &c, struct Mat
                         if (eval.Ucomp < val)
                         {
                             eval.Ucomp = val;
-                            eval.candidate_0 = &shops[a];
-                            eval.candidate_1 = &shops[b];
+                            eval.candidate_seller = &shops[a];
+                            eval.candidate_buyer = &shops[b];
                             c[0] = a;
                             c[1] = b;
                         }

@@ -40,8 +40,8 @@ TestMatch::weekly_matching(std::vector<Trader*> trader_line,
 			trader.get_family_shop() == nullptr) {
 			struct MatchEvaluation eval;
 			eval.Ucomp = U;
-			eval.candidate_0 = trader.get_seller_shop();
-			eval.candidate_1 = trader.get_buyer_shop();
+			eval.candidate_seller = trader.get_seller_shop();
+			eval.candidate_buyer = trader.get_buyer_shop();
 			// candidate initialization with current links
 			std::stack<Shop*> cand_stack;
 			cand_stack.push(trader.get_seller_shop());
@@ -84,15 +84,15 @@ TestMatch::weekly_matching(std::vector<Trader*> trader_line,
 				}
 				else {
 					// adopt c[0], c[1] as improved chain if any
-					trader.set_seller_shop(eval.candidate_0);
-					trader.set_buyer_shop(eval.candidate_1);
+					trader.set_seller_shop(eval.candidate_seller);
+					trader.set_buyer_shop(eval.candidate_buyer);
 				}
 			}
 
 			struct MatchEvaluation* temp = new MatchEvaluation(eval);
 			temp->barter = eval.barter;
-			temp->candidate_0 = eval.candidate_0;
-			temp->candidate_1 = eval.candidate_1;
+			temp->candidate_seller = eval.candidate_seller;
+			temp->candidate_buyer = eval.candidate_buyer;
 			temp->Ubarter = eval.Ubarter;
 			temp->Ucomp = eval.Ucomp;
 			response->push_back(*temp);
@@ -185,7 +185,7 @@ void TestMatch::try_one(const Trader& trader, std::vector<int>& c,
                         eval.Ucomp = shop.get_price_supply(s) * candidate_1.get_price_supply(s);
                     }
                     c[0] = c[idx];
-                    eval.candidate_0 = &shop;
+                    eval.candidate_seller = &shop;
                     c.erase(c.begin() + idx);
                     --idx;
                 }
@@ -200,7 +200,7 @@ void TestMatch::try_one(const Trader& trader, std::vector<int>& c,
                             eval.Ucomp = (candidate_0.get_price_supply(s) * shop.get_price_demand(d));
                         }
                         c[1] = c[idx];
-                        eval.candidate_1 = &shop;
+                        eval.candidate_buyer = &shop;
                         c.erase(c.begin() + idx);
                         --idx;
                     }
@@ -228,8 +228,8 @@ void TestMatch::try_two(const Trader& trader, std::vector<int>& c,
 							this->shops[b].get_price_demand(trader.get_supplied_good());
 						if (eval.Ucomp < val) {
 							eval.Ucomp = val;
-							eval.candidate_0 = &shops[a];
-							eval.candidate_1 = &shops[b];
+							eval.candidate_seller = &shops[a];
+							eval.candidate_buyer = &shops[b];
 							c[0] = a;
 							c[1] = b;
 						}
