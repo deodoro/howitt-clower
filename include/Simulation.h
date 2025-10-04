@@ -46,34 +46,10 @@ struct MatchEvaluation;
  */
 class Simulation {
 public:
-    // Configuration constants (mirror attached code)
-    static constexpr int numruns   = 1;
-    static constexpr int FirstSlope = 16;
-    static constexpr int LastSlope  = 18;
-    static constexpr double f1     = 0.0;
-
-    static constexpr int n      = 10;   // goods
-    static constexpr int bsize  = 24;   // each (i!=j) type count
-    static constexpr int K      = 200;  // shop locations
-
-    static constexpr int xMax   = 200;
-    static constexpr double lambda = 0.05;
-    static constexpr double alpha  = 0.25;
-    static constexpr double theta  = 0.01;
-    static constexpr double C      = 5.0;
-    static constexpr int persist   = 10;
-
-    static constexpr int T       = 20000; // weeks
-    static constexpr int RANDSEED = 1;
-    static constexpr int RptPer   = 1;
-    static constexpr int prtoscr  = 1;
-
-    static constexpr int m = bsize * n * (n - 1); // number of traders
-
     /**
      * Constructor builds the static economy (agents and lists).
      */
-    Simulation();
+    Simulation(SimulationInfo info = SimulationInfo());
 
     /**
      * Runs all simulation sweeps and time steps, collecting results and statistics.
@@ -81,8 +57,11 @@ public:
     void run_all();
 
 private:
-    // Derived/utility
-    static constexpr int PRINT_LOOP_N = 6;
+    SimulationInfo info;
+
+    int RptPer;   // report period
+    int prtoscr;  // print to screen
+    int PRINT_LOOP_N; // print loop number
 
     double slope{16.0};
 
@@ -95,8 +74,6 @@ private:
     std::vector<std::vector<int>> consumes; // by good j: trader ids desiring j
 
     std::vector<double> usingmoney; // per good
-    std::vector<double> Pinv; // SME inverse retail per good
-    std::vector<double> vol[2], avp[2];
 
     // Run-scoped variables encapsulated in RunInfo
     RunInfo runInfo;
@@ -192,7 +169,7 @@ private:
      * Computes root mean square error for price and volume statistics.
      * Simulation rule: Measures market efficiency and price dispersion.
      */
-    void rmse();
+    void rmse(std::vector<double> &Pinv);
     /**
      * Reports simulation progress and statistics at specified intervals.
      */
