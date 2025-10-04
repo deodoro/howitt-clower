@@ -43,41 +43,6 @@ public:
     int q{0};               // 0 if s<=d else 1 (orders shop's good pair)
 
     /**
-     * Get the index of the buyer shop.
-     */
-    int get_source_idx() const { return source_idx; }
-    /**
-     * Set the index of the buyer shop and update the pointer.
-     */
-    void set_source_idx(int idx) {
-        source_idx = idx;
-        source = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
-    }
-    /**
-     * Get the index of the seller shop.
-     */
-    int get_outlet_idx() const { return outlet_idx; }
-    /**
-     * Set the index of the seller shop and update the pointer.
-     */
-    void set_outlet_idx(int idx) {
-        outlet_idx = idx;
-        outlet = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
-    }
-
-    /**
-     * Get the index of the family shop (owned shop).
-     */
-    int get_familyshop_idx() const { return familyshop; }
-    /**
-     * Set the index of the family shop and update the pointer.
-     */
-    void set_familyshop_idx(int idx) {
-        familyshop = idx;
-        family_shop = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
-    }
-
-    /**
      * Get the pointer to the buyer shop.
      */
     Shop* get_source() const { return source; }
@@ -139,9 +104,9 @@ public:
      */
     std::string to_string() const;
     /**
-     * Sever links to a shop if it becomes inactive or unprofitable.
+     * Sever links to a shop if it becomes inactive or unprofitable. Null = sever to all.
      */
-    void sever_links(Shop& shop);
+    void sever_links(Shop* shop = nullptr);
     /**
      * Select another trader who produces the same good (potential direct competitor or trading partner).
      */
@@ -175,17 +140,13 @@ public:
      * Open a shop if inactive, set goods and ownership, and link to self.
      */
     bool open_shop(Shop &shop);
-    /**
-     * Resets links to all shops (outlet, source and family)
-     */
-    void clear_shops();
 
 private:
     int supplied_good{0};        // produced good
     int demanded_good{0};         // desired good
     int source_idx{0};
     int outlet_idx{0};
-    int familyshop{0};      // owned shop index (0 if none)
+    int familyshop_idx{0};      // owned shop index (0 if none)
     std::vector<Shop>* shops_ref{nullptr};
     // TODO: confirm if outlet/source are the in same direction as in the paper
     Shop* source{nullptr};

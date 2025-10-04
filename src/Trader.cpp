@@ -28,14 +28,21 @@ std::string Trader::to_string() const {
     // Returns a string representation of the trader's state for debugging.
     // Simulation rule: Each trader is defined by their supply and demand goods, shop links, and family shop status.
     return "Trader{s=" + std::to_string(get_supplied_good()) + ", d=" + std::to_string(get_supplied_good()) + ", q=" + std::to_string(q) +
-           ", sh=[" + std::to_string(get_outlet_idx()) + "," + std::to_string(get_source_idx()) + "], familyshop=" + std::to_string(get_familyshop_idx()) + "}";
+           ", sh=[" + std::to_string(outlet_idx) + "," + std::to_string(source_idx) + "], familyshop=" + std::to_string(familyshop_idx) + "}";
 }
 
-void Trader::sever_links(Shop& shop) {
+void Trader::sever_links(Shop* shop) {
     // Simulation rule: Traders sever links to shops that become inactive or unprofitable.
-    if (familyshop &&  get_familyshop_idx() == shop.idx) set_familyshop_idx(0);
-    if (outlet_idx && get_outlet_idx() == shop.idx) set_outlet_idx(0);
-    if (source_idx && get_source_idx() == shop.idx) set_source_idx(0);
+    if (shop != nullptr) {
+        if (get_familyshop() == shop) set_familyshop(nullptr);
+        if (get_outlet() == shop) set_outlet(nullptr);
+        if (get_source() == shop) set_source(nullptr);
+    }
+    else {
+        if (get_familyshop() != nullptr) set_familyshop(nullptr);
+        if (get_outlet() != nullptr) set_outlet(nullptr);
+        if (get_source() != nullptr) set_source(nullptr);
+    }
 }
 
 /*
@@ -100,19 +107,14 @@ bool Trader::open_shop(Shop &shop)
         shop.g[1 - q] = demanded_good;
         shop.g[q]     = supplied_good;
         // owner links
-        set_outlet_idx(shop.idx);
-        set_source_idx(0);
-        set_familyshop_idx(shop.idx);
+        set_outlet(&shop);
+        set_source(nullptr);
+        set_familyshop(&shop);
         shop.owner = idx;
         return true;
     }
 }
 
-void Trader::clear_shops() {
-    set_outlet(nullptr);
-    set_source(nullptr);
-    set_familyshop(nullptr);
-}
 
 void Trader::set_supplies(int s) {
     // Simulation rule: Sets the supply good for the trader and updates the orientation (q) for shop assignment.
@@ -164,5 +166,5 @@ void Trader::set_outlet(Shop* shop) {
 void Trader::set_familyshop(Shop* shop) {
     // Set the pointer to the family shop (owned shop).
     family_shop = shop;
-    familyshop = shop ? shop->idx : 0;
+    familyshop_idx = shop ? shop->idx : 0;
 }

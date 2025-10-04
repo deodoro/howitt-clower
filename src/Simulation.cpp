@@ -207,7 +207,7 @@ void Simulation::init_run() {
 
     // TODO: Traders can be static, since it is a full set, but Shops could be a dynamic set.
     for (Trader& trader : traders) {
-        trader.clear_shops();
+        trader.sever_links();
     }
     int i = 0;
     for (Shop& shop : shops) {
@@ -226,7 +226,7 @@ void Simulation::weekly_entry() {
     auto overhead_f = make_overhead(f1, slope);
     int r = rng.uniform_int(m) + 1; // prospective owner
     Trader& trader = traders[r];
-    if (NumberOfShops < K && trader.get_familyshop_idx() == 0) {
+    if (NumberOfShops < K && trader.get_familyshop() == nullptr) {
         ResearchResults ok = research(trader);
         if (ok.enter > 0) {
             for (Shop& shop : shops) {
@@ -350,7 +350,7 @@ void Simulation::weekly_trade_and_exit() {
             if ((!shop.is_profitable(make_overhead(f1, slope))) && rng.uniform01_inclusive() <= theta) {
                 // sever links
                 for (Trader& trader : traders) {
-                    trader.sever_links(shop);
+                    trader.sever_links(&shop);
                 }
                 shop.clear();
                 NumberOfShops--;
