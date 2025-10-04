@@ -183,6 +183,7 @@ private:
     int buyer_idx{0};
     int seller_idx{0};
     int familyshop{0};      // owned shop index (0 if none)
+    // TODO: dependencies to shops and trades must be broken
     std::vector<Shop>* shops_ref{nullptr};
     std::vector<Trader>* traders_ref{nullptr};
     Shop* buyer_shop{nullptr};
