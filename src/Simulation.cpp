@@ -65,6 +65,11 @@ void Simulation::run_all() {
     // Main simulation loop: runs all parameter sweeps and time steps.
     // Simulation rule: Orchestrates initialization, weekly activities, reporting, and statistics collection.
 
+    // Time and IO variables
+    std::time_t firstbegin{}, finish{};
+    std::clock_t clock_begin{}, clock_finish{};
+    std::FILE* stream{nullptr};
+
     // Record the start time of the entire simulation
     time(&firstbegin);
 
@@ -80,17 +85,20 @@ void Simulation::run_all() {
         slope = _s;
 
         // For each slope, run multiple simulation runs
-        for (run = 1; run <= numruns; ++run) {
+        for (int run = 1; run <= numruns; ++run) {
+            runInfo.run = run;
+            runInfo.Slope = slope;
             // Initialize the run-specific state
             init_run();
             clock_begin = std::clock();
 
             // Main simulation loop: run for T time steps
-            for (t = 1; t <= T; ++t) {
+            for (int t = 1; t <= T; ++t) {
+                runInfo.t = t;
                 // Ensure at least one shop exists before proceeding
                 do {
                     weekly_entry();
-                } while (NumberOfShops == 0);
+                } while (runInfo.NumberOfShops == 0);
 
                 // Perform weekly activities: matching, trading, exit, and price updates
                 weekly_matching();
@@ -98,10 +106,10 @@ void Simulation::run_all() {
                 weekly_update_prices();
 
                 // Periodically report progress and check for monetary equilibrium
-                if (t % (PRINT_LOOP_N * RptPer) == 0) {
-                    monetary = calc1();
-                    report(t);
-                    if (monetary == 1) {
+                if (runInfo.t % (PRINT_LOOP_N * RptPer) == 0) {
+                    runInfo.monetary = calc1();
+                    report(runInfo.t);
+                    if (runInfo.monetary == 1) {
                         printf("Monetary equilibrium reached\n");
                         break; // Exit early if monetary equilibrium is reached
                     }
@@ -114,7 +122,7 @@ void Simulation::run_all() {
             // Log timing information
             clock_finish = std::clock();
             std::printf("Run number %d. Time elapsed: %.2f seconds.\n",
-                run,
+                runInfo.run,
                 (clock_finish - clock_begin) / (double)CLOCKS_PER_SEC);
             std::printf("Slope equals %-.0f, xMax equals %d\n\n", slope, xMax);
 
@@ -123,8 +131,8 @@ void Simulation::run_all() {
             if (stream) {
                 std::fprintf(stream,
                     "%5d %5.0f %3d %4.0f %3d %4.0f %4.0f %3d %4.0f %6.0f %5.0f %3d %3d %3d %6.3f %6.3f %4d %4d\n",
-                    run, slope, fulldev, part, monetary, moneytraders, usingmax,
-                    moneygood, Csurp, Psurp, SurpSME, Nshop, NumberOfShops, BS, R[0], R[1], devyear, monyear);
+                    runInfo.run, slope, runInfo.fulldev, runInfo.part, runInfo.monetary, runInfo.moneytraders, runInfo.usingmax,
+                    runInfo.moneygood, runInfo.Csurp, runInfo.Psurp, runInfo.SurpSME, runInfo.Nshop, runInfo.NumberOfShops, runInfo.BS, runInfo.R[0], runInfo.R[1], runInfo.devyear, runInfo.monyear);
                 std::fclose(stream);
             }
 
@@ -181,7 +189,7 @@ void Simulation::init_static() {
         }
     }
     // Theoretical max number of "money traders": bsize*(n-2)*(n-1)
-    Fmon = bsize * (n - 2.0) * (n - 1.0);
+    runInfo.Fmon = bsize * (n - 2.0) * (n - 1.0);
 }
 
 void Simulation::init_run() {
@@ -191,17 +199,16 @@ void Simulation::init_run() {
     std::printf("Number Using Using Using Using Using Using \n");
     std::printf("Active Money good1 good2 good3 good4 good5 Year NS \n");
 
-    endcount = 0;
-    fulldev = 0;
-    devyear = -1;
-    monyear = -1;
-    devcount = 0;
+    runInfo.endcount = 0;
+    runInfo.fulldev = 0;
+    runInfo.devyear = -1;
+    runInfo.monyear = -1;
+    runInfo.devcount = 0;
 
-    rng.seed(RANDSEED + run - 1, RANDSEED + run - 1);
+    rng.seed(RANDSEED + runInfo.run - 1, RANDSEED + runInfo.run - 1);
 
-    clock_begin = std::clock();
-    t = 0;
-    NumberOfShops = 0;
+    runInfo.t = 0;
+    runInfo.NumberOfShops = 0;
 
     // TODO: Traders can be static, since it is a full set, but Shops could be a dynamic set.
     for (Trader& trader : traders) {
@@ -224,12 +231,12 @@ void Simulation::weekly_entry() {
     auto overhead_f = make_overhead(f1, slope);
     int r = rng.uniform_int(m) + 1; // prospective owner
     Trader& trader = traders[r];
-    if (NumberOfShops < K && trader.get_familyshop() == nullptr) {
+    if (runInfo.NumberOfShops < K && trader.get_familyshop() == nullptr) {
         ResearchResults ok = research(trader);
         if (ok.enter > 0) {
             for (Shop& shop : shops) {
                 if (!shop.active && (&shop != &shops.front())) { // skip index 0
-                    NumberOfShops++;
+                    runInfo.NumberOfShops++;
                     trader.open_shop(shop);
                     shop.set_targets(ok.targ0, ok.targ1);
                     shop.update_prices(C, overhead_f);
@@ -351,7 +358,7 @@ void Simulation::weekly_trade_and_exit() {
                     trader.sever_links(&shop);
                 }
                 shop.clear();
-                NumberOfShops--;
+                runInfo.NumberOfShops--;
             }
         }
     }
@@ -600,8 +607,8 @@ int Simulation::calc1() {
     // Calculates monetary equilibrium and tracks the emergence of money in the simulation.
     // Simulation rule: Aggregates statistics to detect monetary phases and equilibrium.
 
-    part = 0.0;
-    moneytraders = 0.0;
+    runInfo.part = 0.0;
+    runInfo.moneytraders = 0.0;
     std::fill(usingmoney.begin(), usingmoney.end(), 0.0);
 
     for (Trader& trader : traders) {
@@ -613,50 +620,50 @@ int Simulation::calc1() {
             int ma = (shop_a->g[0] == trader.get_supplied_good());
             int mb = (shop_b != nullptr && shop_b->g[0] == trader.get_demand_good());
 
-            part += (shop_a->g[ma] == trader.get_demand_good()) ||
+            runInfo.part += (shop_a->g[ma] == trader.get_demand_good()) ||
                     (shop_b && (shop_a->g[ma] == shop_b->g[mb])) ||
                     (shop_b == nullptr && shop_a->g[ma] == 0);
 
             if (shop_b != nullptr && shop_a->g[ma] == shop_b->g[mb]) {
-                moneytraders += 1.0;
+                runInfo.moneytraders += 1.0;
                 usingmoney[shop_b->g[mb]] += 1.0;
             }
         }
     }
 
-    if (fulldev == 0) {
-        if (part >= 0.99 * m) {
-            if (devcount == 0)
-                devyear = t / 50;
-            devcount++;
+    if (runInfo.fulldev == 0) {
+        if (runInfo.part >= 0.99 * m) {
+            if (runInfo.devcount == 0)
+                runInfo.devyear = runInfo.t / 50;
+            runInfo.devcount++;
         }
         else {
-            devcount = 0;
+            runInfo.devcount = 0;
         }
-        if (devcount >= persist)
-            fulldev = 1;
+        if (runInfo.devcount >= persist)
+            runInfo.fulldev = 1;
     }
 
-    usingmax = 0.0;
-    moneygood = 0;
+    runInfo.usingmax = 0.0;
+    runInfo.moneygood = 0;
     for (int i = 1; i <= n; ++i) {
-        if (usingmoney[i] > usingmax) {
-            usingmax = usingmoney[i];
-            moneygood = i;
+        if (usingmoney[i] > runInfo.usingmax) {
+            runInfo.usingmax = usingmoney[i];
+            runInfo.moneygood = i;
         }
     }
 
-    if (usingmoney[moneygood] >= 0.99 * Fmon) {
-        if (endcount == 0) {
-            monyear = t / 50;
+    if (usingmoney[runInfo.moneygood] >= 0.99 * runInfo.Fmon) {
+        if (runInfo.endcount == 0) {
+            runInfo.monyear = runInfo.t / 50;
         }
-        endcount++;
+        runInfo.endcount++;
     }
     else {
-        endcount = 0;
+        runInfo.endcount = 0;
     }
 
-    return (endcount >= persist);
+    return (runInfo.endcount >= persist);
 }
 
 void Simulation::calc2() {
@@ -664,46 +671,46 @@ void Simulation::calc2() {
     // Simulation rule: Summarizes market outcomes for analysis.
 
     auto overhead_f = make_overhead(f1, slope);
-    if (monetary == 0)
-        monyear = -1;
-    if (fulldev == 0)
-        devyear = -1;
+    if (runInfo.monetary == 0)
+        runInfo.monyear = -1;
+    if (runInfo.fulldev == 0)
+        runInfo.devyear = -1;
 
     // count non-money active shops
-    BS = 0;
+    runInfo.BS = 0;
     for (Shop& shop : shops) {
         if (shop.active) {
-            if (shop.g[0] != moneygood && shop.g[1] != moneygood)
-                BS++;
+            if (shop.g[0] != runInfo.moneygood && shop.g[1] != runInfo.moneygood)
+                runInfo.BS++;
         }
     }
 
-    W = 1.0 - (overhead_f(moneygood) + C) / bsize;
-    if (W > 0.0) {
+    runInfo.W = 1.0 - (overhead_f(runInfo.moneygood) + C) / bsize;
+    if (runInfo.W > 0.0) {
         for (int i = 1; i <= n; ++i) {
             Pinv[i] = ((m / n) - (overhead_f(i) + C)) /
-                ((m / n) - (n - 2) * (overhead_f(moneygood) + C));
+                ((m / n) - (n - 2) * (overhead_f(runInfo.moneygood) + C));
         }
     }
-    SurpSME = m - n * f1 - (slope / 2.0) * n * (n - 1) - (n - 2) * overhead_f(moneygood);
+    runInfo.SurpSME = m - n * f1 - (slope / 2.0) * n * (n - 1) - (n - 2) * overhead_f(runInfo.moneygood);
 
     rmse();
 
-    Csurp = 0.0;
+    runInfo.Csurp = 0.0;
     for (Trader& trader : traders)
-        Csurp += trader.utility();
+        runInfo.Csurp += trader.utility();
 
-    Psurp = 0.0;
-    Nshop = 0;
+    runInfo.Psurp = 0.0;
+    runInfo.Nshop = 0;
     for (Shop& shop : shops) {
         if (shop.active) {
             for (int h = 0; h < 2; ++h) {
-                Psurp += (shop.y[h] - overhead_f(shop.g[h]) - shop.P[1 - h] * shop.y[1 - h]);
+                runInfo.Psurp += (shop.y[h] - overhead_f(shop.g[h]) - shop.P[1 - h] * shop.y[1 - h]);
             }
             int own = shop.owner;
             int qown = (own > 0) ? traders[own].q : 0;
             if ((own > 0) && (shop.y[qown] > 1.0 || shop.y[1 - qown] > 0.0))
-                Nshop++;
+                runInfo.Nshop++;
         }
     }
 }
@@ -712,7 +719,7 @@ void Simulation::rmse() {
     // Computes root mean square error for price and volume statistics.
     // Simulation rule: Measures market efficiency and price dispersion.
 
-    if (W > 0.0) {
+    if (runInfo.W > 0.0) {
         for (int h = 0; h < 2; ++h) {
             std::fill(vol[h].begin(), vol[h].end(), 0.0);
             std::fill(avp[h].begin(), avp[h].end(), 0.0);
@@ -721,8 +728,8 @@ void Simulation::rmse() {
         // aggregate by pairs with moneygood
         for (Shop& shop : shops) {
             if (shop.active) {
-                if (shop.g[0] == moneygood || shop.g[1] == moneygood) {
-                    int ma = (shop.g[1] == moneygood);
+                if (shop.g[0] == runInfo.moneygood || shop.g[1] == runInfo.moneygood) {
+                    int ma = (shop.g[1] == runInfo.moneygood);
                     int i = shop.g[1 - ma];
                     vol[0][i] += shop.y[1 - ma];
                     if (vol[0][i] > 0.0) {
@@ -737,9 +744,9 @@ void Simulation::rmse() {
         }
 
         for (int i = 1; i <= n; ++i) {
-            if (i == moneygood)
+            if (i == runInfo.moneygood)
                 continue;
-            avp[0][i] = (W != 0.0) ? (avp[0][i] / W) : 0.0;
+            avp[0][i] = (runInfo.W != 0.0) ? (avp[0][i] / runInfo.W) : 0.0;
             avp[1][i] = (Pinv[i] != 0.0) ? (avp[1][i] / Pinv[i]) : 0.0;
         }
 
@@ -747,17 +754,17 @@ void Simulation::rmse() {
             double sse = 0.0;
             int count = 0;
             for (int i = 1; i <= n; ++i) {
-                if (i == moneygood)
+                if (i == runInfo.moneygood)
                     continue;
                 double e = 1.0 - avp[h][i];
                 sse += e * e;
                 ++count;
             }
-            R[h] = (count > 0) ? std::sqrt(sse / count) : -1.0;
+            runInfo.R[h] = (count > 0) ? std::sqrt(sse / count) : -1.0;
         }
     }
     else {
-        R[0] = R[1] = -1.0;
+        runInfo.R[0] = runInfo.R[1] = -1.0;
     }
 }
 
@@ -767,11 +774,11 @@ void Simulation::report(int tt) {
     if (prtoscr != 0) {
         if (tt == -1)
             std::printf("***");
-        std::printf("%6.0f %6.0f ", part, moneytraders);
+        std::printf("%6.0f %6.0f ", runInfo.part, runInfo.moneytraders);
         for (int b = 1; b <= 5 && b <= n; ++b) {
             std::printf("%6.0f ", usingmoney[b]);
         }
-        std::printf("%6d %4d\n", (tt == -1 ? t : tt) / 50, NumberOfShops);
+        std::printf("%6d %4d\n", (tt == -1 ? runInfo.t : tt) / 50, runInfo.NumberOfShops);
     }
 }
 

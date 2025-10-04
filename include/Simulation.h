@@ -24,6 +24,8 @@
 #include "Shop.h"
 #include "Trader.h"
 #include "ResearchResults.h"
+#include "RunInfo.h"
+#include "SimulationInfo.h"
 #include <vector>
 #include <array>
 #include <ctime>
@@ -96,28 +98,8 @@ private:
     std::vector<double> Pinv; // SME inverse retail per good
     std::vector<double> vol[2], avp[2];
 
-    // run-scoped variables
-    int NumberOfShops{0};        // active shops
-    int BS{0};        // active non-money shops
-    int devyear{-1};
-    int monyear{-1};
-    int endcount{0}, devcount{0};
-    int monetary{0}, fulldev{0}, moneygood{0};
-    double Fmon{0.0};
-    double W{0.0}, SurpSME{0.0};
-    double part{0.0}, moneytraders{0.0}, usingmax{0.0};
-    double Csurp{0.0}, Psurp{0.0};
-    double R[2]{-1.0, -1.0};
-
-    // time & IO
-    std::time_t firstbegin{}, finish{};
-    std::clock_t clock_begin{}, clock_finish{};
-    std::FILE* stream{nullptr};
-
-    // run and time variables
-    int run{1};
-    int t{0};
-    int Nshop{0};
+    // Run-scoped variables encapsulated in RunInfo
+    RunInfo runInfo;
 
     // Helper methods
     /**
