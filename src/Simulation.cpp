@@ -39,6 +39,14 @@
  // Global RNG instance
 PCG32 rng;
 
+struct MatchEvaluation {
+    double Ucomp = 0.0;
+    double Ubarter = 0.0;
+    Shop* barter = nullptr;
+    Shop* candidate_seller = nullptr;
+    Shop* candidate_buyer = nullptr;
+};
+
 Simulation::Simulation() {
     traders.resize(m + 1); // 1-based
     shops.resize(K + 1);   // 1-based
@@ -57,6 +65,9 @@ Simulation::Simulation() {
 }
 
 void Simulation::run_all() {
+    // Main simulation loop: runs all parameter sweeps and time steps.
+    // Simulation rule: Orchestrates initialization, weekly activities, reporting, and statistics collection.
+
     // Record the start time of the entire simulation
     time(&firstbegin);
 
@@ -142,12 +153,18 @@ void Simulation::run_all() {
 }
 
 std::function<double(int)> Simulation::make_overhead(double f1, double slope) {
+    // Computes the overhead cost for a shop based on good index and slope.
+    // Simulation rule: Overhead increases with good index and slope, affecting shop profitability.
+
     return [f1, slope](int i) -> double {
         return f1 + (i - 1) * slope;
         };
 }
 
 void Simulation::init_static() {
+    // Initializes the static structure of the economy: traders, shops, and goods assignments.
+    // Simulation rule: Sets up agent populations and their supply/demand relationships.
+
     // Build all (i,j) types with multiplicity bsize, i != j
     // Traders are 1..m enumerating all pairs with bsize copies
     int r = 0;
@@ -170,6 +187,9 @@ void Simulation::init_static() {
 }
 
 void Simulation::init_run() {
+    // Initializes the state for a new simulation run, resetting agents and shops.
+    // Simulation rule: Prepares the market for a fresh round of trading and adaptation.
+
     std::printf("Number Using Using Using Using Using Using \n");
     std::printf("Active Money good1 good2 good3 good4 good5 Year NS \n");
 
@@ -201,6 +221,9 @@ void Simulation::init_run() {
 
 // Entry process: potential entrepreneur tries to open a shop
 void Simulation::weekly_entry() {
+    // Handles entry of new shops by prospective entrepreneurs.
+    // Simulation rule: Traders may open shops if conditions are favorable.
+
     auto overhead_f = make_overhead(f1, slope);
     int r = rng.uniform_int(m) + 1; // prospective owner
     Trader& trader = traders[r];
@@ -223,6 +246,9 @@ void Simulation::weekly_entry() {
 
 // Matching: agents sample a small set of shops and adopt best links
 std::vector<MatchEvaluation>* Simulation::weekly_matching() {
+    // Matches traders to shops based on utility and compatibility, updating links.
+    // Simulation rule: Agents seek optimal trading partners each week.
+
     std::vector<MatchEvaluation>* response = new std::vector<MatchEvaluation>();
 
     for (Trader* trader : trader_line) {
@@ -247,7 +273,7 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
             }
 
             if (cand.size() > 0) {
-                // NOTE: Hack to emulate the fact that the original code addresses the item at  index zero
+                // NOTE: Hack to emulate the fact that the original code addresses the item at index zero
                 Shop zero;
                 Shop* temp;
                 if (eval.candidate_seller == nullptr)
@@ -292,6 +318,9 @@ void Simulation::report_trader(Trader const* trader) {
 
 // Trade/accounting and stochastic exit of unprofitable shops
 void Simulation::weekly_trade_and_exit() {
+    // Executes weekly trading, income accounting, and stochastic exit of unprofitable shops.
+    // Simulation rule: Shops may exit if not profitable, severing links with traders.
+
     print_debug("Weekly trade begins");
 
     // reset shop weekly incomes
@@ -335,6 +364,9 @@ void Simulation::weekly_trade_and_exit() {
 
 // Update targets adaptively and recompute posted prices
 void Simulation::weekly_update_prices() {
+    // Updates shop targets and posted prices adaptively based on recent performance.
+    // Simulation rule: Shops adjust strategies to maximize profit and survive.
+
     auto overhead_f = make_overhead(f1, slope);
     for (Shop& shop : shops) {
         if (shop.active) {
@@ -348,6 +380,9 @@ void Simulation::weekly_update_prices() {
 // Research process for a prospective owner r
 // Should return an object ResearchResults, with targ0 and targ1 set as the local variables, and enter set as the return value of the function
 ResearchResults Simulation::research(Trader& trader) {
+    // Simulates the research process for a prospective shop owner, determining entry viability.
+    // Simulation rule: Entry depends on utility comparisons with existing trading options.
+
     auto overhead_f = make_overhead(f1, slope);
     auto priceF = [this](double tr0, double tr1, double f_other) {
         return (tr1 - f_other - C > 0.0) ? ((tr1 - C - f_other) / tr0) : 0.0;
@@ -434,16 +469,22 @@ ResearchResults Simulation::research(Trader& trader) {
 }
 
 Trader& Simulation::random_consumer(int good) {
+    // Selects a random consumer of a given good from the trader population.
+
     int k = 1 + rng.uniform_int(std::max(1, (int)consumes[good].size()) - 1);
     return traders[consumes[good][k - 1]];
 }
 
 Trader& Simulation::random_producer(int good) {
+    // Selects a random producer of a given good from the trader population.
+
     int k = 1 + rng.uniform_int(std::max(1, (int)produces[good].size()) - 1);
     return traders[produces[good][k - 1]];
 }
 
 Shop& Simulation::random_shop() {
+    // Selects a random shop from the shop population.
+
     return shops[rng.uniform_int(K) + 1];
 }
 
@@ -468,6 +509,9 @@ void Simulation::lineup() {
 }
 
 void Simulation::try_barter(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
+    // Attempts to match a trader with shops for barter opportunities.
+    // Simulation rule: Barter is considered if compatible shops are available.
+
     // iterate candidates from index 2 onward
     for (size_t idx = 0; idx < c.size(); ++idx) {
         Shop& shop = shops[c[idx]];
@@ -483,8 +527,12 @@ void Simulation::try_barter(const Trader* trader, std::vector<int>& c, struct Ma
     }
 }
 
+// NOTE: Should NULL store be evaluated? PS: c[.] may be zero in the loop
 // TODO: replace array for a proper queue
 void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
+    // Attempts to improve a trader's outlet or source by matching with candidate shops.
+    // Simulation rule: Agents seek better trading terms through shop selection.
+
     Shop zero;
     int s = trader->get_supplied_good();
     int d = trader->get_demand_good();
@@ -524,6 +572,9 @@ void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct Match
 }
 
 void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
+    // Attempts to match a trader with two shops for indirect trade via a common intermediary.
+    // Simulation rule: Indirect trade is considered for maximizing utility.
+
     for (size_t ia = 0; ia < c.size(); ++ia) {
         int a = c[ia];
         if (shops[a].provides(trader->get_supplied_good())) {
@@ -548,6 +599,9 @@ void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct Match
 }
 
 int Simulation::calc1() {
+    // Calculates monetary equilibrium and tracks the emergence of money in the simulation.
+    // Simulation rule: Aggregates statistics to detect monetary phases and equilibrium.
+
     part = 0.0;
     moneytraders = 0.0;
     std::fill(usingmoney.begin(), usingmoney.end(), 0.0);
@@ -605,6 +659,9 @@ int Simulation::calc1() {
 }
 
 void Simulation::calc2() {
+    // Calculates final statistics for the simulation run, including surplus and shop counts.
+    // Simulation rule: Summarizes market outcomes for analysis.
+
     auto overhead_f = make_overhead(f1, slope);
     if (monetary == 0)
         monyear = -1;
@@ -651,6 +708,9 @@ void Simulation::calc2() {
 }
 
 void Simulation::rmse() {
+    // Computes root mean square error for price and volume statistics.
+    // Simulation rule: Measures market efficiency and price dispersion.
+
     if (W > 0.0) {
         for (int h = 0; h < 2; ++h) {
             std::fill(vol[h].begin(), vol[h].end(), 0.0);
@@ -701,6 +761,8 @@ void Simulation::rmse() {
 }
 
 void Simulation::report(int tt) {
+    // Reports simulation progress and statistics at specified intervals.
+
     if (prtoscr != 0) {
         if (tt == -1)
             std::printf("***");
@@ -713,6 +775,8 @@ void Simulation::report(int tt) {
 }
 
 void Simulation::print_debug(std::string title) const {
+    // Prints debug information about the simulation state.
+
     if (DEBUG) {
         std::cout << "--------------------------------------------------" << std::endl;
         std::cout << title << std::endl;
@@ -723,6 +787,8 @@ void Simulation::print_debug(std::string title) const {
 }
 
 void Simulation::print_traders() const {
+    // Prints the state of all traders for debugging.
+
     std::cout << "Traders:" << std::endl;
     for (size_t i = 1; i < traders.size(); ++i) {
         std::cout << traders[i].to_string() << std::endl;
@@ -730,6 +796,8 @@ void Simulation::print_traders() const {
 }
 
 void Simulation::print_shops() const {
+    // Prints the state of all shops for debugging.
+
     std::cout << "Shops:" << std::endl;
     for (size_t i = 1; i < shops.size(); ++i) {
         std::cout << "Shop " << i << ": " << shops[i].to_string() << std::endl;
