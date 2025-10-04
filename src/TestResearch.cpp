@@ -153,7 +153,7 @@ void TestResearch::addshop(const Trader *trader, Shop *shop, std::vector<int> &c
     {
         if (std::find(cand.begin(), cand.end(), shop->idx) == cand.end())
         {
-            if (!(shop->idx != trader->get_buyer_idx() && shop->idx != trader->get_outlet_idx()))
+            if (!(shop->idx != trader->get_source_idx() && shop->idx != trader->get_outlet_idx()))
             {
                 printf("hit!\n");
             }

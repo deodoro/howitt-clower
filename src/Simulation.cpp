@@ -207,9 +207,7 @@ void Simulation::init_run() {
 
     // TODO: Traders can be static, since it is a full set, but Shops could be a dynamic set.
     for (Trader& trader : traders) {
-        trader.set_outlet_idx(0);
-        trader.set_buyer_idx(0);
-        trader.set_familyshop(0);
+        trader.clear_shops();
     }
     int i = 0;
     for (Shop& shop : shops) {
@@ -228,7 +226,7 @@ void Simulation::weekly_entry() {
     auto overhead_f = make_overhead(f1, slope);
     int r = rng.uniform_int(m) + 1; // prospective owner
     Trader& trader = traders[r];
-    if (NumberOfShops < K && trader.get_familyshop() == 0) {
+    if (NumberOfShops < K && trader.get_familyshop_idx() == 0) {
         ResearchResults ok = research(trader);
         if (ok.enter > 0) {
             for (Shop& shop : shops) {
@@ -256,7 +254,7 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
         double U = trader->utility();
         double psearch = (U > 0.0 ? lambda : 1.0);
         // Skip condition: random or already owns a shop
-        if (rng.uniform01_inclusive() < psearch && trader->get_family_shop() == nullptr) {
+        if (rng.uniform01_inclusive() < psearch && trader->get_familyshop() == nullptr) {
             struct MatchEvaluation eval;
             eval.Ucomp = U;
             eval.candidate_seller = trader->get_outlet();
@@ -609,18 +607,21 @@ int Simulation::calc1() {
     std::fill(usingmoney.begin(), usingmoney.end(), 0.0);
 
     for (Trader& trader : traders) {
-        if (trader.get_outlet_idx() > 0) {
-            int a = trader.get_outlet_idx();
-            int b = trader.get_buyer_idx();
-            int ma = (shops[a].g[0] == trader.get_supplied_good());
-            int mb = (b > 0 && shops[b].g[0] == trader.get_demand_good());
+        if (trader.get_outlet() != nullptr) {
+            Shop zero;
 
-            part += (shops[a].g[ma] == trader.get_demand_good()) ||
-                (shops[a].g[ma] == shops[b].g[mb]);
+            Shop* shop_a = trader.get_outlet();
+            Shop* shop_b = trader.get_source();
+            int ma = (shop_a->g[0] == trader.get_supplied_good());
+            int mb = (shop_b != nullptr && shop_b->g[0] == trader.get_demand_good());
 
-            if (b > 0 && shops[a].g[ma] == shops[b].g[mb]) {
+            part += (shop_a->g[ma] == trader.get_demand_good()) ||
+                    (shop_b && (shop_a->g[ma] == shop_b->g[mb])) ||
+                    (shop_b == nullptr && shop_a->g[ma] == 0);
+
+            if (shop_b != nullptr && shop_a->g[ma] == shop_b->g[mb]) {
                 moneytraders += 1.0;
-                usingmoney[shops[b].g[mb]] += 1.0;
+                usingmoney[shop_b->g[mb]] += 1.0;
             }
         }
     }

@@ -37,7 +37,7 @@ TestMatch::weekly_matching(std::vector<Trader*> trader_line,
 		double psearch = (U > 0.0 ? lambda : 1.0);
 		// Skip condition: random or already owns a shop
 		if (rng.uniform01_inclusive() < psearch &&
-			trader.get_family_shop() == nullptr) {
+			trader.get_familyshop() == nullptr) {
 			struct MatchEvaluation eval;
 			eval.Ucomp = U;
 			eval.candidate_seller = trader.get_outlet();
@@ -50,7 +50,7 @@ TestMatch::weekly_matching(std::vector<Trader*> trader_line,
 			std::vector<int> cand;
 			cand.reserve(8);
 			cand.push_back(trader.get_outlet_idx()); // c[0]
-			cand.push_back(trader.get_buyer_idx());  // c[1]
+			cand.push_back(trader.get_source_idx());  // c[1]
 
 			// add friend outlets/sources and one random shop
 			int comrade_idx = trader.trade_comrade(produces);
@@ -121,7 +121,7 @@ void TestMatch::addshop(const Trader* trader, Shop* shop,
 	std::vector<int>& cand) {
 	if (shop && shop->active && trader->is_compatible_with(shop)) {
 		if (std::find(cand.begin(), cand.end(), shop->idx) == cand.end()) {
-			if (!(shop->idx != trader->get_buyer_idx() &&
+			if (!(shop->idx != trader->get_source_idx() &&
 				shop->idx != trader->get_outlet_idx())) {
 				printf("hit!\n");
 			}

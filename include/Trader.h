@@ -45,34 +45,34 @@ public:
     /**
      * Get the index of the buyer shop.
      */
-    int get_buyer_idx() const { return buyer_idx; }
+    int get_source_idx() const { return source_idx; }
     /**
      * Set the index of the buyer shop and update the pointer.
      */
-    void set_buyer_idx(int idx) {
-        buyer_idx = idx;
+    void set_source_idx(int idx) {
+        source_idx = idx;
         source = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
     }
     /**
      * Get the index of the seller shop.
      */
-    int get_outlet_idx() const { return seller_idx; }
+    int get_outlet_idx() const { return outlet_idx; }
     /**
      * Set the index of the seller shop and update the pointer.
      */
     void set_outlet_idx(int idx) {
-        seller_idx = idx;
+        outlet_idx = idx;
         outlet = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
     }
 
     /**
      * Get the index of the family shop (owned shop).
      */
-    int get_familyshop() const { return familyshop; }
+    int get_familyshop_idx() const { return familyshop; }
     /**
      * Set the index of the family shop and update the pointer.
      */
-    void set_familyshop(int idx) {
+    void set_familyshop_idx(int idx) {
         familyshop = idx;
         family_shop = (idx > 0 && shops_ref) ? &(*shops_ref)[idx] : nullptr;
     }
@@ -96,25 +96,24 @@ public:
     /**
      * Get the pointer to the family shop (owned shop).
      */
-    Shop* get_family_shop() const { return family_shop; }
-
+    Shop* get_familyshop() const { return family_shop; }
+    /**
+     * Set the pointer to the family shop (owned shop).
+     */
+    void set_familyshop(Shop* shop);
     /**
      * Set the reference to the shops vector.
      */
     void set_shops(std::vector<Shop>* s) { shops_ref = s; }
-    /**
-     * Set the reference to the traders vector.
-     */
-    void set_traders(std::vector<Trader>* s) { traders_ref = s; }
 
     /**
      * Get the supply good for the trader.
      */
-    int get_supplied_good() const { return supplies; }
+    int get_supplied_good() const { return supplied_good; }
     /**
      * Get the demand good for the trader.
      */
-    int get_demand_good() const { return demands; }
+    int get_demand_good() const { return demanded_good; }
 
     /**
      * Set the supply good for the trader and update orientation.
@@ -176,16 +175,18 @@ public:
      * Open a shop if inactive, set goods and ownership, and link to self.
      */
     bool open_shop(Shop &shop);
+    /**
+     * Resets links to all shops (outlet, source and family)
+     */
+    void clear_shops();
 
 private:
-    int supplies{0};        // produced good
-    int demands{0};         // desired good
-    int buyer_idx{0};
-    int seller_idx{0};
+    int supplied_good{0};        // produced good
+    int demanded_good{0};         // desired good
+    int source_idx{0};
+    int outlet_idx{0};
     int familyshop{0};      // owned shop index (0 if none)
-    // TODO: dependencies to shops and trades must be broken
     std::vector<Shop>* shops_ref{nullptr};
-    std::vector<Trader>* traders_ref{nullptr};
     // TODO: confirm if outlet/source are the in same direction as in the paper
     Shop* source{nullptr};
     Shop* outlet{nullptr};
