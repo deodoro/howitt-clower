@@ -1,0 +1,2147 @@
+[
+    {
+        "type": "text",
+        "text": "The emergence of economic organization ",
+        "text_level": 1,
+        "bbox": [
+            196,
+            188,
+            619,
+            208
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Peter Howitt a,∗, Robert Clower b ",
+        "bbox": [
+            281,
+            219,
+            531,
+            234
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "a Department of Economics The Ohio State University 410 Arps Hall 1945 North High St. Columbus OH 43210-1172 USA b The University of South Carolina Colombia, S.C., USA ",
+        "bbox": [
+            132,
+            238,
+            686,
+            275
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Received 7 April 1999; accepted 1 September 1999 ",
+        "bbox": [
+            267,
+            282,
+            537,
+            294
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Abstract ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            342,
+            173,
+            354
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "A model of decentralized markets is studied, in which transactors follow simple adaptive rules. Transactions are coordinated by specialist trading firms that bear the costs of market disequilibrium. Starting from an initially autarkic situation in which none of the institutions that support exchange exist, computer simulation shows that for a wide range of parameter values a fully developed market economy will emerge spontaneously. Moreover, in virtually every case where a market economy develops, one of the commodities traded will emerge as a universal medium of exchange, being traded by every firm and changing hands in every act of exchange. $\\ @ 2 0 0 0$ Elsevier Science B.V. All rights reserved. ",
+        "bbox": [
+            117,
+            363,
+            704,
+            473
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "JEL classification: E00; P00 ",
+        "bbox": [
+            117,
+            484,
+            267,
+            496
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "Keywords: Markets; Money; Transaction costs; Organization; Intermediation ",
+        "bbox": [
+            116,
+            508,
+            516,
+            521
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "1. Introduction ",
+        "text_level": 1,
+        "bbox": [
+            117,
+            584,
+            225,
+            598
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "This paper studies the mechanism by which exchange activities are coordinated in a decentralized market economy. Our topic is not amenable to conventional equilibrium theory, which assumes that exchanges plans are coordinated perfectly by an external agent (usually unspecified but sometimes referred to as ‘the auctioneer’) with no identifiable real-world counterpart. In contrast, we depict transactors as acting on the basis of trial and error rather than pre-reconciled calculation, and we start by noting that in reality most transactions are coordinated by an easily identified set of agents; namely, specialist trading enterprises. Thus, we buy groceries and clothes from grocery and clothing stores; buy or rent lodging from realtors; buy cars from dealers; acquire medical, legal, accounting, gardening and other services through specialist sellers; borrow, invest, and insure through financial intermediaries. Likewise, we earn income by selling labor services to specialist employers (the self-employed are specialist dealers in their own services). ",
+        "bbox": [
+            117,
+            616,
+            704,
+            736
+        ],
+        "page_idx": 0
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            85,
+            702,
+            145
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Specialist traders reduce the costs of search, bargaining and exchange, by using their expertise and by setting up trading facilities that enable non-specialists to trade on a regular basis. Collectively they coordinate the exchange process, for better or worse, by setting prices, holding buffer-stock inventories, announcing times of business, entering into implicit or explicit contracts with customers and suppliers, and taking care of logistical problems that arise in delivery, inspection, payment, and other aspects of the transaction process. 1 When there are imbalances between demand and supply, specialist traders typically are responsible for making whatever adjustments are needed to ensure that non-specialists can continue their activities with minimal interruption. Those that do the job poorly do not survive competition. ",
+        "bbox": [
+            114,
+            146,
+            704,
+            296
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "A decentralized economy is one in which the coordinating network of trade specialists emerges spontaneously. Our immediate objective in the present paper is to constructively show how this might happen. We present a stylized account of an economy in which people pursue self interest by obeying simple behavioral rules rather than by trying to carry out ‘optimal’ plans. The analysis focuses on the five activities that we see as most central to the functioning of a decentralized market economy: exchange, shopping, entrepreneurship, exit and price-setting. Computer simulation of this model economy shows that, starting from an initially autarkic situation in which none of the institutions that support economic exchange as we know it exist, a fully developed market economy will ultimately emerge, at least under some circumstances, with no central guidance. ",
+        "bbox": [
+            116,
+            297,
+            704,
+            446
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "By ‘growing’ a market economy, we are following the same strategy as biologists who have used computer models of evolution to grow such things as eyes (Dawkins (1995), p. 78 ff). Success in following this strategy shows that no divine intervention, state planning, or other external force is needed to account for the phenomenon in question. Success also supports the notion that the forces embodied in the computer simulation are related to important forces at work in reality. All the more so if the object that emerges from the simulation exhibits the same characteristics as in real life. ",
+        "bbox": [
+            116,
+            448,
+            704,
+            553
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "Perhaps the most obvious characteristic of real-world market economies, besides the fact that they are coordinated by specialist traders, is that they are organized along ‘monetary’ lines; that is, one tradable object has the property that it (or a direct claim to it) is involved in virtually every act of exchange 2 . As it turns out, this characteristic is shared by the market economies that emerge from our computer simulations. In almost all cases, if a fully developed market economy emerges, one of the commodities will have become the sole exchange intermediary (commodity ‘money’ 3 ) in the system. The only significant exceptions to this general rule occur when we make the extreme assumption that there is no cost to operating a trade facility. ",
+        "bbox": [
+            116,
+            554,
+            705,
+            659
+        ],
+        "page_idx": 1
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            114,
+            85,
+            704,
+            114
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "Thus a secondary purpose of the paper is to shed light on the nature and origin of monetary exchange 4 . According to the model presented below, money, markets, and the specialist traders that organize markets, are interdependent trading institutions whose origins all lie in the elementary forces described by our stylized account of competitive evolution. ",
+        "bbox": [
+            117,
+            116,
+            704,
+            175
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "Our procedure is adumbrated in Don Walker’s Advances in General Equilibrium Theory (Walker, 1997) As indicated in his preface: ",
+        "bbox": [
+            117,
+            176,
+            704,
+            205
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": ". . . for a model to be a functioning system, it must be explicitly endowed with the structural and behavioural features that are necessary to generate economic behaviour. If the model is a functioning system, its workings can be investigated and the consequences of different variations of parameters can be compared. It can be converted into an empirical model and tested, precisely in order to discover whether it has identified the important features and interconnections of the economy and how their influence is exerted in the determination of economic magnitudes . . . . ",
+        "bbox": [
+            130,
+            207,
+            705,
+            310
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "The program suggested by Walker leads us to view an economy as an algorithm generating observed outcomes. A functioning system is one whose algorithmic representation is self contained, leaving no need for ‘skyhooks’ (Dennett (1996), chap. 3). Since the algorithm must work from any initial position, we cannot impose any ‘equilibrium’ concept that would restrict attention to initial positions in which transactor plans are mutually consistent. Equilibrium is a possibly emergent property of a functioning system: nothing more. Likewise, institutions such as organized markets that facilitate commodity trading should ‘emerge’ from transactor interactions, not be assumed to exist a priori. ",
+        "bbox": [
+            116,
+            313,
+            704,
+            433
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "2. Relation to recent literature ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            468,
+            331,
+            482
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "Our analysis is related to the theoretical literature on evolutionary game theory, synthesized by Young (1998), that studies how institutions and conventions can emerge from the interaction of people’s independent attempts at trial and error. This literature has not focused as we do here on the coordinating role of specialist traders 5 . Analytically, the main difference between our approach and the approach followed in this literature concerns the way random experimentation is modeled. There, it is modeled as an infrequent disturbing force, taking the form of occasional random actions by some player or players, being likened to rare mutations in evolutionary biology. 6 In our view, the random disturbing force most central to an economy’s coordination mechanism is the entrepreneurship that creates new trade facilities. Following Schumpeter, we see entrepreneurship not as a rarely observed phenomenon, but as a relentless aspect of everyday life in a competitive market economy. ",
+        "bbox": [
+            116,
+            502,
+            704,
+            592
+        ],
+        "page_idx": 2
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            85,
+            704,
+            160
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Furthermore, in the theoretical literature on evolutionary game theory, the probability distribution of random actions is almost always taken to be exogenous, whereas in our view it varies endogenously with the state of the economy. We model explicitly the process of market research whereby a prospective entrepreneur decides whether or not to act on a random idea for creating a new trade facility. This process allows entrepreneurship to play an ‘annealing’ role, constantly disturbing a system when there are plenty of gains from trade left unexploited but otherwise leaving the system relatively undisturbed. 7 ",
+        "bbox": [
+            116,
+            161,
+            704,
+            266
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Even more closely related to our analysis is the extensive literature (for example Arthur et al. (1997)) on ‘complexity’. Within this literature, the papers by Vriend (1995) and Tesfatsion (1996) are motivated by the same idea as ours, namely that of understanding by means of computer simulation the emergence of a network of trade facilities. Dawid (1999) pursues a similar idea. Pingle (1999) studies the emergence of market organization experimentally. Ioannides (1990) studies the formation of trading networks as an equilibrium phenomenon, using random graph theory. We attempt to go beyond these analyses in studying the evolution of a closed multi-market system and in portraying the forces giving rise to a monetary pattern of exchange. 8 ",
+        "bbox": [
+            116,
+            267,
+            704,
+            402
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "Our analysis is also related to the literature on the origins of monetary exchange. Much of that literature has focused recently on the search-theoretic approach to money, developed first by Jones (1976) and subsequently by Kiyotaki and Wright (1989). This literature portrays monetary exchange as solving the familiar ‘double coincidence’ problem, with no reference to specialist traders. In our view what characterizes a monetary economy is not so much that different transactors all choose to accept the same exchange intermediary for their production commodities, as in search theory, but that the shops they deal with don’t give them any choice. What we seek to explain is why the competitive forces of evolution favor shops that conform to such a pattern. While search is an important part of the adjustment process in our analysis, the final equilibrium attained when a fully developed market economy emerges is one in which search plays no role. ",
+        "bbox": [
+            116,
+            404,
+            704,
+            568
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "The analysis by Marimon et al. (1990) deals with the evolution of trading strategies in a search economy of the sort portrayed by Kiyotaki and Wright. From our point of view, this analysis does not deal with the central issue of monetary exchange, since it abstracts from the role of specialist traders. 9 Moreover, the assumption underlying this analysis, to the effect that there does not exist a double coincidence of wants between any two potential partners, directly precludes direct barter. In the analysis below we do not rule out double coincidences. Direct barter is a possibility, but one that never materializes under the forces we have portrayed. ",
+        "bbox": [
+            116,
+            569,
+            704,
+            613
+        ],
+        "page_idx": 3
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            84,
+            704,
+            160
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Alchian’s (1977) account of money, like ours, emphasizes the cost of trading many commodities in the same trade facility, but does not take into account the fixed costs of operating the facility. 10 Starr and Stinchcombe (1993, 1998) tell a trading-post story of money in which fixed costs play an important role. The reason why monetary exchange can occur in equilibrium in our model is almost identical to the reason portrayed in these papers. The difference is that we have provided an analysis of how the shops and trading relationships underlying such a monetary equilibrium might emerge from a decentralized process of evolution, whereas they characterize organizational structures under full information. 11 ",
+        "bbox": [
+            116,
+            161,
+            705,
+            281
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Thus, in some of the computer runs reported on below, there exist multiple equilibria in the Starr–Stinchcombe sense, including a barter equilibrium in which a full set of trading posts exists, one for each pair of tradeable objects. Yet these equilibria never emerge from the computer simulations, whereas monetary equilibria do. This cannot be explained by the fact that the most efficient organizational structure is monetary in nature, since often an inefficient monetary equilibrium emerges in which the commodity that serves as universal medium of exchange is not the least costly commodity to trade. ",
+        "bbox": [
+            117,
+            282,
+            704,
+            387
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "3. Narrative prelude ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            425,
+            261,
+            439
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "We start by recognizing that ‘do-it-yourself’ exchange (Hicks (1968); Ostroy (1973)) is inherently so costly that hardly anyone would trade regularly except through the intermediation of firms that establish trading times, affirm the quality of commodities traded, develop procedures to enforce contracts, transfer control of commodities, and so forth. This fact is embodied in the stark assumption: ",
+        "bbox": [
+            116,
+            457,
+            704,
+            531
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Individuals trade with each other only through the intermediation of specialist traders called shops. ",
+        "bbox": [
+            124,
+            532,
+            704,
+            561
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Second, we note that real-world firms typically deal with only a small fraction of potentially tradeable objects. We embody this fact by supposing: ",
+        "bbox": [
+            116,
+            563,
+            702,
+            593
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Every shop trades two and only two commodities. ",
+        "bbox": [
+            135,
+            593,
+            454,
+            607
+        ],
+        "page_idx": 4
+    },
+    {
+        "type": "text",
+        "text": "Third, we observe that the typical firm relies for its survival on repeat business from regular customers (Blinder et al. (1998)), which we simulate by supposing: ",
+        "bbox": [
+            117,
+            85,
+            705,
+            114
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Individuals can trade at a particular shop only by forming a ‘trading relationship’ with it. ",
+        "bbox": [
+            125,
+            116,
+            700,
+            145
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "In real life most people continue week after week and month after month purchasing from the same small subset of retail outlets, and selling labor services to the same small subset (usually a singleton) of employers; so to the preceding assumption we add: ",
+        "bbox": [
+            117,
+            146,
+            704,
+            190
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "An individual can have a continuing trading relationship with no more than two shops. ",
+        "bbox": [
+            122,
+            191,
+            700,
+            205
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Fourth, real-world firms can be established only by incurring substantial organizational ‘setup’ costs, and a substantial fraction of ‘going-firm’ operating costs are ‘overhead’ expenses which depend on the type but not the quantity of commodities traded (Blinder et al. (1998)). We recognize both these fact by assuming: ",
+        "bbox": [
+            117,
+            207,
+            704,
+            266
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "The operating cost of each shop (per unit time) is independent of quantities of commodities traded by the shop. ",
+        "bbox": [
+            125,
+            267,
+            702,
+            296
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "4. The mechanism of exchange ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            325,
+            333,
+            340
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Given the substantive assumptions just introduced, imagine an economy with $n$ commodities and $m$ transactors — all clustered at a single ‘location’. The time unit is the week, indexed by $t = 1 , \\ldots , T$ , 50 consecutive weeks being designated a year. Because we wish to deal with trading actions rather than consumer or producer choice, we assume initially that each transactor ‘likes’ only commodities that other transactors are endowed with; specifically, we suppose that each transactor receives as endowment (‘makes’) just one unit per week of one kind of commodity, say that labeled $i$ , which we call the transactor’s ‘production commodity’; and each transactor is a potential consumer of just one other commodity, say that labeled $j$ , which we call the transactor’s ‘consumption commodity’. For each of the $n ( n - 1 )$ ordered pairs $( i , j )$ of commodities, there is the same number $^ b$ of transactors for whom $i$ and $j$ are respectively the transactor’s production and consumption commodity; that is, there are $^ b$ transactors of each ‘type’ $( i , j )$ . The population of the economy is thus $m = b n ( n - 1 )$ . No commodity is storable from one week to the next; thus the economy’s total supply each week of each commodity is the current endowment flow $b ( n - 1 )$ . ",
+        "bbox": [
+            116,
+            358,
+            704,
+            568
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Since no transactor ‘likes’ the commodity it ‘makes’, a transactor can acquire a commodity it ‘likes’ only by trading with another transactor; and according to the assumptions of the preceding section the transactor must form trading relationships with shops in order to trade. We discuss below the origin of shops and trading relationships. For now we just take as given that during a particular week there will exist some number $N$ of shops, each labeled by the location $k$ at which it is established, each offering to trade two of the $n$ commodities, labeled $g _ { 0 k }$ and $g _ { 1 k }$ . Thus if the shop at Location 2 is offering to trade commodities 3 and 7, we have $g _ { 0 2 } = 3$ and $g _ { 1 2 } = 7$ . In addition, each transactor $r$ may have ongoing ‘trading relationships’ with one or two of these shops. ",
+        "bbox": [
+            116,
+            569,
+            704,
+            704
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "text",
+        "text": "Consider a ‘representative’ shop, $k .$ . The transactors who have trading relationships with it (the shop’s ‘customers’) will be of two sorts; those that sell commodity $g _ { 0 k }$ to the shop and those that sell commodity $g _ { 1 k }$ . The shop posts a price $p _ { 0 k }$ that it offers to pay to the first type for each unit of $g _ { 0 k }$ they sell to the shop, and a price $p _ { 1 k }$ that it offers to pay the second sort for each unit of $g _ { 1 k }$ they sell. These offers are binding. Thus if the first group of customers sells the total amount $y _ { 0 k }$ of commodity $g _ { 0 k }$ , they at the same time buy the amount $p _ { 0 k } y _ { 0 k }$ of commodity $g _ { 1 k }$ ; and if the second group sells $y _ { 1 k }$ of commodity $g _ { 1 k }$ they simultaneously buy $p _ { 1 k } y _ { 1 k }$ of commodity $g _ { 0 k }$ . ",
+        "bbox": [
+            116,
+            705,
+            704,
+            765
+        ],
+        "page_idx": 5
+    },
+    {
+        "type": "image",
+        "img_path": "images/02a9cd3bc97b4f3bca5c898de0cf9252efa5c60410a353bfea2fae84dbc9067c.jpg",
+        "image_caption": [
+            "Fig. 1. Trade flows in and out of the typical shop. "
+        ],
+        "image_footnote": [],
+        "bbox": [
+            222,
+            82,
+            593,
+            236
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            281,
+            704,
+            342
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "The ‘circular’ flow of commodities into and out of the shop (shown in Fig. 1) then illustrates the ‘Janus’ aspect of all quid pro quo commodity trades (supply is demand, and demand is supply). We have seller/buyers on both sides, and two ‘selling/buying’ prices (Walras, 1954, p. 88); (Keynes, 1894, p. 539). ",
+        "bbox": [
+            116,
+            343,
+            704,
+            402
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "Fig. 1 also illustrates the trilateral nature of organized exchange. Although individual trades take place between non-specialist transactors and a shop that acts as a specialist trader, the shop is an intermediary between non-specialist transactors on each side. ",
+        "bbox": [
+            116,
+            404,
+            702,
+            446
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "The shop’s ‘trading surplus’ in commodity $g _ { 0 k }$ is the difference between the inflow and outflow in the upper part of Fig. 1: $ y _ { 0 k } - p _ { 1 k } y _ { 1 k }$ , and its trading surplus in commodity $g _ { 1 k }$ is $y _ { 1 k } - p _ { 0 k } y _ { 0 k }$ . If both trading surpluses are positive, the shop will be left with some of each commodity at the end of the week’s trading. These surpluses can be used to defray the shop’s overhead cost. Anything remaining after covering overhead cost can be consumed by the shop’s owner. In order for each trading surplus to be positive, the product of the two prices, $p _ { 0 k } p _ { 1 k }$ must be less than unity. (This product is also an inverse measure of the spread between the firm’s offer price for each commodity and its bid price for the same commodity, the latter being the reciprocal of its offer price for the other commodity.) ",
+        "bbox": [
+            116,
+            448,
+            705,
+            583
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "Next, consider a representative transactor, $r .$ , of type $( i , j )$ , that enters the week having ongoing trading relationships with up to two shops. The exact nature of $r$ ’s trading relationships is represented by the two variables $s h _ { 0 r }$ and $s h _ { 1 r }$ . If $r$ has a trading relationship with a shop that trades the production commodity $i .$ , then $s h _ { 0 r }$ denotes the location of that shop, which is called r’s ‘outlet’. If the transactor has no outlet, then $s h _ { 0 r } = 0$ . If the transactor has a trading relationship with a ‘source’; that is, a shop that trades $r '$ ’s consumption commodity $j$ (but not $i )$ ), then the location of the source is $s h _ { 1 r }$ . (If $r$ has no source then $s h _ { 1 r } = 0 .$ .) ",
+        "bbox": [
+            116,
+            584,
+            704,
+            689
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "If $r$ has an outlet that also trades the consumption commodity $j .$ , then $r$ can trade directly with this single shop. Each week $r$ will visit the outlet to sell the unit endowment of $i$ ; that is, $r$ will buy (and then consume) the amount $p$ of commodity $j .$ , where $p$ is the outlet’s offer price for $i .$ . Alternatively, if $r$ has an outlet and a source, and both trade the same third commodity $c$ , then $r$ can trade indirectly, first visiting the outlet to buy the amount $p$ of commodity $c$ , and then 12 visiting the source to buy (and consume) the amount $p p ^ { \\prime }$ of commodity $j .$ , where $p ^ { \\prime }$ is the source’s offer price for $c$ . In the latter case, commodity $c$ is the transactor’s ‘exchange intermediary’. If neither of these cases applies, the transactor does not trade. ",
+        "bbox": [
+            116,
+            690,
+            704,
+            765
+        ],
+        "page_idx": 6
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            84,
+            704,
+            145
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "5. Shopping, entry, exit and prices ",
+        "text_level": 1,
+        "bbox": [
+            117,
+            178,
+            357,
+            193
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "In keeping with conventional wisdom from the time of Thales and Aristotle, we suppose that transactor behavior is aimed at raising the level of commodity consumption, which is possible here only through exchange. ",
+        "bbox": [
+            117,
+            209,
+            704,
+            253
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "5.1. Shopping ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            273,
+            210,
+            287
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "In general we may presume that transactor information is limited and local; so we proceed by supposing that in every week some transactors search for information about possible trading relationships that will increase their weekly commodity consumption. Specifically, a searcher will gather a sample of shops, some through direct observation of potential shop locations, and some through contact with other transactors. ",
+        "bbox": [
+            116,
+            305,
+            704,
+            380
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Consider the set of shops in this search sample together with the transactor’s existing source and outlet (if either exists). For each shop in the set, the transactor knows the labels of the two commodities traded and their currently posted prices. This information is enough to infer the weekly consumption level attainable from having trading relationships with any one or two shops in the set, according to the mechanism described in the preceding section. If any such set of trading relationships would yield the transactor a higher level of consumption than that attainable under existing relationships, the transactor establishes the new relationships and severs the old ones. Otherwise the transactor’s trading relationships remain as they were. ",
+        "bbox": [
+            116,
+            381,
+            704,
+            515
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "5.2. Entry ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            535,
+            186,
+            549
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Shops can be opened only by transactors that ‘innovate’ by formulating workable plans. From historical experience we know that ",
+        "bbox": [
+            117,
+            566,
+            702,
+            595
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Entrepreneurship is rare and occurs randomly. ",
+        "bbox": [
+            135,
+            598,
+            439,
+            611
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Accordingly, we suppose that in any given week each transactor has a (small) probability of formulating an idea for opening a new shop at a currently vacant location $k$ (a shop that will offer to trade the entrepreneur’s production commodity and consumption commodity). One aspect of any such idea is the setting of target incomes $t r _ { 0 k }$ and $t r _ { 1 k }$ , for the two commodities that the entrepreneur proposes to trade. In our story, the value of each target is drawn randomly from the set $\\{ 1 , 2 , . . . , \\mathrm { { x M a x } \\} }$ . The outcome of these draws represents, so to speak, the entrepreneur’s ‘Animal Spirits’-a tangled melange of hope (for customers), fear (of known and potential competitors), and luck. ",
+        "bbox": [
+            116,
+            613,
+            705,
+            732
+        ],
+        "page_idx": 7
+    },
+    {
+        "type": "text",
+        "text": "Putting the idea for a new shop into effect entails a setup cost to the entrepreneur (here treated as purely psychic in nature). So before incurring that cost the entrepreneur consults a small number of transactors that might adopt the newly-created shop as a consumption source and a few others that might use it as a production outlet. If this ‘market research’ indicates sufficient strength on either side of the market the entrepreneur will open the shop, terminate existing trading relationships, and become the shop’s first customer; otherwise the opportunity lapses. ",
+        "bbox": [
+            116,
+            85,
+            704,
+            191
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "5.3. Exit ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            208,
+            176,
+            223
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "We begin our discussion of shop exit by specifying that a shop dealing in commodities $i$ and $j$ will need to expend the amount $f ( i )$ of commodity $i$ and the amount $f ( j )$ of commodity $j$ to defray its operating costs. As indicated earlier, $f ( i )$ and $f ( j )$ are overhead costs. For convenience we number the commodities in order of ascending cost: ",
+        "bbox": [
+            116,
+            239,
+            705,
+            300
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "equation",
+        "img_path": "images/04f0140bca132a4cf17e99fa05282713c21bcf6147923f34d5d2a160e4f6ec43.jpg",
+        "text": "$$\n0 \\leq f ( 1 ) \\leq f ( 2 ) \\leq \\cdot \\cdot \\cdot \\leq f ( n )\n$$",
+        "text_format": "latex",
+        "bbox": [
+            145,
+            310,
+            361,
+            328
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "The ‘operating surpluses’ $\\pi _ { 0 k }$ and $\\pi _ { 1 k }$ of a shop $k$ are the amounts of the two commodities traded available for the owner’s consumption after all customer demands are satisfied and all operating costs paid: ",
+        "bbox": [
+            116,
+            337,
+            704,
+            382
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "equation",
+        "img_path": "images/7ac8eb095c5fe283d68d2afa23fe4c59da66a67ec1d913bd97ed21589ad589f8.jpg",
+        "text": "$$\n\\begin{array} { r } { \\pi _ { 0 k } = y _ { 0 k } - p _ { 1 k } y _ { 1 k } - f \\left( g _ { 0 k } \\right) } \\\\ { { } } \\\\ { \\pi _ { 1 k } = y _ { 1 k } - p _ { 0 k } y _ { 0 k } - f \\left( g _ { 1 k } \\right) } \\end{array}\n$$",
+        "text_format": "latex",
+        "bbox": [
+            145,
+            390,
+            352,
+            436
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "A shop will remain in operation as long as these surpluses are positive. ",
+        "bbox": [
+            114,
+            444,
+            578,
+            459
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "When one of the operating surpluses becomes negative the shop confronts what is, in effect, a stockout problem: whether and how to honor immediate customer demands (quantities traded are determined by customers–the raison d’être of the shop is, after all, to facilitate trades for other transactors). In actual economies, firms deal with impending stockouts by depleting inventories, producing overtime, lengthening delivery lags and making emergency purchases from competitors. Since none of these remedies fits easily into our story we evade the stockout issue at this point by supposing that shop owners always honor their customers’ demands, engaging when necessary in negative consumption. ",
+        "bbox": [
+            116,
+            460,
+            704,
+            580
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "A shopkeeper will not remain in business indefinitely when faced with negative consumption. Accordingly, we assume that each week in which a shop’s operating surplus is negative, there is a fixed probability u the shop will close. When a shop closes, all trading relationships with it are severed, and its location is vacated. ",
+        "bbox": [
+            117,
+            594,
+            704,
+            655
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "5.4. Pricing ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            672,
+            197,
+            688
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "The most common pricing procedure in actual economies is one or another version of full cost pricing (Hall and Hitch (1939); Blinder et al. (1998)). Motivated by pursuit of gain, but lacking reliable information about the relation of price to profit, the shop posts prices that promise to yield what the owner regards as a normal return on investment provided it succeeds in achieving its target income levels. Suppose that the owner regards a fixed consumption level of $C$ units of each 13 commodity it trades (over and above the consumption the owner achieves as customer of the shop) as constituting a normal return. Then it will want to post prices such that $\\pi _ { 0 k } = C$ and $\\pi _ { 1 k } = C$ . We refer to $C$ as the ‘setup cost’ of the shop. ",
+        "bbox": [
+            116,
+            704,
+            704,
+            765
+        ],
+        "page_idx": 8
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            114,
+            85,
+            705,
+            160
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "Whether or not such prices will be posted will depend, however, on the two income targets. If, for example, the income target $t r _ { 0 k }$ for commodity $g _ { 0 k }$ is less than the sum of the overhead cost $f ( g _ { 0 k } )$ and the setup cost $C$ , the shop cannot expect to cover its setup cost no matter how little it pays for the other commodity $g _ { 1 k }$ ; in such cases it will set $p _ { 1 k } = 0$ . Likewise, when $t r _ { 1 k } < f ( g _ { 1 k } ) + C$ , it will set $p _ { 0 k } = 0$ . It follows that the shop’s prices will be given by the formulas: ",
+        "bbox": [
+            114,
+            161,
+            705,
+            251
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "equation",
+        "img_path": "images/25abcbe120c91f895fd4436f0a6f2b17c052c37a9a02e663182d65a749e01e2d.jpg",
+        "text": "$$\n\\begin{array} { l } { p _ { 0 k } = \\left( \\frac { t r _ { 1 k } - f ( g _ { 1 k } ) - C } { t r _ { 0 k } } \\right) ^ { + } } \\\\ { p _ { 1 k } = \\left( \\frac { t r _ { 0 k } - f ( g _ { 0 k } ) - C } { t r _ { 1 k } } \\right) ^ { + } } \\end{array}\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            258,
+            357,
+            342
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "where the notation $x ^ { + }$ denotes the maximum of $x$ and 0. ",
+        "bbox": [
+            116,
+            349,
+            480,
+            364
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "The income targets that enter these pricing formulae, as indicated earlier, are initially determined by the shop owner’s animal spirits. Over time, however, the owner will observe the actual incomes $y _ { 0 k }$ and $y _ { 1 k }$ during the course of each week, so we assume that the owner will adapt gradually to realized trading results by adjusting its targets according to the formula ",
+        "bbox": [
+            116,
+            366,
+            705,
+            440
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "equation",
+        "img_path": "images/fa3e33884e76c91d4923cd393599a2d8737cbd3603c3a1192c172e5db8f4356b.jpg",
+        "text": "$$\n\\Delta t r _ { h k } = \\alpha ( y _ { h k } - t r _ { h k } ) , \\quad h = 0 , 1 ;\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            450,
+            387,
+            468
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "where the parameter $\\alpha$ representing the speed of adaptation lies between 0 and 1. ",
+        "bbox": [
+            132,
+            492,
+            660,
+            508
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "6. System performance ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            540,
+            281,
+            554
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "From an initial state in which few customers have a trading relationship, if operating and setup costs are not too high entrepreneurs will repeatedly disturb the system by creating new shops. Many of these new shops will eventually exit. To survive, a shop must attract enough customers, because of the fixed nature of its costs. Specifically, it must eventually realize a gross income of at least $f ( i ) + C$ in each commodity $i$ it trades, and each customer contributes at most one unit. Failure to achieve this critical income level in each commodity will tend to be self-reinforcing, because it will eventually induce the shop to cut one of its offer prices to zero, thus inducing suppliers of that commodity to switch to an alternative shop. For the same reason, success in attracting customers will breed further success by inducing the shop to offer higher prices than otherwise. ",
+        "bbox": [
+            116,
+            570,
+            704,
+            722
+        ],
+        "page_idx": 9
+    },
+    {
+        "type": "text",
+        "text": "The smaller are setup and overhead costs, the more likely that any given shop will survive, and the more likely that every transactor will end up with a ‘profitable’ set of trading relationships; that is, a set that affords the transactor a positive consumption level. If such a state of affairs arises the economy is said to have attained ‘full development’. For our story to constitute a plausible account of economies as we know them, something approximating full development must be a likely outcome, at least for some set of parameter values. ",
+        "bbox": [
+            117,
+            85,
+            705,
+            190
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "A shop’s survival prospects also depend on initial conditions–the number and types of other shops and the full set of trading relationships. 14 Consider a shop trading say commodities i and j, and suppose that there are relatively few other shops trading i. That shop is more likely to survive the more transactors have trading relationships with other shops that deal in j. Thus, a shop trading apples and gold when all other shops trade gold can potentially attract all ‘producers’ of apples regardless of their consumption commodities, because they can use gold acquired at this shop as an exchange intermediary; and the shop can also potentially attract all potential consumers of apples regardless of their endowments because they can acquire the needed gold at other shops regardless of their production commodities. This advantage would not be available to someone setting up shop trading apples for oranges unless numerous other shops were also trading oranges. When one commodity comes by chance to be more commonly traded than another, the survival prospects of shops that trade that commodity will be enhanced, and the prospects of shops that don’t will be dimmed. This bandwagon effect can lead to a situation in which one commodity is traded by all shops that have customers and is used as exchange intermediary by all customers that trade indirectly. ",
+        "bbox": [
+            116,
+            191,
+            704,
+            431
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "Whether or not such a situation emerges will depend, among other things, on the fixed costs of shops. If these costs are very large, no shop will long survive, and at any date what little trade occurs will be undertaken with the random collection of shops that have recently opened and are destined soon to exit. On the other hand if costs are very small, then the bandwagon effect that favors those trading the most commonly traded commodity might not be large enough to eliminate other exchange intermediaries. In simulations below we show that for a wide range of intermediate costs, something approximating ‘monetary’ exchange will eventually be established, as it is in all advanced economies of record. ",
+        "bbox": [
+            116,
+            433,
+            704,
+            553
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "Which commodity, if any, emerges as ‘money’ will depend to some extent on the overhead cost of a shop trading it. A commodity that is more costly to trade will have lower survival probability, other things equal, because the critical income level needed for a shop trading that commodity to survive is higher. Thus the commodity with smallest overhead cost (Commodity 1) is most likely to emerge as ‘money’. However, luck will also play a role in this path-dependent process; if by chance a large number of shops trading Commodity 2 open at an early stage of development, the bandwagon effect may offset the otherwise poor survival prospects of these shops and lead to Commodity 2 emerging as ‘money’. ",
+        "bbox": [
+            116,
+            554,
+            704,
+            674
+        ],
+        "page_idx": 10
+    },
+    {
+        "type": "text",
+        "text": "As a reference point, we define a ‘stationary commodity money equilibrium’ to be a situation in which (a) there are exactly $n - 1$ shops, one trading each non-‘money’ commodity, (b) every transactor with the ‘money’ commodity $c$ as consumption or production commodity is trading directly and all others are trading indirectly, (c) all offer prices are positive and (d) each shop’s targets are constant from week to week. As shown in the appendix, the offer price of every non-‘money’ commodity $j$ in such a situation equals: ",
+        "bbox": [
+            116,
+            85,
+            704,
+            176
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "equation",
+        "img_path": "images/2063645e96790d46d6be14429321a96705442d41b773ed19ac46e918b064cf3c.jpg",
+        "text": "$$\nP = 1 - \\frac { f ( c ) + C } { b } > 0 ,\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            183,
+            313,
+            214
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "which is the same for all commodities $j$ , and the offer price of ‘money’ at the same shop (the reciprocal of the ‘retail’ price of $j$ ) equals: ",
+        "bbox": [
+            114,
+            219,
+            702,
+            250
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "equation",
+        "img_path": "images/c101d29990b735147d77c971fb6ee930d466b2a99ea9e1f087fd1755e511e531.jpg",
+        "text": "$$\nP _ { c } ^ { j } = \\frac { ( n - 1 ) b - [ f ( j ) + C ] } { ( n - 1 ) b - ( n - 2 ) [ f ( c ) + C ] } > 0\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            256,
+            429,
+            291
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "Evidently a stationary commodity money equilibrium will exist whenever overhead and setup costs are small enough. ",
+        "bbox": [
+            114,
+            296,
+            705,
+            327
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "We do not impose this or any other notion of equilibrium a priori. Nevertheless, as the simulations below indicate, in the absence of external shocks the economy often converges to a situation that approximates a stationary commodity money equilibrium. The fact that only $n - 1$ shops exist in this equilibrium reflects the fixity of operating costs, which creates a natural monopoly in each non-‘money’ commodity. The equality of actual and target incomes is brought about partly though ‘bankruptcy’, and partly through adaptive adjustment of income targets as described earlier. ",
+        "bbox": [
+            116,
+            327,
+            705,
+            433
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "Although our account eschews conventional notions of rational choice, a stationary commodity money equilibrium is almost identical to the concept of general Bertrand equilibrium defined in a similar setup by Starr and Stinchcombe (1998). 15 Intuitively, shops in equilibrium satisfy the same zero-profit condition 16 that would characterize a ‘rational’ firm that was limit-pricing under conditions of free entry and zero search time by customers. Thus, although firms are following simple rules, they may be led (by the visible hand of the functioning system) to act as if they were maximizing profits. ",
+        "bbox": [
+            116,
+            433,
+            704,
+            537
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "text",
+        "text": "One measure of the system’s performance is the overall level of consumption. Since all investment (setup) costs are purely psychic, this is also the economy’s GDP, by standard national income accounting conventions. 17 Since the owner of each shop consumes its operating surplus, we have: ",
+        "bbox": [
+            116,
+            539,
+            704,
+            598
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "equation",
+        "img_path": "images/89f888f8e68b1f9c928fa8872a441983a21d79e3225a05be5da436992c01501d.jpg",
+        "text": "$$\n\\mathrm { G D P } = \\sum _ { k = 1 h = 0 } ^ { K } \\{ y _ { h k } - f ( g _ { h k } ) \\}\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            604,
+            352,
+            651
+        ],
+        "page_idx": 11
+    },
+    {
+        "type": "table",
+        "img_path": "images/a285d8377264296d9ceec4e2790b5ddda492a8b8fa4410aaa127465b057b38a6.jpg",
+        "table_caption": [
+            "Table 1 Simulation parameters "
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Parameter</td><td>Description</td><td>Value</td></tr><tr><td>T</td><td>Number of weeks in a run</td><td>20,000</td></tr><tr><td>n</td><td>Number of commodities</td><td>10</td></tr><tr><td>m</td><td>Number of transactors</td><td>2160</td></tr><tr><td>xMax</td><td>Maximal animal spirits</td><td>200</td></tr><tr><td>K</td><td>Number of available shop locations</td><td>200</td></tr><tr><td>入</td><td>Intensity of search</td><td>0.05</td></tr><tr><td>α</td><td>Speed of adaptation of targets</td><td>0.25</td></tr><tr><td>0</td><td>Weekly exit rate</td><td>0.01</td></tr><tr><td>C</td><td>Setup cost</td><td>5</td></tr></table>",
+        "bbox": [
+            114,
+            109,
+            705,
+            253
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "where $K$ is the number of available shop locations (only $N$ of which are occupied by a shop), and by convention $y _ { h k } \\equiv 0$ for all vacant locations $k$ and $f ( 0 ) \\equiv 0$ . ",
+        "bbox": [
+            114,
+            277,
+            704,
+            308
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "In all specifications simulated here, the stationary commodity money equilibrium with Commodity 1 as ‘money’ (whenever it exists) yields the maximum possible GDP. 18 Intuitively, this is because such an equilibrium yields the maximal sum of shop-incomes $\\Sigma \\Sigma y _ { h k } = m$ with the minimal number of shops $n - 1$ , operated at the least possible overhead cost (since Commodity 1 has the smallest operating cost). ",
+        "bbox": [
+            116,
+            323,
+            704,
+            398
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "7. Algorithmic details ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            428,
+            271,
+            443
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "The activities described above constitute a stochastic process governing the evolution of the ‘state’ variables: ",
+        "bbox": [
+            114,
+            458,
+            705,
+            488
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "equation",
+        "img_path": "images/55a2e7a7941653f21e39ef79932fc7a2a62792ed2ebed4a113f740dddbc5d93b.jpg",
+        "text": "$$\n\\begin{array} { r l r l r l r } { N , \\{ g _ { 0 k } , g _ { 1 k } \\} _ { k = 1 } ^ { K } , } & { } & { \\{ t r _ { 0 k } , t r _ { 1 k } \\} _ { k = 1 } ^ { K } , } & { } & { \\{ p _ { 0 k } , p _ { 1 k } \\} _ { k = 1 } ^ { K } , } & { } & { \\{ \\mathrm { o w n } _ { k } \\} _ { k = 1 } ^ { K } , } & { } & { \\{ s h _ { 0 r } , s h _ { 1 r } \\} _ { r = 1 } ^ { m } } \\end{array}\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            494,
+            712,
+            516
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "where $\\mathrm { o w n } _ { k }$ is the identity of the owner of shop $k$ . (If shop location $k$ is vacant, then each $\\mathbf { O W } \\mathbf { n } _ { k }$ , $g _ { h k }$ , $t r _ { h k }$ ,and $p _ { h k }$ equals zero.) To simulate our story, we first specify initial values for all state variables, which are put in memory at the beginning of Week 1. A ‘run’ then proceeds through a sequence of $T$ weeks. Each week, transactor activities are simulated in stages, following a fixed schedule, and result in new values of the state variables, which are stored in memory to start the next week. ",
+        "bbox": [
+            114,
+            522,
+            705,
+            613
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "At the beginning of any run, in addition to specifying initial values for the state variables, a simulator must set values for various parameters. The values assigned in the simulations reported here are given by Table 1: In addition, the form of the overhead cost function $f ( )$ must be specified. We chose: ",
+        "bbox": [
+            116,
+            613,
+            705,
+            674
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "equation",
+        "img_path": "images/18781227da39bfd45a8c5e1e1e3bfc99d692b14e0c7a415f42230eaf24b66c84.jpg",
+        "text": "$$\nf ( i ) = s ( i - 1 ) ; \\quad i = 1 , \\ldots , n ; \\quad s \\geq 0\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            683,
+            429,
+            699
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "The slope parameter $s$ of this cost function had to be set at the beginning of each run. Unlike the parameters of Table 1, $s$ was allowed to vary across runs, taking on even numbered values from 0 to 22. (This almost spans the integer values of $s$ for which a stationary commodity money equilibrium exists; for integers $s \\geq 2 4$ , the above formula for the equilibrium offer price of ‘money’ for Commodity 10, and possibly for other commodities, would equal zero. 19 ) All of the parameters in Table 1 remained unchanged across all runs. ",
+        "bbox": [
+            116,
+            708,
+            704,
+            738
+        ],
+        "page_idx": 12
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            117,
+            85,
+            704,
+            160
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "text",
+        "text": "In addition, a random permutation of the first $m$ positive integers was chosen, to represent the order in which transactors each week are given an opportunity to search. This order was changed at the beginning of each run. ",
+        "bbox": [
+            117,
+            161,
+            702,
+            205
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "text",
+        "text": "7.1. Entry ",
+        "text_level": 1,
+        "bbox": [
+            117,
+            226,
+            186,
+            239
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "text",
+        "text": "In the first stage of the algorithm representing weekly activities, an integer $r$ between 1 and $m$ is randomly selected. If transactor $r$ is already a shop owner, or if $N$ is already equal to the number of available shop locations $K$ , the program passes to the next stage. Otherwise transactor $r$ undertakes the market research described above, with prospective prices calculated according to the pricing formulas of Section 5, using initial integer targets drawn independently from $\\{ 1 , \\ldots , \\mathrm { { x M a x } \\} }$ . ",
+        "bbox": [
+            117,
+            265,
+            704,
+            354
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "text",
+        "text": "To simulate market research, the program checks $r '$ s type $( i , j )$ (recall that if $r$ opens a new shop it will trade commodities $i$ and $j )$ ) and then selects four other transactors; one whose production commodity is $i .$ , one whose consumption commodity is $j$ , one whose production commodity is $j$ and one whose consumption commodity is $i$ . The first two are prospective customers on one side, the other two are prospective customers on the other side. For each of these prospective customers, the search algorithm outlined in Section 5 calculates whether, from the set including this prospective shop and the prospective customer’s existing outlet and source (if either exists), a set of trading relationships would be chosen that includes the prospective shop. If the answer is positive for at least one prospective customer on each side, the shop opens at a location $k$ chosen randomly from the currently vacant locations among $\\{ 1 , \\ldots , K \\}$ , and the state variables in memory are modified accordingly. ",
+        "bbox": [
+            117,
+            356,
+            704,
+            536
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "text",
+        "text": "7.2. Shopping ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            556,
+            210,
+            570
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "text",
+        "text": "Next, the program gives each transactor $r$ , in turn, an opportunity to search, in the order chosen at the beginning of the run. If $r$ is a shop owner, the opportunity is not taken. Otherwise, if $r$ already has a profitable set of trading relationships, the opportunity is taken with probability $s$ , and if not it is taken with certainty. The program generates each searcher’s sample as follows. First, a shop location $k$ is chosen at random from the integers $\\{ 1 , \\ldots , K \\}$ ; if there is a shop at location $k$ it is included in the sample. Next, a random transactor (‘comrade’) with the same production commodity is chosen. If the comrade has an outlet, it is also included in the sample. Then a random transactor (‘soulmate’) with the same consumption commodity is chosen. If the soulmate has a source, it is also included. The variables $s h _ { 0 r }$ and $s h _ { 1 r }$ are updated according to the search algorithm of Section 5. ",
+        "bbox": [
+            116,
+            595,
+            704,
+            731
+        ],
+        "page_idx": 13
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            114,
+            85,
+            705,
+            114
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "A transactor $r$ may have trading relationships that are not profitable. This will happen, for example, when $r$ is trading indirectly and its source or outlet exits, leaving $r$ with a ‘widowed’ outlet or source, or when $r ^ { \\mathrm { : } }$ ’s outlet sets to zero its offer price for $r$ ’s production commodity. In such cases if a profitable set of trading relationships is not found the searcher is made to switch to any prospective outlet found offering a positive price for $r$ s production commodity. ",
+        "bbox": [
+            116,
+            116,
+            704,
+            205
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "7.3. Exchange ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            234,
+            214,
+            250
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "Next, the program calculates the income $y _ { h k }$ realized by each shop $k$ in each commodity $g _ { h k }$ traded and stores it in memory. ",
+        "bbox": [
+            116,
+            266,
+            702,
+            295
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "7.4. Exit ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            325,
+            176,
+            338
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "The program then calculates each firm’s operating surplus, on the basis of the incomes and prices stored in memory. Each shop $k$ whose operating surplus is not positive in both commodities traded exits with probability $\\theta$ . When a shop exits, its location is vacated and all its trading relationships are severed. ",
+        "bbox": [
+            116,
+            356,
+            704,
+            416
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "7.5. Pricing ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            449,
+            197,
+            463
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "Finally, the program updates income targets, calculates corresponding offer prices, and stores the results in memory. ",
+        "bbox": [
+            116,
+            481,
+            704,
+            510
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "8. Simulation results ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            553,
+            263,
+            566
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "We simulated the economy in 6000 runs, 500 runs for each of the 12 different values of the slope coefficient $s$ of the overhead-cost schedule, starting each time in a situation of autarky, with no shops and no trading relationships. Each run proceeded for up to 400 years (20,000 weeks). Different results emerged for each run, even when parameter values remained unchanged, because of the various random events that take place each week within a run (who innovates, who is picked as whose comrade or soulmate, etc.). ",
+        "bbox": [
+            116,
+            583,
+            704,
+            672
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "text",
+        "text": "The state of the system was checked at the end of each year (50 weeks). If the number of transactors having a profitable trading relationship, or owning a shop, at the end of the year was within 1 percent of the total population $m$ for 10 years in a row, we deemed the economy to have reached full development. If the number trading indirectly using the same exchange intermediary ever came within 1 percent of the maximal number $m ( n - 2 ) / n$ for 10 years in a row, we deemed that ‘monetary exchange’ had emerged, and the run was ",
+        "bbox": [
+            116,
+            675,
+            704,
+            765
+        ],
+        "page_idx": 14
+    },
+    {
+        "type": "table",
+        "img_path": "images/d9a33d4dfb69202f4d61f99d1e69fba72564328de9f6594d46a6d06bebe9193f.jpg",
+        "table_caption": [
+            "Table 2 Each data point as an average over all 500 runs using the corresponding value of the slope parametera "
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td>Slope</td><td>Prdev</td><td>Avyrs</td><td>Prmon</td><td>GDP</td><td>Gap</td><td>Gap1</td><td>Gap2</td><td>Gap3</td><td>DistO</td><td>Dist1</td><td>Monfr</td><td>Usmax</td></tr><tr><td>0</td><td>0.860</td><td>131.10</td><td>0.028</td><td>2145</td><td>0.007</td><td>0.007</td><td>0.000</td><td>0.000</td><td>0.572</td><td>0.573</td><td>0.769</td><td>0.387</td></tr><tr><td>2</td><td>0.810</td><td>92.92</td><td>0.998</td><td>1958</td><td>0.054</td><td>0.021</td><td>0.005</td><td>0.029</td><td>0.104</td><td>0.104</td><td>0.826</td><td>0.583</td></tr><tr><td>4</td><td>0.966</td><td>77.88</td><td>0.998</td><td>1914</td><td>0.033</td><td>0.007</td><td>0.006</td><td>0.020</td><td>0.021</td><td>0.017</td><td>1.000</td><td>1.000</td></tr><tr><td>6</td><td>0.972</td><td>66.05</td><td>1.000</td><td>1781</td><td>0.058</td><td>0.009</td><td>0.008</td><td>0.041</td><td>0.026</td><td>0.017</td><td></td><td></td></tr><tr><td>8</td><td>0.986</td><td>42.03</td><td>1.000</td><td>1722</td><td>0.043</td><td>0.005</td><td>0.009</td><td>0.029</td><td>0.013</td><td>0.009</td><td></td><td></td></tr><tr><td>10</td><td>0.998</td><td>27.60</td><td>1.000</td><td>1677</td><td>0.020</td><td>0.000</td><td>0.010</td><td>0.009</td><td>0.001</td><td>0.001</td><td></td><td></td></tr><tr><td>12</td><td>0.998</td><td>19.04</td><td>1.000</td><td>1564</td><td>0.035</td><td>0.001</td><td>0.012</td><td>0.021</td><td>0.002</td><td>0.002</td><td></td><td></td></tr><tr><td>14</td><td>1.000</td><td>12.19</td><td>1.000</td><td>1486</td><td>0.029</td><td>0.000</td><td>0.010</td><td>0.019</td><td>0.001</td><td>0.001</td><td></td><td></td></tr><tr><td>16</td><td>1.000</td><td>12.87</td><td>1.000</td><td>1407</td><td>0.023</td><td>0.000</td><td>0.005</td><td>0.017</td><td>0.001</td><td>0.001</td><td></td><td></td></tr><tr><td>18</td><td>1.000</td><td>16.78</td><td>1.000</td><td>1315</td><td>0.026</td><td>0.000</td><td>0.000</td><td>0.026</td><td>0.001</td><td>0.001</td><td></td><td></td></tr><tr><td>20</td><td>1.000</td><td>28.13</td><td>1.000</td><td>1225</td><td>0.028</td><td>0.000</td><td>0.000</td><td>0.028</td><td>0.001</td><td>0.001</td><td></td><td></td></tr><tr><td>22</td><td>0.258</td><td>202.59</td><td>1.000</td><td>-12958</td><td>12.075</td><td>1.043</td><td>0.031</td><td>11.002</td><td>0.586</td><td>0.555</td><td></td><td></td></tr><tr><td>Overall</td><td>0.904</td><td>49.57</td><td>0.923</td><td>436</td><td>1.036</td><td>0.091</td><td>0.008</td><td>0.937</td><td>0.111</td><td>0.107</td><td>0.770</td><td>0.389</td></tr><tr><td>All but 22</td><td>0.963</td><td>45.84</td><td>0.921</td><td>1654</td><td>0.032</td><td>0.005</td><td>0.006</td><td>0.022</td><td>0.067</td><td>0.066</td><td>0.770</td><td>0.389</td></tr></table>",
+        "bbox": [
+            114,
+            109,
+            704,
+            315
+        ],
+        "page_idx": 15
+    },
+    {
+        "type": "text",
+        "text": "a Prdev is the fraction of runs in which the economy achieved full development.; Avyrs is the average number of years it took to reach full development when that occurred.; Prmon is the observed probability that ‘monetary exchange’ emerges when the economy achieves full development.; GDP is total supply delivered by participants minus total overhead costs.; Gap is the proportional gap between actual and maximal GDP. It is decomposed into:; Gap1: Attributable to not enough participants; Gap2: Attributable to an inefficent money commodity, and; Gap3: Attributable to too many shops.; Dist0 is the distance of wholesale prices from stationary commodity money equilibrium values.; Dist1 is the distance of retail prices from their monetary equilibrium values.; Monfr is the number of transactors that are trading indirectly on the final week of a run that achieved full development without ‘monetary exchange’ emerging, expressed as a fraction of the maximal number $m ( n - 2 ) / n = 1 7 2 8 .$ ; Usmax is the number of transactors using the most common exchange intermediary, on the final week of such a run, also expressed as a fraction of the maximal number. ",
+        "bbox": [
+            116,
+            318,
+            704,
+            455
+        ],
+        "page_idx": 15
+    },
+    {
+        "type": "text",
+        "text": "terminated. Otherwise the run was allowed to continue for 400 years. 20 The main results are tabulated in Table 2. ",
+        "bbox": [
+            116,
+            478,
+            702,
+            508
+        ],
+        "page_idx": 15
+    },
+    {
+        "type": "text",
+        "text": "A fully developed market economy emerged in just over 90 percent of all runs. In over 99 percent of those cases ‘monetary exchange’ also emerged, except in the limiting case where there were no overhead costs $( s = 0 )$ , when it emerged slightly less than 3 percent of the time. Even in this limiting case, the number of transactors trading indirectly (using two shops rather than one) at the end of a run that achieved full development without ‘monetary exchange’ was on average 77 percent of the maximal number $m ( n - 2 ) / n = 1 7 2 8$ that would be found in a stationary commodity money equilibrium, and the number of transactors that were using the most prevalent exchange intermediary was almost 39 percent of this maximal number. ",
+        "bbox": [
+            116,
+            510,
+            705,
+            645
+        ],
+        "page_idx": 15
+    },
+    {
+        "type": "table",
+        "img_path": "images/9e0065fec22773c2c6d53a43e031b2628c5031bc3dafec8c94e81469804ef86d.jpg",
+        "table_caption": [
+            "Table 3 Breakdown of performance measuresa "
+        ],
+        "table_footnote": [
+            "a Mgap is the proportional GDP gap in those runs where ‘monetary exchange’ emerged.; Bgap is the proportional gap in all other runs.; Mdist and Bdist are the analogous breakdowns of the Dist statistics between ‘monetary’ and other runs.; The shaded cells are those for which the statistic is based on fewer than five runs. "
+        ],
+        "table_body": "<table><tr><td>Slope</td><td>MgapMgap1Mgap2Mgap3Mdist0Mdist1</td><td></td><td></td><td></td><td></td><td></td><td>Bgap</td><td>Bgap1</td><td>Bgap2</td><td>Bgap3</td><td>Bdist0</td><td>Bdist1</td></tr><tr><td></td><td>0 0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.001</td><td>0.001</td><td>0.007</td><td>0.007</td><td>0.000</td><td>0.000</td><td>0.586</td><td>0.587</td></tr><tr><td>2</td><td>0.006</td><td>0.000</td><td>0.004</td><td>0.002</td><td>0.001</td><td>0.001</td><td>0.257</td><td>0.107</td><td>0.008</td><td>0.142</td><td>0.539</td><td>0.540</td></tr><tr><td>4</td><td>0.009</td><td>0.000</td><td>0.005</td><td>0.003</td><td>0.000</td><td>0.000</td><td>0.694</td><td>0.198</td><td>0.014</td><td>0.481</td><td>0.583</td><td>0.472</td></tr><tr><td>6</td><td>0.013</td><td>0.000</td><td>0.007</td><td>0.006</td><td>0.001</td><td>0.001</td><td>1.606</td><td>0.339</td><td>0.027</td><td>1.239</td><td>0.919</td><td>0.604</td></tr><tr><td>8</td><td>0.017</td><td>0.000</td><td>0.009</td><td>0.009</td><td>0.001</td><td>0.001</td><td>1.869</td><td>0.369</td><td>0.025</td><td>1.475</td><td>0.837</td><td>0.611</td></tr><tr><td>10</td><td>0.020</td><td>0.000</td><td>0.010</td><td>0.009</td><td>0.001</td><td>0.001</td><td>0.064</td><td>0.000</td><td>0.000</td><td>0.064</td><td>0.002</td><td>0.002</td></tr><tr><td>12</td><td>0.026</td><td>0.000</td><td>0.012</td><td>0.014</td><td>0.001</td><td>0.001</td><td>4.321</td><td>0.432 0.059</td><td></td><td>3.830</td><td>0.788</td><td>0.740</td></tr><tr><td>14</td><td>0.029</td><td>0.000</td><td>0.010</td><td>0.019</td><td>0.001</td><td>0.001</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>16</td><td>0.023</td><td>0.000</td><td>0.005</td><td>0.017</td><td>0.001</td><td>0.001</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>18</td><td>0.026</td><td>0.000</td><td>0.000</td><td>0.026</td><td>0.001</td><td>0.001</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>20</td><td>0.028</td><td>0.000</td><td>0.000</td><td>0.028</td><td>0.001</td><td>0.001</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>22</td><td>0.042</td><td>0.000</td><td>0.000</td><td>0.042</td><td>0.001</td><td>0.002</td><td>16.064</td><td>1.389</td><td>0.04114.634</td><td></td><td>1.000</td><td>0.947</td></tr><tr><td>overall</td><td>0.020</td><td>0.000</td><td>0.006</td><td>0.014</td><td>0.001</td><td>0.001</td><td>6.065</td><td>0.542</td><td>0.017</td><td>5.505</td><td>0.720</td><td>0.695</td></tr><tr><td>allbut22</td><td>0.020</td><td>0.000</td><td>0.006</td><td>0.013</td><td>0.001</td><td>0.001</td><td>0.129</td><td>0.040</td><td>0.003</td><td>0.086</td><td>0.588</td><td>0.577</td></tr></table>",
+        "bbox": [
+            117,
+            111,
+            702,
+            308
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "Generally speaking the market organization that emerged by the end of a run allowed transactors to achieve a high level of total consumption (GDP). As Table 2 shows, the gap between actual and potential GDP (the level that would be achieved in a stationary commodity money equilibrium with commodity 1 as ‘money’) at the end of each run averaged about 3 percent if we exclude the runs with the largest overhead costs $( s = 2 2 )$ . Most (over 2 percentage points on average) of this gap was attributable to the existence of more than the minimum necessary number of shops, each incurring overhead costs. 21 ",
+        "bbox": [
+            116,
+            372,
+            705,
+            478
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "In those runs where ‘monetary exchange’ did emerge, the state of the system at the end of the run closely approximated a stationary commodity money equilibrium. As Table 3 indicates, the average GDP gap over such runs was only 2 percent, almost three quarters of which was attributable to there being too many shops. 22 Moreover, in those runs where ‘monetary exchange’ emerged, the distance (measured by root mean square deviation) of actual prices from their stationary commodity money equilibrium values averaged only one tenth of 1 percent. ",
+        "bbox": [
+            116,
+            478,
+            705,
+            583
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "text",
+        "text": "The typical approach to equilibrium is not smooth or gradual, as can be seen from the four sample runs depicted in Fig. 2a–d. The number of transactors trading directly usually goes fairly quickly to close to its stationary value. But the number trading indirectly often fluctuates; the system may go for several decades without any noticeable change in trading patterns, and then jump to a new configuration with the entry or exit of few key shops. The final approach to equilibrium is almost always sudden, at least in terms of the number of traders using a single commodity as exchange intermediary, which typically jumps to its ultimate value in the space of just a few years, often after a number of decades in which it shows no tendency to gravitate towards any resting place. ",
+        "bbox": [
+            116,
+            584,
+            704,
+            628
+        ],
+        "page_idx": 16
+    },
+    {
+        "type": "image",
+        "img_path": "images/804e566c0460f1a9cd31b2cb0497d166aaee5f2d43c85d768b0e8e1dc375dcfd.jpg",
+        "image_caption": [
+            "Fig. 2. (a) Run 35 Slope 4; (b) Run 365 Slope 8; (c) Run 273 Slope 12; (d) Run 319 Slope 1 "
+        ],
+        "image_footnote": [],
+        "bbox": [
+            166,
+            75,
+            653,
+            662
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            704,
+            704,
+            765
+        ],
+        "page_idx": 17
+    },
+    {
+        "type": "image",
+        "img_path": "images/5f343ec9b8a82bb89d613864e6e2cf69c4f840ad2ec6ab371c210921485faf43.jpg",
+        "image_caption": [
+            "Fig. 2. (Continued) "
+        ],
+        "image_footnote": [],
+        "bbox": [
+            163,
+            77,
+            655,
+            659
+        ],
+        "page_idx": 18
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            112,
+            689,
+            704,
+            719
+        ],
+        "page_idx": 18
+    },
+    {
+        "type": "text",
+        "text": "The early stage of the process, before a commodity money standard emerges, shows characteristics typical of the ‘shakeout’ phase of a development cycle in a situation with ‘network economies’. The number of firms is larger than the eventual equilibrium number of 9, indicating that there are potential gains from trade to be exploited. However, once the system locks into an equilibrium, unexploited gains quickly vanish, new entry ceases, and redundant shops soon vanish. Thus, entrepreneurship with research provides a form of ‘annealing’ for market organization. When the existing organization leaves unexploited profit opportunities, entrepreneurs repeatedly disturb it by creating new trade facilities, and as the profit opportunities disappear the disturbing force cools off. Even though it is no part of any transactor’s plan to do so, a coherent market structure is created and, once created, ‘solidifies’. ",
+        "bbox": [
+            116,
+            720,
+            704,
+            765
+        ],
+        "page_idx": 18
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            85,
+            704,
+            205
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "text",
+        "text": "8.1. The role of transaction costs ",
+        "text_level": 1,
+        "bbox": [
+            117,
+            231,
+            334,
+            246
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "text",
+        "text": "According to Table 2, overhead costs make a significant difference to the system’s performance. When the slope parameter $s$ reaches 22 performance deteriorates sharply; the probability of full development falls, the average number of years to reach full development rises, and the gap between actual and potential GDP rises, all dramatically. When $s = 2 2$ a stationary commodity money equilibrium still exists, but the economy usually remains far away from it even after 400 years; on average, GDP is substantially negative, meaning that many shops have so few customers that the owners experience negative consumption. ",
+        "bbox": [
+            116,
+            262,
+            704,
+            367
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "text",
+        "text": "If we exclude the extreme points $s { = } 0$ and $s = 2 2$ , most performance measures improve as transaction costs rise 23 . For example, the gap between actual and potential GDP tends to fall as transaction costs rise, partly because the number of active participants tends to rise (as indicated by Gap1) and partly because the probability of achieving ‘monetary exchange’ with other than commodity 1 tends to fall (as indicated by Gap2 — see also Table 4). However, the average gap rises when $s$ rises from 0 to 2, and again from 20 to 22. ",
+        "bbox": [
+            116,
+            369,
+            704,
+            459
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "text",
+        "text": "A similar pattern can be seen in the probability of reaching full development, which falls when $s$ first rises from 0 to 2 but then increases as $s$ continues to rise above 2. Likewise the average number of years taken to reach full development falls until $s$ reaches 14. ",
+        "bbox": [
+            116,
+            459,
+            702,
+            503
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "text",
+        "text": "In the dimensions just discussed the system seems generally to perform better when transaction costs are larger. Some insight into why this happens can be gleaned from observing runs that fail to reach full development. As Fig. 3(a) and (b) show, the system often ‘sticks’ somewhere near a ‘multiple currency’ regime in which two or more commodities are used as exchange intermediaries but none is close to being a general purpose commodity money. 24 Almost always there are more than twice the minimal number (9) of shops, but holes remain in the market structure, in the sense that for a significant number of transactor types no pair of shops exists that would afford a positive consumption level. In such a situation most firms have a small clientele, but they linger for a long time because their operating costs are also small. A potential entrant that might fill one of the gaps has poor survival prospects because many transactors have already found a profitable set of trading relationships, hence search only with probability 0.05 each week, meaning that a new shop is likely to fail before being located by a critical mass of customers. ",
+        "bbox": [
+            116,
+            505,
+            704,
+            670
+        ],
+        "page_idx": 19
+    },
+    {
+        "type": "table",
+        "img_path": "images/a2dc3b4a0ce5c36e7358537a9f39aa3c242b13b50b2d78b90616d182351a4c2d.jpg",
+        "table_caption": [
+            "Table 4 Simulation parametersa "
+        ],
+        "table_footnote": [
+            "a Prmni, for $i = 1 , \\ldots , 1 0$ , is the observed probability that good $i$ is the ‘money’ commodity when ‘monetary exchange’ emerges.; In the shaded cells, a stationary commodity money equilibrium does not exist. "
+        ],
+        "table_body": "<table><tr><td>Slope</td><td>Prmn1</td><td>Prmn2</td><td>Prmn3</td><td>Prmn4</td><td>Prmn5</td><td>Prmn6</td><td>Prmn7</td><td>Prmn8</td><td>Prmn9</td><td>Prmn10</td></tr><tr><td></td><td>0.333</td><td>0.000</td><td>0.000</td><td>0.167</td><td>0.167</td><td>0.083</td><td>0.083</td><td>0.167</td><td>0.000</td><td>0.000</td></tr><tr><td></td><td>0.616</td><td>0.262</td><td>0.092</td><td>0.022</td><td>0.005</td><td>0.002</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>024</td><td>0.720</td><td>0.230</td><td>0.044</td><td>0.006</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>6</td><td>0.759</td><td>0.204</td><td>0.037</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>8</td><td>0.777</td><td>0.195</td><td>0.028</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>10</td><td>0.778</td><td>0.222</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>12</td><td>0.794</td><td>0.206</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>14</td><td>0.868</td><td>0.132</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>16</td><td>0.942</td><td>0.058</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>18</td><td>1.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>20</td><td>1.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>22</td><td>1.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td><td>0.000</td></tr><tr><td>overall</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td>0.8330.144080.017980.002790.000790.000390.000190.00039</td><td>0.000</td><td>0.000</td></tr><tr><td colspan=\"2\"></td><td>4732214561151077617909360511968025598401279680255</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td colspan=\"9\">229 7914 56755590728795364897682795364</td><td></td></tr></table>",
+        "bbox": [
+            117,
+            112,
+            671,
+            327
+        ],
+        "page_idx": 20
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            386,
+            704,
+            415
+        ],
+        "page_idx": 20
+    },
+    {
+        "type": "text",
+        "text": "Likewise, the long stretches of incomplete development that characterize even those runs that end in full development with commodity money tend to be longer when transaction costs are smaller. Thus large transaction costs, although they lead to a lower potential GDP, can help the economy realize its full potential by eliminating small-scale shops that don’t conform to a coherent (‘monetary’) form of market organization. ",
+        "bbox": [
+            116,
+            416,
+            704,
+            491
+        ],
+        "page_idx": 20
+    },
+    {
+        "type": "text",
+        "text": "9. The selection of a ‘money’ commodity ",
+        "text_level": 1,
+        "bbox": [
+            117,
+            522,
+            400,
+            536
+        ],
+        "page_idx": 20
+    },
+    {
+        "type": "text",
+        "text": "It seems on the basis of this evidence that the story we have told contains within it the forces giving rise to market organization of the sort we know, including the institution of monetary exchange. There are many aspects of real economic systems that can potentially be studied using this story and the computer program that simulates it. Here we illustrate that potential by analyzing the question why the medium of exchange in most economies of record has tended to have classical properties of divisibility, portability, recognizability, etc., properties summarized in our story by low operating cost for a shop dealing in that commodity. ",
+        "bbox": [
+            116,
+            554,
+            704,
+            674
+        ],
+        "page_idx": 20
+    },
+    {
+        "type": "text",
+        "text": "Which commodity becomes ‘money’ is not ‘determined’ by the story in any absolute sense; it depends instead 25 on random events during the development process, although, as indicated above, commodities that are less expensive to trade (those labeled with smaller numbers) are more likely to emerge as ‘money’. Thus Table 4 indicates that in about 17 percent of the runs in which ‘monetary exchange’ emerged the ‘money’ commodity was not the commodity least expensive to trade (Commodity 1). The probability of any other commodity becoming ‘money’ falls as the overhead cost of trading it rises, because the larger the slope coefficient $s$ of operating costs, the fewer commodities can satisfy the equilibrium conditions described in Section 6 above for a stationary commodity money equilibrium 26 . ",
+        "bbox": [
+            116,
+            676,
+            704,
+            734
+        ],
+        "page_idx": 20
+    },
+    {
+        "type": "image",
+        "img_path": "images/dbfddacd37c0466dcf1abc95111b7d58b76fa87fc62c025b608dfa825380986f.jpg",
+        "image_caption": [
+            "Fig. 3. (a) Run 412 Slope 2; (b) Run 422 Slope 2. "
+        ],
+        "image_footnote": [],
+        "bbox": [
+            165,
+            74,
+            655,
+            664
+        ],
+        "page_idx": 21
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            114,
+            704,
+            704,
+            765
+        ],
+        "page_idx": 21
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            114,
+            85,
+            705,
+            114
+        ],
+        "page_idx": 22
+    },
+    {
+        "type": "text",
+        "text": "One way to reduce the indeterminacy at issue is to cast our story in a historical context of technological progress, which over the centuries has reduced the cost of operating trade facilities. 27 If the fall has been gradual, and if the force of entrepreneurship has always been present, then the appropriate initial conditions for our purposes should be those in which costs have not fallen far below the threshold above which a fully developed market structure cannot be sustained. As indicated by Table 4, these are the conditions under which the only commodity that stands a chance of emerging as ‘money’ is the least expensive one to trade. Only if the process begins when $s$ has fallen to 16 or below does the second most expensive commodity have a significant chance of emerging as ‘money’, and only when it has fallen to 8 or below does the third have a chance. ",
+        "bbox": [
+            116,
+            116,
+            704,
+            265
+        ],
+        "page_idx": 22
+    },
+    {
+        "type": "text",
+        "text": "A related historical factor that ought to play a role in the determination of which commodity emerges as medium of exchange is the reduction in transportation and communication costs that tends to bring previously isolated societies into contact with each other. This contact can awaken the force of entrepreneurship by opening up new profit opportunities, and the resulting introduction of new shops will change the fitness landscape, possibly leading to a new ‘money’ commodity. Consider, for example, two economies that had previously reached full development in isolation, but each with a different ‘money’ commodity. If they now come together to form a unified economy, the same forces leading to a single monetary standard will operate in the new economy. Thus, the commodity that was initially the common exchange intermediary for members of one society may eventually be replaced. ",
+        "bbox": [
+            116,
+            267,
+            705,
+            431
+        ],
+        "page_idx": 22
+    },
+    {
+        "type": "text",
+        "text": "To investigate this possibility, we ran 1000 additional simulations, 500 each with slope parameters 28 2 and 4. In each case the simulation proceeded as before, except that it started not from autarky but from an initial situation in which there were 18 shops, nine of them forming a stationary commodity money equilibrium with Commodity 1 as ‘money’ in one of the original economies, comprising $m / 2$ of the transactors, and the other nine shops forming a stationary equilibrium with Commodity 2 as ‘money’ in the other original economy, comprising the other $m / 2$ transactors. Each of the original economies was characterized by the same parameter values as shown in Table 1 above, with the exception of $m$ (here set at $m = 1 0 8 0$ rather than $m = 2 1 6 0$ ). ",
+        "bbox": [
+            116,
+            433,
+            704,
+            568
+        ],
+        "page_idx": 22
+    },
+    {
+        "type": "text",
+        "text": "Table 5 shows the results of these additional simulations. It indicates that the probability of reaching a stationary commodity money equilibrium in the newly formed economy is much higher than when we began from autarky in the unified economy. Moreover, the probability that the commodity which is least expensive to trade (Commodity 1) will become ‘money’ is much larger than when we began from autarky. In this sense a shop trading Commodity 2, for example, has greater evolutionary fitness in an economy where Commodity 2 has emerged as ‘money’, if the economy is subject only to the small-scale random mutation of the occasional entrepreneur thinking of opening up shop trading in Commodity 1 than if this population of two-traders is ‘invaded’ by a large number of 1-traders. 29 This result, combined with the results summarized in Table 3, shed light on why, despite the path dependence of the evolutionary process giving rise to monetary exchange, there has been a tendency nevertheless for less costly to drive out more costly ‘money’ commodities. ",
+        "bbox": [
+            116,
+            569,
+            704,
+            674
+        ],
+        "page_idx": 22
+    },
+    {
+        "type": "table",
+        "img_path": "images/e5086146aa50ee7177ac7b45681e819cdc7d293a7516aadfac78d4c9bda8e0a7.jpg",
+        "table_caption": [
+            "Table 5 Datageneratefialposofefllyoedoosimois‘dii "
+        ],
+        "table_footnote": [],
+        "table_body": "<table><tr><td></td><td></td><td></td><td></td><td></td><td>SlopePrdevAvyrsPronSurplusGapGap1Gap2Gap3DistODist1MonfrUmaxPrmn1Prmn2Prn3Prmn4Prmn5Prmn6Prn7Pmn8Prn9Pr10</td><td></td><td></td><td></td><td></td></tr><tr><td>2</td><td>0.990 11.31 0.996 2064</td><td></td><td></td><td></td><td>0.0030.0010.000.0020.0050.0060.8290.7770.9630.0370.0000.0000.0000.0000.0000.0000.0000.000</td><td></td><td></td><td></td><td></td></tr><tr><td>4</td><td>1.0007.77 1.000 1976</td><td></td><td></td><td>0.002 0.000 0.000 0.002 0.000 0.000</td><td></td><td></td><td>0.9960.0040.0000.0000.0000.0000.0000.0000.0000.000</td><td></td><td></td></tr></table>",
+        "bbox": [
+            239,
+            392,
+            906,
+            462
+        ],
+        "page_idx": 23
+    },
+    {
+        "type": "table",
+        "img_path": "images/a9f1c43b615142db46947d63b99871c1cfde32b233fd558a7e1f624b0013783f.jpg",
+        "table_caption": [
+            "Table 6 Simulation results when commodity 2 is the most abundant and most widely consumed commoditya "
+        ],
+        "table_footnote": [
+            "a Each data point is an average over 50 runs.; For every distinct pair $( i , j )$ there were 20 transactors having i as production commodity and $j$ as consumption commodity, except for $i = 2$ or $j = 2$ , in which case there were 40. "
+        ],
+        "table_body": "<table><tr><td>Slope</td><td>Prdev</td><td>Prmon</td><td>Prmn1</td><td>Prmn2</td><td>Prmn3</td><td>Prmn4</td><td>Prmn5</td><td>Prmn6</td><td>Prmn7</td><td>Prmn8</td><td>Prmn9</td><td>Prm10</td></tr><tr><td>2</td><td>0.960</td><td>1.000</td><td>0.063</td><td>0.938</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>4</td><td>0.920</td><td>1.000</td><td>0.130</td><td>0.870</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>6</td><td>0.860</td><td>1.000</td><td>0.256</td><td>0.744</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>8</td><td>0.920</td><td>1.000</td><td>0.261</td><td>0.739</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>10</td><td>0.960</td><td>1.000</td><td>0.354</td><td>0.646</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>12</td><td>0.980</td><td>1.000</td><td>0.367</td><td>0.633</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>14</td><td>1.000</td><td>1.000</td><td>0.460</td><td>0.540</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>16</td><td>0.980</td><td>1.000</td><td>0.510</td><td>0.490</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>18</td><td>1.000</td><td>1.000</td><td>0.640</td><td>0.360</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>20</td><td>1.000</td><td>0.980</td><td>0.939</td><td>0.061</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Overall</td><td>0.958</td><td>0.998</td><td>0.404</td><td>0.596</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table>",
+        "bbox": [
+            114,
+            109,
+            705,
+            279
+        ],
+        "page_idx": 24
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            116,
+            325,
+            705,
+            401
+        ],
+        "page_idx": 24
+    },
+    {
+        "type": "text",
+        "text": "Another factor that helps explain for why a commodity can become ‘money’ is its relative availability or consumability. Until now we have considered only symmetrical situations in which all commodities are equally available and consumable. But suppose we make one of the commodities, say Commodity 2, more abundant, and consumable by more transactors, than all the others. Starting from an initial position of autarky it is clear that this change will tend to confer some additional evolutionary fitness on shops trading Commodity 2, by making them more likely to acquire enough customers to cover overhead costs. This should increase chances that Commodity 2 becomes ‘money’. ",
+        "bbox": [
+            116,
+            402,
+            705,
+            522
+        ],
+        "page_idx": 24
+    },
+    {
+        "type": "text",
+        "text": "To verify this intuitive result we ran some additional simulations, starting again from autarky but this time modifying the configuration of tastes and endowments. Specifically, in this case we assumed there were 20 transactors of each type $( i , j )$ , except when either $i$ or $j$ was 2, in which case there were 40 such transactors. This specification leaves the total number of transactors (2160) the same as in the baseline simulations of Tables 2–4. To save time we ignored extreme cases of very low and very high overhead costs, and ran 50 simulations for each of 10 values of the slope parameter $s$ running from 2 to 20. As shown in Table 6, this resulted in a much higher probability of Commodity 2 becoming ‘money’. The overall probability of Commodity 1 becoming the ‘money’ commodity fell from 0.83 to 0.40, while the overall probability of Commodity 2 becoming ‘money’ rose from 0.14 to 0.60. ",
+        "bbox": [
+            116,
+            523,
+            705,
+            688
+        ],
+        "page_idx": 24
+    },
+    {
+        "type": "table",
+        "img_path": "images/c45ad66920197ed3d02f84bee5b0ce84e11a1e74725f2eb66c6df7851a2821d8.jpg",
+        "table_caption": [
+            "Table 7 Simulation results when Commodity 2 is the most abundant commoditya "
+        ],
+        "table_footnote": [
+            "a Each data point is an average over 50 runs.; For every distinct pair $( i , j )$ there were 20 people having i as production commodity and $j$ as consumption commodity, except for $i = 2$ , in which case there were 60. "
+        ],
+        "table_body": "<table><tr><td>Slope</td><td>Prdev</td><td>Prmon</td><td>Prmn1</td><td>Prmn2</td><td>Prmn3</td><td>Prmn4</td><td>Prmn5</td><td>Prmn6</td><td>Prmn7</td><td>Prmn8</td><td>Prmn9</td><td>Prm10</td></tr><tr><td>2</td><td>1.000</td><td>1.000</td><td>0.260</td><td>0.620</td><td>0.080</td><td>0.040</td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>4</td><td>1.000</td><td>1.000</td><td>0.420</td><td>0.560</td><td>0.020</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>6</td><td>1.000</td><td>1.000</td><td>0.280</td><td>0.680</td><td>0.040</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>8</td><td>1.000</td><td>1.000</td><td>0.440</td><td>0.560</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>10</td><td>1.000</td><td>1.000</td><td>0.420</td><td>0.580</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>12</td><td>1.000</td><td>1.000</td><td>0.480</td><td>0.520</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>14</td><td>1.000</td><td>1.000</td><td>0.460</td><td>0.540</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>16</td><td>1.000</td><td>1.000</td><td>0.760</td><td>0.240</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>18</td><td>0.700</td><td>1.000</td><td>1.000</td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr><tr><td>Overall</td><td>0.967</td><td>1.000</td><td>0.485</td><td>0.494</td><td>0.016</td><td>0.005</td><td></td><td></td><td></td><td></td><td></td><td></td></tr></table>",
+        "bbox": [
+            114,
+            109,
+            705,
+            265
+        ],
+        "page_idx": 25
+    },
+    {
+        "type": "text",
+        "text": "Recently Cuadras-Morató and Wright (1997) have argued that increased consumability should raise the chances of a commodity becoming ‘money’ but that increased availability should have the opposite effect. Their reasoning was that by accepting in exchange a commodity that is widely available one runs the risk of encountering a potential trading partner who already has an abundant supply of that commodity and is therefore unwilling to accept it in exchange for the commodity one wants to acquire. This leads to few people choosing the commodity as an exchange intermediary. ",
+        "bbox": [
+            116,
+            314,
+            704,
+            420
+        ],
+        "page_idx": 25
+    },
+    {
+        "type": "text",
+        "text": "To test this idea we ran another 500 simulations, identical to those reported in Table 6, but with a slightly different configuration of tastes and endowments. In this case there are 20 transactors of each type $( i , j )$ , except when $i = 2$ , in which case there are 60 such transactors. 30 The results are shown in Table 7. Commodity 2 was still much more likely to become the ‘money’ commodity than in the symmetric baseline case reported in Tables 2–4, although not quite by as much as in the case where Commodity 2 was both more available and more consumable than other commodities. Compared with the baseline case, the overall probability of Commodity 1 becoming ‘money’ fell from 0.83 to 0.49, while the overall probability of Commodity 2 becoming ‘money’ rose from 0.14 to 0.49. ",
+        "bbox": [
+            116,
+            421,
+            704,
+            555
+        ],
+        "page_idx": 25
+    },
+    {
+        "type": "text",
+        "text": "The results of this experiment illustrate a significant advantage of functioning systems for studying phenomena that are subject to multiple equilibria. The argument of Cuadras-Morato and Wright is one that identifies the relative ‘likelihood’ of a commodity emerging as ‘money’ with the relative amount of parameter space over which there exists a monetary equilibrium with that particular commodity as ‘money’. But such an argument, while perhaps suggestive, does not address the relevant issue, which is the likelihood that dynamic forces will generate an outcome in which the commodity is used as ‘money’, since it makes no reference to such forces. It is easy to construct dynamic models with multiple equilibria in which the equilibria that exist under the smallest set of parameter values are the only stable ones. Only by spelling out an algorithm representing dynamic forces at work in any situation can one begin to address the issue. ",
+        "bbox": [
+            116,
+            556,
+            705,
+            722
+        ],
+        "page_idx": 25
+    },
+    {
+        "type": "text",
+        "text": "10. Conclusions ",
+        "text_level": 1,
+        "bbox": [
+            117,
+            85,
+            230,
+            99
+        ],
+        "page_idx": 26
+    },
+    {
+        "type": "text",
+        "text": "Our analysis of a ‘functioning system’ shows, in the language of Epstein and Axtell (1996), that it is possible to ‘grow’ economic organization, starting from stark assumptions based on simple observations concerning transactor behavior in actual economies, rather than relying on a priori principles of equilibrium and rationality. In a world characterized by these observations, market organization, with commodity ‘money’, is a possible emergent property of interactions between gain-seeking transactors that are unaware of any system-wide consequences of their own actions. ",
+        "bbox": [
+            116,
+            117,
+            704,
+            222
+        ],
+        "page_idx": 26
+    },
+    {
+        "type": "text",
+        "text": "Our story of the emergence of market organization bears a strong resemblance to the emergence of standards in new industries described by such writers as Arthur (1989). In both cases there is a ‘network’ economy conferred on those whose behavioral characteristics conform with the standard adopted by others. In both cases the establishment of a standard involves an initial shake-out period in which a number of different contenders may be present, one of which may at some stage become locked in when a critical mass is reached. ",
+        "bbox": [
+            116,
+            223,
+            704,
+            313
+        ],
+        "page_idx": 26
+    },
+    {
+        "type": "text",
+        "text": "The analysis illustrates some of the promise of computer simulation as an alternative to formal theoretical analysis. The network economy that confers a ‘fitness’ advantage on shops conforming to an emerging commodity money standard is easy enough to understand informally. But just what that standard is likely to be cannot easily be determined with theoretical analysis, given the multiplicity of equilibria and the complexity of the dynamical systems involved. Yet distinct patterns can be revealed by controlled simulations, which in this case help shed light on the forces leading to the selection of a low-cost commodity as medium of exchange and on the role of transaction costs in allowing a society to realize its potential GDP. ",
+        "bbox": [
+            116,
+            314,
+            704,
+            448
+        ],
+        "page_idx": 26
+    },
+    {
+        "type": "text",
+        "text": "One implication of our analysis is that market forces are in some ways less and in other ways more powerful than one would infer from general equilibrium theory. They are less powerful in the sense that the process of creating and maintaining markets consumes resources that usually are invisible to equilibrium theory, and also in the sense that they do not always bring the economy near an equilibrium with actual GDP close to potential. But they are more powerful in that they often allow such a situation to be approximated even though no one in the economy is capable of performing the elaborate maximization problems postulated by equilibrium theory. ",
+        "bbox": [
+            116,
+            449,
+            704,
+            569
+        ],
+        "page_idx": 26
+    },
+    {
+        "type": "text",
+        "text": "Acknowledgements ",
+        "text_level": 1,
+        "bbox": [
+            117,
+            613,
+            251,
+            627
+        ],
+        "page_idx": 26
+    },
+    {
+        "type": "text",
+        "text": "This is an updated version of a paper first presented to the meetings of the Canadian Economics Association at the University of Ottawa, May 1998. We acknowledge helpful comments and suggestions from Dan Friedman, Miles Kimball, David Laidler, Axel Leijonhufvud, Dick Lipsey, Scott Page, Michael Salemi and Leigh Tesfatsion. Howitt’s research was conducted partly at the IDEI, University of Toulouse and partly at the Santa Fe Institute, and was supported by the Computable and Experimental Economics Laboratory of the University of Trento. The source code for the program on which the paper is based is available online at http://www.econ.ohio-state.edu/howitt/. ",
+        "bbox": [
+            117,
+            643,
+            704,
+            763
+        ],
+        "page_idx": 26
+    },
+    {
+        "type": "text",
+        "text": "Appendix A ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            85,
+            200,
+            101
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "text",
+        "text": "This appendix shows why a stationary commodity money equilibrium with commodity $c$ as ‘money’ is characterized by the offer prices described in Section 6. Let $y _ { i }$ denote the income of commodity $i$ to the shop trading $i$ for $c$ , and let $y _ { c } ^ { ( i ) }$ denote the shop’s income of the ‘money’ commodity. It follows from our description of the trading process that $y _ { i }$ must equal the total endowment of Commodity $i \\mathrm { : }$ ",
+        "bbox": [
+            114,
+            116,
+            705,
+            194
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "equation",
+        "img_path": "images/f7dd440550637d5731aecb2e8952fc4d36eb11ac8f4530e016e3a49a32fd0556.jpg",
+        "text": "$$\ny _ { i } = ( n - 1 ) b ; \\ i = 1 , \\dots , n ; \\ i \\neq c .\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            204,
+            395,
+            220
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "text",
+        "text": "Each transactor $r$ with $i$ as consumption commodity contributes to $y _ { c } ^ { ( i ) }$ . Those for whom $c$ is a production commodity each contribute 1 unit. The rest each contribute $P _ { j }$ , the offer price for the transactor’s production commodity $j$ at the shop trading $j$ for $c$ . Since there are $^ b$ of each type: ",
+        "bbox": [
+            114,
+            229,
+            705,
+            292
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "equation",
+        "img_path": "images/14908b8691e9b14c61b0ea402b2875df092de98907f397d9e2c9170a92185e38.jpg",
+        "text": "$$\ny _ { c } ^ { ( i ) } = \\left( \\sum _ { j = 1 } ^ { n } P _ { j } - P _ { i } \\right) b ; i = 1 , \\ldots , n ; i \\neq c ,\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            299,
+            460,
+            351
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "text",
+        "text": "where $P _ { c } \\equiv 1$ . Since targets are constant in equilibrium, the adaptive rule outlined in Section 5 implies that the $y ^ { : }$ ’s just defined equal the corresponding shops’ targets. Thus the pricing formulas of Section 5 imply: ",
+        "bbox": [
+            114,
+            356,
+            704,
+            402
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "equation",
+        "img_path": "images/4b31becac9979eb0d62cf03971c67264a2a7540f75cf665c1463db349cc8825d.jpg",
+        "text": "$$\nP _ { i } = { \\frac { \\left( \\sum _ { j = 1 } ^ { n } P _ { j } - P _ { i } \\right) b - ( f ( c ) + C ) } { ( n - 1 ) b } } ; i = 1 , \\ldots , n ; i \\neq c .\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            410,
+            565,
+            454
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "text",
+        "text": "Rearranging this equation to isolate $P _ { i }$ on the left hand side shows that the posted offer prices $P _ { i }$ of all the non-‘money’ commodities must be the same. Solving the equation under the implied restriction that $P _ { j } = P$ for all $j$ not equal to $c$ yields the formula for $P$ in Section 6. Substituting from this formula into the above expression for $y _ { c } ^ { ( i ) }$ yields: ",
+        "bbox": [
+            114,
+            460,
+            705,
+            525
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "equation",
+        "img_path": "images/9fdaa653ada7d7baec72400b6545d9409d7e588451ce4a015a2d6a7cb468ebb7.jpg",
+        "text": "$$\ny _ { c } ^ { ( i ) } = ( n - 1 ) b - ( n - 2 ) ( f ( c ) + C ) ; \\ i = 1 , \\dots , n ; \\neq c .\n$$",
+        "text_format": "latex",
+        "bbox": [
+            147,
+            531,
+            534,
+            551
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "text",
+        "text": "Substituting from this and the above expression for $y _ { i }$ into the pricing formulas of Section 5 yield the formula for $P _ { c } ^ { ( i ) }$ in Section 6. ",
+        "bbox": [
+            114,
+            559,
+            704,
+            592
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "text",
+        "text": "References ",
+        "text_level": 1,
+        "bbox": [
+            116,
+            619,
+            194,
+            633
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "text",
+        "text": "Alchian’s, A., 1977. Why money?. Journal of Money Credit and Banking 9, 133–140.   \nArthur, W.B., 1989. Competing technologies, increasing returns, and lock-in by historical events. Economic Journal 99, 116–131.   \nArthur, W.B., Durlauf, S.N., Lane, D.A. (Eds.), 1997. The Economy as an Evolving Complex System II. Santa Fe Institute Studies in the Sciences of Complexity. Proceedings Volume XXVII. Addison Wesley, Reading, MA.   \nBlinder, A.S., Canetti, E.R.D., Lebow, D.E., Rudd, J.B., 1998. Asking About Prices: A New Approach to Understanding Price Stickiness. Russell Sage Foundation, New York.   \nChuchman, G., 1982. A Model of the Evolution of Exchange Processes. Ph.D. Dissertation, Department of Economics, University of Western Ontario.   \nClower, R.W., 1967. A Reconsideration of the Microfoundations of Monetary Theory. Western Economic Journal 6 (December), 1–9 (now Economic Inquiry).   \nClower, R.W., 1975. Reflections on the Keynesian perplex. Zeitschrift für Nationalökonomie 35, 1–24.   \nClower, R.W., 1995. On the origin of monetary exchange. Economic Inquiry 33, 525–536.   \nClower, R., Howitt, P., 1996. Taking markets seriously: groundwork for a post Walrasian macroeconomics. In: Colander, David (Ed.), Beyond Microfoundations: Post Walrasian Macroeconomics. Cambridge University Press, New York, pp. 21–37.   \nClower, R., Howitt, P., 1997. Money, markets and coase. In: d’Autume, Antoine, Cartelier, Jean (Eds.), Is Economics Becoming a Hard Science? Edward Elgar, Cheltenham, UK, pp. 189–203.   \nCuadras-Morató, X., Wright, R., 1997. Money as a medium of exchange when goods vary by supply and demand. Macroeconomic Dynamics 1, 680–700.   \nDawid, H., 1999. On the Emergence of Exchange and Mediation in a Production Economy. Journal of Economic Behavior and Organization (forthcoming).   \nDawkins, R., 1995. River Out of Eden: A Darwinian View of Life. BasicBooks, New York.   \nDay, R.H., 1984. Disequilibrium economic dynamics: a post-Schumpeterian contribution. Journal of Economic Behavior and Organization 5, 57–76.   \nDennett, D.C., 1996. Darwin’s Dangerous Idea: Evolution and the Meanings of Life. Simon and Shuster, New York.   \nEinzig, P., 1949. Primitive Money: In its Ethnological, Historical and Economic Aspects. Eyre and Spottiswoode, London.   \nEpstein, J.M., Axtell, R., 1996. Axtell, R., Growing Artificial Societies. MIT Press, Cambridge, MA.   \nFriedman, D., 1991. Evolutionary games in economics. Econometrica 59, 637–666.   \nFriedman, D., Yellin, J., 1997. Evolving landscapes for population games.UC Santa Cruz, 17, unpublished.   \nHall, R.L., Hitch, C.J., 1939. Price Theory and Business Behaviour. Oxford Economic Papers 12–45.   \nHeymann, D., Perazzo, R.P.J., Schuschny, A.R., 1999. Price setting in a schematic model of inductive learning. In: Howitt, Peter, de Antoni, Elisabetta, Leijonhufvud, Axel (Eds.), Money, Markets and Method: Essays in Honor of Robert W. Clower. Edward Elgar, Cheltenham, pp. 247–66.   \nHicks, J.R., 1968. Critical Essays in Monetary Theory. Clarendon Press, Oxford.   \nHowitt, P., 1974. Stability and the quantity theory. Journal of Political Economy 82, 133–151.   \nIoannides, Y.M., 1990. Trading uncertainty and market form. International Economic Review 31, 619–638.   \nIwai, K., 1996. The bootstrap theory of money: a search-theoretic foundation of monetary economics. Structural Change and Economic Dynamics 7, 451–477.   \nJackson, M.O.,Watts, A., 1998. The Evolution of Social and Economic Networks, 26, unpublished,.   \nJackson, M.O., Wolinsky, A., 1996. A strategic model of social and economic networks. Journal of Economic Theory 71, 44–74.   \nJohnson, P.M., 1997. Essays on Capital Markets: Frictions and Social Forces. Ph.D. Dissertation, UCLA.   \nJones, R.A., 1976. The origin and development of media of exchange. Journal of Political Economy 84, 757–775.   \nKauffman, S.A., 1993. The Origins of Order: Self-Organization and Selection in Evolution. Oxford, New York.   \nKeynes, J.N., 1894. Demand. In: R.H. Inglis Palgrave (Eds.), Dictionary of Political Economy, vol. I. Macmillan, London, pp. 539–42.   \nKiyotaki, N., Wright, R., 1989. On money as a medium of exchange. Journal of Political Economy 97, 927–954.   \nLuo, G.Y., 1995. Evolutionary Models of Market Behavior. Ph.D. Dissertation, University of Western Ontario.   \nMarimon, R., McGrattan, E.R., Sargent, T.J., 1990. Money as a medium of exchange in an economy with artificially intelligent agents. Journal of Economic Dynamics and Control 14, 329–373.   \nMatsuyama, K., Kiyotaki, N., Matsui, A., 1993. Toward a theory of international currency. Review of Economic Studies 60, 283–307.   \nMaynard Smith, J., 1982. Evolution and the Theory of Games. Cambridge University Press, Cambridge, UK.   \nOstroy, J.M., 1973. The informational efficiency of monetary exchange. American Economic Review 63, 597–610.   \nPingle, M., 1999. The effect of decision costs on the formation of market-making intermediaries: a pilot experiment. Journal of Economic Behavior and Organization (forthcoming).   \nSnell, D.C., 1997. Life in the Ancient Near East: 3100-332 B.C.E. Yale University Press, New Haven.   \nSpulber, D.F., 1999. Market Microstructure: Intermediaries and the Theory of the Firm. Cambridge University Press, New York.   \nStarr, R.M., 1998. Monetizing Trade: A Tatonnement Example. UC,San Diego, October 22 (unpublished manuscript).   \nStarr, R.M., Stinchcombe, M.B., 1993. Exchange in a Network of Trading Posts. Discussion Paper 93–13, Department of Economics, University of California San Diego, April 1993.   \nStarr, R.M., Stinchcombe, M.B., 1998. Monetary Equilibrium with Pairwise Trade and Transaction Costs. University of California San Diego, September 3 (unpublished).   \nTesfatsion, L., 1996. A Trade Network Game With Endogenous Partner Selection. Iowa State University (unpublished).   \nVriend, N.J., 1995. Self-organization of markets: an example of a computational approach. Computational Economics 8, 205–231.   \nWalker, D.A., 1997. Advances in General Equilibrium Theory. Elgar, Cheltenham, UK.   \nWalras, L., 1926. Elements of Pure Economics. Augustus M. Kelley, 1926. (Translated by William Jaffé, 1954), New York.   \nWright, S., 1931. Evolution in Mendelian populations. Genetics 16, 97–159.   \nYoung, H.P., 1998. Individual Strategy and Social Structure: An Evolutionary Theory of Institutions. Princeton University Press, Princeton. ",
+        "bbox": [
+            114,
+            648,
+            705,
+            765
+        ],
+        "page_idx": 27
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            114,
+            85,
+            707,
+            767
+        ],
+        "page_idx": 28
+    },
+    {
+        "type": "text",
+        "text": "",
+        "bbox": [
+            114,
+            87,
+            705,
+            289
+        ],
+        "page_idx": 29
+    }
+]
