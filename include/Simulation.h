@@ -56,14 +56,17 @@ public:
      */
     void run_all();
 
+    /**
+     * Get the collected run info for all slopes and runs.
+     */
+    const std::vector<std::vector<RunInfo>>& get_runs_per_slope() const { return runs_per_slope; }
+
 private:
     SimulationInfo info;
 
-    int RptPer;   // report period
-    int prtoscr;  // print to screen
-    int PRINT_LOOP_N; // print loop number
-
     double slope{16.0};
+
+    std::vector<std::vector<RunInfo>> runs_per_slope; // stores all runs for each slope
 
     // State
     std::vector<Trader> traders;
@@ -72,8 +75,6 @@ private:
 
     std::vector<std::vector<int>> produces; // by good i: trader ids producing i
     std::vector<std::vector<int>> consumes; // by good j: trader ids desiring j
-
-    std::vector<double> usingmoney; // per good
 
     // Helper methods
     /**

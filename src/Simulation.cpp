@@ -34,6 +34,8 @@
 #include <functional>
 #include <assert.h>
 
+ // Loop interval between state dumps
+#define PRINT_LOOP_N 6
 #define DEBUG 0
 #define CONTAINS(_COLLECTION, _ITEM)  (std::find(_COLLECTION.begin(), _COLLECTION.end(), _ITEM) != _COLLECTION.end())
  // Global RNG instance
@@ -47,13 +49,11 @@ struct MatchEvaluation {
     Shop* candidate_buyer = nullptr;
 };
 
-Simulation::Simulation(SimulationInfo info) : info(info), RptPer(1), prtoscr(1), PRINT_LOOP_N(6) {
+Simulation::Simulation(SimulationInfo info) : info(info) {
     traders.resize(info.m + 1); // 1-based
     shops.resize(info.K + 1);   // 1-based
     produces.assign(info.n + 1, {});
     consumes.assign(info.n + 1, {});
-    usingmoney.assign(info.n + 1, 0.0);
-    // Pinv.assign(info.n + 1, 0.0);
     init_static();
 }
 
@@ -61,28 +61,20 @@ void Simulation::run_all() {
     // Main simulation loop: runs all parameter sweeps and time steps.
     // Simulation rule: Orchestrates initialization, weekly activities, reporting, and statistics collection.
 
-    // Time and IO variables
-    std::time_t firstbegin{}, finish{};
+    // Time variables
     std::clock_t clock_begin{}, clock_finish{};
-    std::FILE* stream{nullptr};
-    RunInfo runInfo;
 
-    // Record the start time of the entire simulation
-    time(&firstbegin);
-
-    // Initialize the output file "evol.fil" with headers for evolutionary data
-    stream = std::fopen("evol.fil", "w+");
-    if (stream) {
-        std::fprintf(stream, " run slope dev part mon mtrd usmx Mgd Csur Psur Esur Nsh NS BS RMS_0 RMS_1 dyr myr\n");
-        std::fclose(stream);
-    }
+    runs_per_slope.clear(); // clear any previous data
 
     // Loop over different slope values for parameter sweeps
     for (int _s = info.FirstSlope; _s <= info.LastSlope; _s += 2) {
         slope = _s;
 
+        std::vector<RunInfo> runs_for_slope;
+
         // For each slope, run multiple simulation runs
         for (int run = 1; run <= info.numruns; ++run) {
+            RunInfo runInfo(info.n);
             runInfo.run = run;
             runInfo.Slope = slope;
             // Initialize the run-specific state
@@ -103,10 +95,10 @@ void Simulation::run_all() {
                 weekly_update_prices();
 
                 // Periodically report progress and check for monetary equilibrium
-                if (runInfo.t % (PRINT_LOOP_N * RptPer) == 0) {
+                if (runInfo.t % PRINT_LOOP_N == 0) {
                     runInfo.monetary = calc1(runInfo);
-                    report(runInfo);
-                    if (runInfo.monetary == 1) {
+                    runInfo.report();
+                    if (runInfo.monetary) {
                         printf("Monetary equilibrium reached\n");
                         break; // Exit early if monetary equilibrium is reached
                     }
@@ -118,40 +110,18 @@ void Simulation::run_all() {
 
             // Log timing information
             clock_finish = std::clock();
+            runInfo.time_spent = (clock_finish - clock_begin) / (double)CLOCKS_PER_SEC;
             std::printf("Run number %d. Time elapsed: %.2f seconds.\n",
                 runInfo.run,
                 (clock_finish - clock_begin) / (double)CLOCKS_PER_SEC);
             std::printf("Slope equals %-.0f, xMax equals %d\n\n", slope, info.xMax);
 
-            // Append run results to the output file
-            stream = std::fopen("evol.fil", "a");
-            if (stream) {
-                std::fprintf(stream,
-                    "%5d %5.0f %3d %4.0f %3d %4.0f %4.0f %3d %4.0f %6.0f %5.0f %3d %3d %3d %6.3f %6.3f %4d %4d\n",
-                    runInfo.run, slope, runInfo.fulldev, runInfo.part, runInfo.monetary, runInfo.moneytraders, runInfo.usingmax,
-                    runInfo.moneygood, runInfo.Csurp, runInfo.Psurp, runInfo.SurpSME, runInfo.Nshop, runInfo.NumberOfShops, runInfo.BS, runInfo.R[0], runInfo.R[1], runInfo.devyear, runInfo.monyear);
-                std::fclose(stream);
-            }
-
-            // Add a blank line between runs in the output file
-            stream = std::fopen("evol.fil", "a");
-            if (stream) {
-                std::fprintf(stream, "\n");
-                std::fclose(stream);
-            }
+            // Store the runInfo for this run
+            runs_for_slope.push_back(runInfo);
         }
 
-        // Add blank lines between slope sweeps in the output file
-        stream = std::fopen("evol.fil", "a");
-        if (stream) {
-            std::fprintf(stream, "\n\n n bsiz K xMax lambda alpha theta C Nrun Pst(yr) T RND\n");
-            std::fprintf(stream, "%3d %4d %3d %5d %6.3f %6.3f %6.3f %2.0f %5d %3d %6d %3d\n",
-                info.n, info.bsize, info.K, info.xMax, info.lambda, info.alpha, info.theta, info.C, info.numruns, info.persist, info.T, info.RANDSEED);
-            time(&finish);
-            std::fprintf(stream, "\n Started : %s", std::ctime(&firstbegin));
-            std::fprintf(stream, " Finished: %s\n", std::ctime(&finish));
-            std::fclose(stream);
-        }
+        // Store all runs for this slope
+        runs_per_slope.push_back(runs_for_slope);
     }
 }
 
@@ -161,7 +131,7 @@ std::function<double(int)> Simulation::make_overhead(double f1, double slope) {
 
     return [f1, slope](int i) -> double {
         return f1 + (i - 1) * slope;
-        };
+    };
 }
 
 void Simulation::init_static() {
@@ -177,7 +147,7 @@ void Simulation::init_static() {
                 continue;
             for (int k = 1; k <= info.bsize; ++k) {
                 ++r;
-                traders[r].idx = r; // PROVISIONAL: to make the code compatible while it's  refactored
+                traders[r].idx = r; // Trader's unique key
                 traders[r].set_supplies(i);
                 traders[r].set_demands(j);
                 produces[i].push_back(r);
@@ -185,11 +155,17 @@ void Simulation::init_static() {
             }
         }
     }
+    int u =0;
+    for (Shop& shop : shops) {
+        shop.idx = u++; // Shop's unique key
+    }
 }
 
 void Simulation::init_run(RunInfo& runInfo) {
     // Initializes the state for a new simulation run, resetting agents and shops.
     // Simulation rule: Prepares the market for a fresh round of trading and adaptation.
+
+    rng.seed(info.RANDSEED + runInfo.run - 1, info.RANDSEED + runInfo.run - 1);
 
     std::printf("Number Using Using Using Using Using Using \n");
     std::printf("Active Money good1 good2 good3 good4 good5 Year NS \n");
@@ -201,21 +177,12 @@ void Simulation::init_run(RunInfo& runInfo) {
     runInfo.devyear = -1;
     runInfo.monyear = -1;
     runInfo.devcount = 0;
-
-    rng.seed(info.RANDSEED + runInfo.run - 1, info.RANDSEED + runInfo.run - 1);
-
     runInfo.t = 0;
     runInfo.NumberOfShops = 0;
 
     // TODO: Traders can be static, since it is a full set, but Shops could be a dynamic set.
-    for (Trader& trader : traders) {
-        trader.sever_links();
-    }
-    int i = 0;
-    for (Shop& shop : shops) {
-        shop.clear();
-        shop.idx = i++;
-    }
+    for (Trader& trader : traders) { trader.sever_links(); }
+    for (Shop& shop : shops) { shop.clear(); }
 
     lineup();
 }
@@ -607,7 +574,7 @@ int Simulation::calc1(RunInfo& runInfo) {
 
     runInfo.part = 0.0;
     runInfo.moneytraders = 0.0;
-    std::fill(usingmoney.begin(), usingmoney.end(), 0.0);
+    runInfo.usingmoney.assign(info.n + 1, 0.0);
 
     for (Trader& trader : traders) {
         if (trader.get_outlet() != nullptr) {
@@ -624,7 +591,7 @@ int Simulation::calc1(RunInfo& runInfo) {
 
             if (shop_b != nullptr && shop_a->g[ma] == shop_b->g[mb]) {
                 runInfo.moneytraders += 1.0;
-                usingmoney[shop_b->g[mb]] += 1.0;
+                runInfo.usingmoney[shop_b->g[mb]] += 1.0;
             }
         }
     }
@@ -645,13 +612,13 @@ int Simulation::calc1(RunInfo& runInfo) {
     runInfo.usingmax = 0.0;
     runInfo.moneygood = 0;
     for (int i = 1; i <= info.n; ++i) {
-        if (usingmoney[i] > runInfo.usingmax) {
-            runInfo.usingmax = usingmoney[i];
+        if (runInfo.usingmoney[i] > runInfo.usingmax) {
+            runInfo.usingmax = runInfo.usingmoney[i];
             runInfo.moneygood = i;
         }
     }
 
-    if (usingmoney[runInfo.moneygood] >= 0.99 * runInfo.Fmon) {
+    if (runInfo.usingmoney[runInfo.moneygood] >= 0.99 * runInfo.Fmon) {
         if (runInfo.endcount == 0) {
             runInfo.monyear = runInfo.t / 50;
         }
@@ -770,20 +737,6 @@ void Simulation::rmse(RunInfo& runInfo, std::vector<double> &Pinv) {
     }
     else {
         runInfo.R[0] = runInfo.R[1] = -1.0;
-    }
-}
-
-void Simulation::report(RunInfo& runInfo) {
-    // Reports simulation progress and statistics at specified intervals.
-
-    if (prtoscr != 0) {
-        if (runInfo.t == -1)
-            std::printf("***");
-        std::printf("%6.0f %6.0f ", runInfo.part, runInfo.moneytraders);
-        for (int b = 1; b <= 5 && b <= info.n; ++b) {
-            std::printf("%6.0f ", usingmoney[b]);
-        }
-        std::printf("%6d %4d\n", (runInfo.t == -1 ? runInfo.t : runInfo.t) / 50, runInfo.NumberOfShops);
     }
 }
 

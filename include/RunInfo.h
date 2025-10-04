@@ -24,6 +24,7 @@
 #include <cstdio>
 #include <string>
 #include <sstream>
+#include <vector>
 
 /**
  * @brief Class to store run-scoped variables for the simulation.
@@ -33,11 +34,14 @@
  */
 class RunInfo {
 public:
+    RunInfo(int n) : info_n(n) {}
+
     // Active shops and related counts
     int NumberOfShops{0};        // active shops
     int BS{0};                   // active non-money shops
     int Nshop{0};                // additional shop count
     int Slope{0};
+    int info_n{0};
 
     // Development and monetary emergence tracking
     int devyear{-1};
@@ -51,10 +55,26 @@ public:
     double part{0.0}, moneytraders{0.0}, usingmax{0.0};
     double Csurp{0.0}, Psurp{0.0};
     double R[2]{-1.0, -1.0};
+    double time_spent{0.0};
+
+    // Usage of money goods
+    std::vector<double> usingmoney;
 
     // Run and time variables
     int run{1};
     int t{0};
+
+    void report() {
+        // Reports simulation progress and statistics at specified intervals.
+
+        if (t == -1)
+            std::printf("***");
+        std::printf("%6.0f %6.0f ", part, moneytraders);
+        for (int b = 1; b <= 5 && b <= info_n; ++b) {
+            std::printf("%6.0f ", usingmoney[b]);
+        }
+        std::printf("%6d %4d\n", (t == -1 ? t : t) / 50, NumberOfShops);
+    }
 
     /**
      * @brief Convert the run info to a JSON string.
@@ -84,7 +104,14 @@ public:
         oss << "\"Psurp\":" << Psurp << ",";
         oss << "\"R\":[" << R[0] << "," << R[1] << "],";
         oss << "\"run\":" << run << ",";
-        oss << "\"t\":" << t;
+        oss << "\"t\":" << t << ",";
+        oss << "\"time_spent\":" << time_spent << ",";
+        oss << "\"usingmoney\":[";
+        for (size_t i = 0; i < usingmoney.size(); ++i) {
+            oss << usingmoney[i];
+            if (i < usingmoney.size() - 1) oss << ",";
+        }
+        oss << "]";
         oss << "}";
         return oss.str();
     }
