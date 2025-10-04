@@ -65,6 +65,7 @@ void Simulation::run_all() {
     std::time_t firstbegin{}, finish{};
     std::clock_t clock_begin{}, clock_finish{};
     std::FILE* stream{nullptr};
+    RunInfo runInfo;
 
     // Record the start time of the entire simulation
     time(&firstbegin);
@@ -85,7 +86,7 @@ void Simulation::run_all() {
             runInfo.run = run;
             runInfo.Slope = slope;
             // Initialize the run-specific state
-            init_run();
+            init_run(runInfo);
             clock_begin = std::clock();
 
             // Main simulation loop: run for T time steps
@@ -93,18 +94,18 @@ void Simulation::run_all() {
                 runInfo.t = t;
                 // Ensure at least one shop exists before proceeding
                 do {
-                    weekly_entry();
+                    weekly_entry(runInfo);
                 } while (runInfo.NumberOfShops == 0);
 
                 // Perform weekly activities: matching, trading, exit, and price updates
                 weekly_matching();
-                weekly_trade_and_exit();
+                weekly_trade_and_exit(runInfo);
                 weekly_update_prices();
 
                 // Periodically report progress and check for monetary equilibrium
                 if (runInfo.t % (PRINT_LOOP_N * RptPer) == 0) {
-                    runInfo.monetary = calc1();
-                    report(runInfo.t);
+                    runInfo.monetary = calc1(runInfo);
+                    report(runInfo);
                     if (runInfo.monetary == 1) {
                         printf("Monetary equilibrium reached\n");
                         break; // Exit early if monetary equilibrium is reached
@@ -113,7 +114,7 @@ void Simulation::run_all() {
             }
 
             // Calculate final statistics for the run
-            calc2();
+            calc2(runInfo);
 
             // Log timing information
             clock_finish = std::clock();
@@ -184,17 +185,17 @@ void Simulation::init_static() {
             }
         }
     }
-    // Theoretical max number of "money traders": bsize*(n-2)*(n-1)
-    runInfo.Fmon = info.bsize * (info.n - 2.0) * (info.n - 1.0);
 }
 
-void Simulation::init_run() {
+void Simulation::init_run(RunInfo& runInfo) {
     // Initializes the state for a new simulation run, resetting agents and shops.
     // Simulation rule: Prepares the market for a fresh round of trading and adaptation.
 
     std::printf("Number Using Using Using Using Using Using \n");
     std::printf("Active Money good1 good2 good3 good4 good5 Year NS \n");
 
+    // Theoretical max number of "money traders": bsize*(n-2)*(n-1)
+    runInfo.Fmon = info.bsize * (info.n - 2.0) * (info.n - 1.0);
     runInfo.endcount = 0;
     runInfo.fulldev = 0;
     runInfo.devyear = -1;
@@ -220,7 +221,7 @@ void Simulation::init_run() {
 }
 
 // Entry process: potential entrepreneur tries to open a shop
-void Simulation::weekly_entry() {
+void Simulation::weekly_entry(RunInfo& runInfo) {
     // Handles entry of new shops by prospective entrepreneurs.
     // Simulation rule: Traders may open shops if conditions are favorable.
 
@@ -262,6 +263,7 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
             eval.candidate_buyer = trader->get_source();
             // candidate initialization with current links
 
+            // NOTE: order of test does not match paper (random should be first)
             std::vector<int> cand;
             Shop* comrade_shop = traders[trader->trade_comrade(produces)].get_outlet(); // same production
             Shop* soulmate_shop = traders[trader->soulmate(consumes)].get_source(); // same consumption
@@ -317,7 +319,7 @@ void Simulation::report_trader(Trader const* trader) {
 }
 
 // Trade/accounting and stochastic exit of unprofitable shops
-void Simulation::weekly_trade_and_exit() {
+void Simulation::weekly_trade_and_exit(RunInfo& runInfo) {
     // Executes weekly trading, income accounting, and stochastic exit of unprofitable shops.
     // Simulation rule: Shops may exit if not profitable, severing links with traders.
 
@@ -599,7 +601,7 @@ void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct Match
     }
 }
 
-int Simulation::calc1() {
+int Simulation::calc1(RunInfo& runInfo) {
     // Calculates monetary equilibrium and tracks the emergence of money in the simulation.
     // Simulation rule: Aggregates statistics to detect monetary phases and equilibrium.
 
@@ -662,7 +664,7 @@ int Simulation::calc1() {
     return (runInfo.endcount >= info.persist);
 }
 
-void Simulation::calc2() {
+void Simulation::calc2(RunInfo& runInfo) {
     // Calculates final statistics for the simulation run, including surplus and shop counts.
     // Simulation rule: Summarizes market outcomes for analysis.
     std::vector<double> Pinv(info.n + 1, 0.0);
@@ -691,7 +693,7 @@ void Simulation::calc2() {
     }
     runInfo.SurpSME = info.m - info.n * info.f1 - (slope / 2.0) * info.n * (info.n - 1) - (info.n - 2) * overhead_f(runInfo.moneygood);
 
-    rmse(Pinv);
+    rmse(runInfo, Pinv);
 
     runInfo.Csurp = 0.0;
     for (Trader& trader : traders)
@@ -712,7 +714,7 @@ void Simulation::calc2() {
     }
 }
 
-void Simulation::rmse(std::vector<double> &Pinv) {
+void Simulation::rmse(RunInfo& runInfo, std::vector<double> &Pinv) {
     std::vector<double> vol[2], avp[2];
 
     // Computes root mean square error for price and volume statistics.
@@ -771,17 +773,17 @@ void Simulation::rmse(std::vector<double> &Pinv) {
     }
 }
 
-void Simulation::report(int tt) {
+void Simulation::report(RunInfo& runInfo) {
     // Reports simulation progress and statistics at specified intervals.
 
     if (prtoscr != 0) {
-        if (tt == -1)
+        if (runInfo.t == -1)
             std::printf("***");
         std::printf("%6.0f %6.0f ", runInfo.part, runInfo.moneytraders);
         for (int b = 1; b <= 5 && b <= info.n; ++b) {
             std::printf("%6.0f ", usingmoney[b]);
         }
-        std::printf("%6d %4d\n", (tt == -1 ? runInfo.t : tt) / 50, runInfo.NumberOfShops);
+        std::printf("%6d %4d\n", (runInfo.t == -1 ? runInfo.t : runInfo.t) / 50, runInfo.NumberOfShops);
     }
 }
 

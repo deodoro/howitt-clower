@@ -20,6 +20,9 @@
 #ifndef SIMULATIONINFO_H
 #define SIMULATIONINFO_H
 
+#include <string>
+#include <sstream>
+
 /**
  * @brief Class to store simulation level parameters.
  */
@@ -50,6 +53,33 @@ public:
           alpha(0.25), theta(0.01), C(5.0), persist(10), RANDSEED(1),
           m(bsize * n * (n - 1)), numruns(1), FirstSlope(16), LastSlope(18),
           T(20000) {}
+
+    /**
+     * @brief Convert the simulation info to a JSON string.
+     * @return A JSON string representation of the simulation parameters.
+     */
+    std::string to_json() const {
+        std::ostringstream oss;
+        oss << "{";
+        oss << "\"n\":" << n << ",";
+        oss << "\"bsize\":" << bsize << ",";
+        oss << "\"K\":" << K << ",";
+        oss << "\"f1\":" << f1 << ",";
+        oss << "\"xMax\":" << xMax << ",";
+        oss << "\"lambda\":" << lambda << ",";
+        oss << "\"alpha\":" << alpha << ",";
+        oss << "\"theta\":" << theta << ",";
+        oss << "\"C\":" << C << ",";
+        oss << "\"persist\":" << persist << ",";
+        oss << "\"RANDSEED\":" << RANDSEED << ",";
+        oss << "\"m\":" << m << ",";
+        oss << "\"numruns\":" << numruns << ",";
+        oss << "\"FirstSlope\":" << FirstSlope << ",";
+        oss << "\"LastSlope\":" << LastSlope << ",";
+        oss << "\"T\":" << T;
+        oss << "}";
+        return oss.str();
+    }
 };
 
 #endif // SIMULATIONINFO_H

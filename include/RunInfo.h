@@ -22,6 +22,8 @@
 
 #include <ctime>
 #include <cstdio>
+#include <string>
+#include <sstream>
 
 /**
  * @brief Class to store run-scoped variables for the simulation.
@@ -53,6 +55,39 @@ public:
     // Run and time variables
     int run{1};
     int t{0};
+
+    /**
+     * @brief Convert the run info to a JSON string.
+     * @return A JSON string representation of the run parameters.
+     */
+    std::string to_json() const {
+        std::ostringstream oss;
+        oss << "{";
+        oss << "\"NumberOfShops\":" << NumberOfShops << ",";
+        oss << "\"BS\":" << BS << ",";
+        oss << "\"Nshop\":" << Nshop << ",";
+        oss << "\"Slope\":" << Slope << ",";
+        oss << "\"devyear\":" << devyear << ",";
+        oss << "\"monyear\":" << monyear << ",";
+        oss << "\"endcount\":" << endcount << ",";
+        oss << "\"devcount\":" << devcount << ",";
+        oss << "\"monetary\":" << monetary << ",";
+        oss << "\"fulldev\":" << fulldev << ",";
+        oss << "\"moneygood\":" << moneygood << ",";
+        oss << "\"Fmon\":" << Fmon << ",";
+        oss << "\"W\":" << W << ",";
+        oss << "\"SurpSME\":" << SurpSME << ",";
+        oss << "\"part\":" << part << ",";
+        oss << "\"moneytraders\":" << moneytraders << ",";
+        oss << "\"usingmax\":" << usingmax << ",";
+        oss << "\"Csurp\":" << Csurp << ",";
+        oss << "\"Psurp\":" << Psurp << ",";
+        oss << "\"R\":[" << R[0] << "," << R[1] << "],";
+        oss << "\"run\":" << run << ",";
+        oss << "\"t\":" << t;
+        oss << "}";
+        return oss.str();
+    }
 };
 
 #endif // RUNINFO_H

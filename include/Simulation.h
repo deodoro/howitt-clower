@@ -75,9 +75,6 @@ private:
 
     std::vector<double> usingmoney; // per good
 
-    // Run-scoped variables encapsulated in RunInfo
-    RunInfo runInfo;
-
     // Helper methods
     /**
      * Computes the overhead cost function for shops based on good index and slope parameter.
@@ -93,7 +90,7 @@ private:
      * Initializes the state for a new simulation run, resetting agents and shops.
      * Simulation rule: Prepares the market for a fresh round of trading and adaptation.
      */
-    void init_run();
+    void init_run(RunInfo& runInfo);
     /**
      * Randomizes the weekly lineup of traders for matching and trading.
      * Simulation rule: Ensures agent interactions are permuted each week.
@@ -103,7 +100,7 @@ private:
      * Handles entry of new shops by prospective entrepreneurs.
      * Simulation rule: Traders may open shops if conditions are favorable.
      */
-    void weekly_entry();
+    void weekly_entry(RunInfo& runInfo);
     /**
      * Matches traders to shops based on utility and compatibility, updating links.
      * Simulation rule: Agents seek optimal trading partners each week.
@@ -117,7 +114,7 @@ private:
      * Executes weekly trading, income accounting, and stochastic exit of unprofitable shops.
      * Simulation rule: Shops may exit if not profitable, severing links with traders.
      */
-    void weekly_trade_and_exit();
+    void weekly_trade_and_exit(RunInfo& runInfo);
     /**
      * Updates shop targets and posted prices adaptively based on recent performance.
      * Simulation rule: Shops adjust strategies to maximize profit and survive.
@@ -159,21 +156,21 @@ private:
      * Calculates monetary equilibrium and tracks the emergence of money in the simulation.
      * Simulation rule: Aggregates statistics to detect monetary phases and equilibrium.
      */
-    int calc1();
+    int calc1(RunInfo& runInfo);
     /**
      * Calculates final statistics for the simulation run, including surplus and shop counts.
      * Simulation rule: Summarizes market outcomes for analysis.
      */
-    void calc2();
+    void calc2(RunInfo& runInfo);
     /**
      * Computes root mean square error for price and volume statistics.
      * Simulation rule: Measures market efficiency and price dispersion.
      */
-    void rmse(std::vector<double> &Pinv);
+    void rmse(RunInfo& runInfo, std::vector<double> &Pinv);
     /**
      * Reports simulation progress and statistics at specified intervals.
      */
-    void report(int tt);
+    void report(RunInfo& runInfo);
     /**
      * Prints debug information about the simulation state.
      */
