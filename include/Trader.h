@@ -66,10 +66,6 @@ public:
      * Set the pointer to the family shop (owned shop).
      */
     void set_familyshop(Shop* shop);
-    /**
-     * Set the reference to the shops vector.
-     */
-    void set_shops(std::vector<Shop>* s) { shops_ref = s; }
 
     /**
      * Get the supply good for the trader.
@@ -147,7 +143,6 @@ private:
     int source_idx{0};
     int outlet_idx{0};
     int familyshop_idx{0};      // owned shop index (0 if none)
-    std::vector<Shop>* shops_ref{nullptr};
     // TODO: confirm if outlet/source are the in same direction as in the paper
     Shop* source{nullptr};
     Shop* outlet{nullptr};

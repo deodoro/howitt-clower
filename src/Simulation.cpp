@@ -50,9 +50,6 @@ struct MatchEvaluation {
 Simulation::Simulation() {
     traders.resize(m + 1); // 1-based
     shops.resize(K + 1);   // 1-based
-    for (size_t i = 1; i < traders.size(); ++i) {
-        traders[i].set_shops(&shops);
-    }
     produces.assign(n + 1, {});
     consumes.assign(n + 1, {});
     usingmoney.assign(n + 1, 0.0);
