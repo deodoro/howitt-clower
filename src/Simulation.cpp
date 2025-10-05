@@ -383,7 +383,9 @@ void Simulation::weekly_update_prices() {
     }
 }
 
-// NOTE: why is it that traders researched are not the same as traders matched later? If it's a random/statistical thing, should it be a larger sample?
+// NOTE: ASK PROFESSOR AXTELL: Why is it that traders evaluate the market positively given their utility compared to a partner? I understand
+// it is the trade in essence, but why does it require the utility of trader be greater than the partner's?
+
 // NOTE: is this process supposed to be paired two by two?
 // Research process for a prospective owner r
 // Should return an object ResearchResults, with targ0 and targ1 set as the local variables, and enter set as the return value of the function
@@ -403,39 +405,41 @@ ResearchResults Simulation::research(Trader& trader) {
 
     bool enter = true;
 
-    // NOTE[AUTOMATED] Paper’s research sample is FOUR SPECIFIC TRANS­ACTORS:
-    // (prod-i), (cons-j) on one side; (prod-j), (cons-i) on the other.
-    // Code below uses (comrade), (soulmate), (random consumer of i), (random producer of j).
-    // Confirm equivalence or replace selections to match exactly before accepting “enter”.
 
+    // NOTE: Double check the evaluation order. In the paper, it says:
+    // (prod-i), (cons-j) on one side; (prod-j), (cons-i) on the other.
+    // Code uses (comrade), (soulmate), (random consumer of i), (random producer of j).
+    // Currently assuming they are equivalent because the code requires AND condition using both sides
+
+
+    /* Testing if anyone would be willing to trade trader's demanded good*/
     // Test with a comrade
-    Trader& partner = traders[trader.any_comrade(produces)];
+    Trader& comrade = traders[trader.any_comrade(produces)];
     double U = 0.0;
-    // NOTE: why partner utility not own?
-    double Ucomp = partner.utility();
+    // NOTE: why comrade utility not own?
+    double Ucomp = comrade.utility();
     // direct or indirect reachability check through fr's links
-    if (trader.wants_to_trade_in(partner.get_demand_good())) {
+    if (trader.wants_to_trade_in(comrade.get_demand_good())) {  // Comrade produces and consumes the same as  trader
         U = P0;
     }
-    else {
-        if (partner.get_source() &&
-            trader.wants_to_trade_in(partner.get_source()->get_the_other_good(partner.get_demand_good()))) {
-            U = partner.get_source()->get_price_demand(partner.get_demand_good()) * P0;
+    else { // Comrade produces the same, but consumes another. Can they trade indirectly?
+        if (comrade.get_source() &&
+            trader.wants_to_trade_in(comrade.get_source()->get_the_other_good(comrade.get_demand_good()))) {
+            U = comrade.get_source()->get_price_demand(comrade.get_demand_good()) * P0;
         }
     }
 
-    if (U < Ucomp) {
-        // Test with a soulmate
-        Trader& partner2 = traders[trader.soulmate(consumes)];
-        Ucomp = partner2.utility();
+    if (U < Ucomp) { // Comrades  don't buy the demand, would soulmates supply something at least (same consumption)?
+        Trader& soulmate = traders[trader.soulmate(consumes)];
+        Ucomp = soulmate.utility();
         U = 0.0;
-        if (trader.wants_to_trade_out(partner2.get_supplied_good())) {
+        if (trader.wants_to_trade_out(soulmate.get_supplied_good())) { // Soulmate produces and consumes the same
             U = P0;
         }
-        else {
-            if (partner2.get_outlet() &&
-                trader.wants_to_trade_out(partner2.get_outlet()->get_the_other_good(partner2.get_supplied_good()))) {
-                U = partner2.get_outlet()->get_price_supply(partner2.get_supplied_good()) * P0;
+        else { // Soulmate produces the same, but consumes another. Can they trade indirectly?
+            if (soulmate.get_outlet() &&
+                trader.wants_to_trade_out(soulmate.get_outlet()->get_the_other_good(soulmate.get_supplied_good()))) {
+                U = soulmate.get_outlet()->get_price_supply(soulmate.get_supplied_good()) * P0;
             }
         }
         if (U < Ucomp) {
@@ -443,41 +447,40 @@ ResearchResults Simulation::research(Trader& trader) {
         }
     }
 
-    if (enter) {
-        Trader& partner3 = random_consumer(trader.get_supplied_good());
-        Ucomp = partner3.utility();
+    /* Testing if anyone would be willing to trade trader's supplied good*/
+    if (enter) { // Utility does not increase with the traders, would it work with a random consumer?
+        Trader& any_consumer = random_consumer(trader.get_supplied_good());
+        Ucomp = any_consumer.utility();
         U = 0.0;
-        if (trader.wants_to_trade_in(partner3.get_supplied_good())) {
+        if (trader.wants_to_trade_in(any_consumer.get_supplied_good())) {
             U = P1;
         }
         else {
-            if (partner3.get_outlet() &&
-                trader.wants_to_trade_in(partner3.get_outlet()->get_the_other_good(partner3.get_supplied_good()))) {
-                U = partner3.get_outlet()->get_price_demand(trader.get_demand_good()) * P1;
+            if (any_consumer.get_outlet() &&
+                trader.wants_to_trade_in(any_consumer.get_outlet()->get_the_other_good(any_consumer.get_supplied_good()))) {
+                U = any_consumer.get_outlet()->get_price_demand(trader.get_demand_good()) * P1;
             }
         }
-    }
 
-    if (enter && (U < Ucomp)) {
-        // Stranger who produces d[r]
-        Trader& partner4 = random_producer(trader.get_demand_good());
-        Ucomp = partner4.utility();
-        U = 0.0;
-        if (trader.wants_to_trade_out(partner4.get_demand_good())) {
-            U = P1;
-        }
-        else {
-            if (partner4.get_source() &&
-                trader.wants_to_trade_out(partner4.get_source()->get_the_other_good(partner4.get_demand_good()))) {
-                U = P1 * partner4.get_source()->get_price_demand(partner4.get_demand_good());
-            }
-        }
         if (U < Ucomp) {
-            enter = false;
+            // Stranger who produces d[r]
+            Trader& any_producer = random_producer(trader.get_demand_good());
+            Ucomp = any_producer.utility();
+            U = 0.0;
+            if (trader.wants_to_trade_out(any_producer.get_demand_good())) {
+                U = P1;
+            }
+            else {
+                if (any_producer.get_source() &&
+                    trader.wants_to_trade_out(any_producer.get_source()->get_the_other_good(any_producer.get_demand_good()))) {
+                    U = P1 * any_producer.get_source()->get_price_demand(any_producer.get_demand_good());
+                }
+            }
+            if (U < Ucomp) {
+                enter = false;
+            }
         }
     }
-
-    // NOTE[AUTOMATED] Paper’s criterion: open if ≥1 prospective customer on EACH side would choose this shop when applying the Section 5 shopping rule with current links + this shop added. Ensure enter==true only in that case.
 
     res.enter = enter ? 1 : 0;
     return res;
