@@ -1,5 +1,5 @@
-Number Using Using Using Using Using Using 
-Active Money good1 good2 good3 good4 good5 Year NS 
+Number  Using  Using  Using  Using  Using  Using 
+Active  Money  good1  good2  good3  good4  good5   Year   NS 
     21      1      0      0      0      0      0      0    6
     80     11      9      0      0      0      1      0   12
    180     21     13      7      0      0      1      0   17
@@ -129,11 +129,11 @@ Active Money good1 good2 good3 good4 good5 Year NS
   2160   1718   1718      0      0      0      0     15   23
   2160   1718   1718      0      0      0      0     15   23
 Monetary equilibrium reached
-Run number 1. Time elapsed: 0.28 seconds.
+Run number 1. Time elapsed: 0.29 seconds.
 Slope equals 16, xMax equals 200
 
-Number Using Using Using Using Using Using 
-Active Money good1 good2 good3 good4 good5 Year NS 
+Number  Using  Using  Using  Using  Using  Using 
+Active  Money  good1  good2  good3  good4  good5   Year   NS 
     20      0      0      0      0      0      0      0    6
     78      2      2      0      0      0      0      0   12
    155      3      3      0      0      0      0      0   18
@@ -316,6 +316,6 @@ Active Money good1 good2 good3 good4 good5 Year NS
   2160   1714   1714      0      0      0      0     21   24
   2160   1715   1715      0      0      0      0     21   23
 Monetary equilibrium reached
-Run number 1. Time elapsed: 0.33 seconds.
+Run number 1. Time elapsed: 0.36 seconds.
 Slope equals 18, xMax equals 200
 

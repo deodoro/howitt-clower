@@ -32,6 +32,8 @@
 #include <cstdio>
 #include <functional>
 
+#include "SimulationSerializer.h"
+
 struct MatchEvaluation;
 
 /**
@@ -45,6 +47,7 @@ struct MatchEvaluation;
  * - The math in methods encodes these rules, ensuring the simulated market evolves according to agent decisions and economic constraints.
  */
 class Simulation {
+    friend class SimulationSerializer;
 public:
     /**
      * Constructor builds the static economy (agents and lists).
@@ -59,14 +62,14 @@ public:
     /**
      * Get the collected run info for all slopes and runs.
      */
-    const std::vector<std::vector<RunInfo>>& get_runs_per_slope() const { return runs_per_slope; }
+    const std::vector<std::vector<RunInfo*>>& get_runs_per_slope() const { return runs_per_slope; }
 
 private:
     SimulationInfo info;
 
     double slope{16.0};
 
-    std::vector<std::vector<RunInfo>> runs_per_slope; // stores all runs for each slope
+    std::vector<std::vector<RunInfo*>> runs_per_slope; // stores all runs for each slope
 
     // State
     std::vector<Trader> traders;

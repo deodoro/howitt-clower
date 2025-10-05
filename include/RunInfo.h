@@ -36,6 +36,41 @@ class RunInfo {
 public:
     RunInfo(int n) : info_n(n) {}
 
+    /**
+     * @brief Create a copy of this RunInfo instance.
+     * @return A pointer to a new RunInfo object with the same state.
+     */
+    RunInfo* clone() const {
+        RunInfo* copy = new RunInfo(info_n);
+        copy->NumberOfShops = NumberOfShops;
+        copy->BS = BS;
+        copy->Nshop = Nshop;
+        copy->Slope = Slope;
+        copy->info_n = info_n;
+        copy->devyear = devyear;
+        copy->monyear = monyear;
+        copy->endcount = endcount;
+        copy->devcount = devcount;
+        copy->monetary = monetary;
+        copy->fulldev = fulldev;
+        copy->moneygood = moneygood;
+        copy->Fmon = Fmon;
+        copy->W = W;
+        copy->SurpSME = SurpSME;
+        copy->part = part;
+        copy->moneytraders = moneytraders;
+        copy->usingmax = usingmax;
+        copy->Csurp = Csurp;
+        copy->Psurp = Psurp;
+        copy->R[0] = R[0];
+        copy->R[1] = R[1];
+        copy->time_spent = time_spent;
+        copy->usingmoney = usingmoney;
+        copy->run = run;
+        copy->t = t;
+        return copy;
+    }
+
     // Active shops and related counts
     int NumberOfShops{0};        // active shops
     int BS{0};                   // active non-money shops

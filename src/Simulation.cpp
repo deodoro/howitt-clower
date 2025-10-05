@@ -70,7 +70,7 @@ void Simulation::run_all() {
     for (int _s = info.FirstSlope; _s <= info.LastSlope; _s += 2) {
         slope = _s;
 
-        std::vector<RunInfo> runs_for_slope;
+        std::vector<RunInfo*> runs_for_slope;
 
         // For each slope, run multiple simulation runs
         for (int run = 1; run <= info.numruns; ++run) {
@@ -97,6 +97,7 @@ void Simulation::run_all() {
                 // Periodically report progress and check for monetary equilibrium
                 if (runInfo.t % PRINT_LOOP_N == 0) {
                     runInfo.monetary = calc1(runInfo);
+                    runs_for_slope.push_back(runInfo.clone());
                     runInfo.report();
                     if (runInfo.monetary) {
                         printf("Monetary equilibrium reached\n");
@@ -117,7 +118,7 @@ void Simulation::run_all() {
             std::printf("Slope equals %-.0f, xMax equals %d\n\n", slope, info.xMax);
 
             // Store the runInfo for this run
-            runs_for_slope.push_back(runInfo);
+            runs_for_slope.push_back(runInfo.clone());
         }
 
         // Store all runs for this slope
@@ -167,16 +168,16 @@ void Simulation::init_run(RunInfo& runInfo) {
 
     rng.seed(info.RANDSEED + runInfo.run - 1, info.RANDSEED + runInfo.run - 1);
 
-    std::printf("Number Using Using Using Using Using Using \n");
-    std::printf("Active Money good1 good2 good3 good4 good5 Year NS \n");
+    std::printf("Number  Using  Using  Using  Using  Using  Using \n");
+    std::printf("Active  Money  good1  good2  good3  good4  good5   Year   NS \n");
 
     // Theoretical max number of "money traders": bsize*(n-2)*(n-1)
-    runInfo.Fmon = info.bsize * (info.n - 2.0) * (info.n - 1.0);
-    runInfo.endcount = 0;
+    runInfo.Fmon = info.bsize * (info.n - 2.0) * (info.n - 1.0); // move to Info
+    runInfo.endcount = 0; // Move to info
     runInfo.fulldev = 0;
-    runInfo.devyear = -1;
-    runInfo.monyear = -1;
-    runInfo.devcount = 0;
+    runInfo.devyear = -1; // Move to info
+    runInfo.monyear = -1; // Move to info
+    runInfo.devcount = 0;  // Move to info
     runInfo.t = 0;
     runInfo.NumberOfShops = 0;
 
@@ -440,21 +441,18 @@ ResearchResults Simulation::research(Trader& trader) {
 
 Trader& Simulation::random_consumer(int good) {
     // Selects a random consumer of a given good from the trader population.
-
     int k = 1 + rng.uniform_int(std::max(1, (int)consumes[good].size()) - 1);
     return traders[consumes[good][k - 1]];
 }
 
 Trader& Simulation::random_producer(int good) {
     // Selects a random producer of a given good from the trader population.
-
     int k = 1 + rng.uniform_int(std::max(1, (int)produces[good].size()) - 1);
     return traders[produces[good][k - 1]];
 }
 
 Shop& Simulation::random_shop() {
     // Selects a random shop from the shop population.
-
     return shops[rng.uniform_int(info.K) + 1];
 }
 
@@ -502,7 +500,6 @@ void Simulation::try_barter(const Trader* trader, std::vector<int>& c, struct Ma
 void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
     // Attempts to improve a trader's outlet or source by matching with candidate shops.
     // Simulation rule: Agents seek better trading terms through shop selection.
-
     Shop zero;
     int s = trader->get_supplied_good();
     int d = trader->get_demand_good();
@@ -544,7 +541,6 @@ void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct Match
 void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
     // Attempts to match a trader with two shops for indirect trade via a common intermediary.
     // Simulation rule: Indirect trade is considered for maximizing utility.
-
     for (size_t ia = 0; ia < c.size(); ++ia) {
         int a = c[ia];
         if (shops[a].provides(trader->get_supplied_good())) {
@@ -571,7 +567,6 @@ void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct Match
 int Simulation::calc1(RunInfo& runInfo) {
     // Calculates monetary equilibrium and tracks the emergence of money in the simulation.
     // Simulation rule: Aggregates statistics to detect monetary phases and equilibrium.
-
     runInfo.part = 0.0;
     runInfo.moneytraders = 0.0;
     runInfo.usingmoney.assign(info.n + 1, 0.0);
@@ -586,8 +581,8 @@ int Simulation::calc1(RunInfo& runInfo) {
             int mb = (shop_b != nullptr && shop_b->g[0] == trader.get_demand_good());
 
             runInfo.part += (shop_a->g[ma] == trader.get_demand_good()) ||
-                    (shop_b && (shop_a->g[ma] == shop_b->g[mb])) ||
-                    (shop_b == nullptr && shop_a->g[ma] == 0);
+                    (shop_b != nullptr && (shop_a->g[ma] == shop_b->g[mb])) ||
+                    (shop_b == nullptr && (shop_a->g[ma] == 0));
 
             if (shop_b != nullptr && shop_a->g[ma] == shop_b->g[mb]) {
                 runInfo.moneytraders += 1.0;
@@ -596,18 +591,16 @@ int Simulation::calc1(RunInfo& runInfo) {
         }
     }
 
-    if (runInfo.fulldev == 0) {
-        if (runInfo.part >= 0.99 * info.m) {
-            if (runInfo.devcount == 0)
-                runInfo.devyear = runInfo.t / 50;
-            runInfo.devcount++;
-        }
-        else {
-            runInfo.devcount = 0;
-        }
-        if (runInfo.devcount >= info.persist)
-            runInfo.fulldev = 1;
+    if (runInfo.part >= 0.99 * info.m) {
+        if (runInfo.devcount == 0)
+            runInfo.devyear = runInfo.t / 50;
+        runInfo.devcount++;
     }
+    else {
+        runInfo.devcount = 0;
+    }
+    if (runInfo.devcount >= info.persist)
+        runInfo.fulldev = 1;
 
     runInfo.usingmax = 0.0;
     runInfo.moneygood = 0;
@@ -637,10 +630,6 @@ void Simulation::calc2(RunInfo& runInfo) {
     std::vector<double> Pinv(info.n + 1, 0.0);
 
     auto overhead_f = make_overhead(info.f1, slope);
-    if (runInfo.monetary == 0)
-        runInfo.monyear = -1;
-    if (runInfo.fulldev == 0)
-        runInfo.devyear = -1;
 
     // count non-money active shops
     runInfo.BS = 0;
@@ -682,10 +671,9 @@ void Simulation::calc2(RunInfo& runInfo) {
 }
 
 void Simulation::rmse(RunInfo& runInfo, std::vector<double> &Pinv) {
-    std::vector<double> vol[2], avp[2];
-
     // Computes root mean square error for price and volume statistics.
     // Simulation rule: Measures market efficiency and price dispersion.
+    std::vector<double> vol[2], avp[2];
     for (int h = 0; h < 2; ++h) {
         vol[h].assign(info.n + 1, 0.0);
         avp[h].assign(info.n + 1, 0.0);

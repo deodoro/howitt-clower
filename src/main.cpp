@@ -1,3 +1,4 @@
+
 /*
  * main.cpp
  *
@@ -18,6 +19,10 @@
  */
 
 #include "Simulation.h"
+#include "SimulationSerializer.h"
+#include <fstream>
+#include <ctime>
+#include <iomanip>
 
 // -------------------------
 // Entry point
@@ -25,5 +30,17 @@
 int main() {
     Simulation sim;
     sim.run_all();
+
+    // Get current time for filename
+    std::time_t t = std::time(nullptr);
+    std::tm tm = *std::localtime(&t);
+    char buf[32];
+    std::strftime(buf, sizeof(buf), "runs-%Y%m%d-%H%M.json", &tm);
+
+    std::ofstream out(buf);
+    if (out) {
+        SimulationSerializer::serialize(sim, out);
+        out.close();
+    }
     return 0;
 }
