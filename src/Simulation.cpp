@@ -3,7 +3,32 @@
  *
  * Author: Jose Deodoro <deodoro.filho@gmail.com> <jdeoliv@gmu.edu>
  *
- * This program is free software: you can redistribute it and/or modify
+ * This program is free software: you can    // NOTE[AUTOMATED]: Paper's overhead function is f(i) = s*(i-1) with no        // NOTE[AUTOMATED]: Paper Sectio            // NOTE[AUTOMATED]: Paper Section 7.2 sa    // NOTE[AUTOMATED]: Paper Section 7.2 i    // NOTE[AUTOMAT    // NOTE[AUTOMATED]: Paper Section 5.3 exit     // NOTE[AUTOMATED]: Paper Section 7.1 market research samples 4 specific t    // NOTE[AUTOMATED]: Paper Section 7.1 entry criterion: open shop if ≥1 prospective customer on EACH side
+    // would choose this shop using Section 5 utility maximization rule.
+    // CRITICAL: Entry requires customers on BOTH sides, not just one side.
+    // Current logic tracks 'enter' flag - verify it implements this bilateral requirement correctly.ansactors for shop (i,j):
+    // Prospective customers side 1: one with production=i, one with consumption=j
+    // Prospective customers side 2: one with production=j, one with consumption=i
+    // CURRENT DEVIATION: This code tests (comrade, soulmate, random consumer of i, random producer of j)
+    // IMPACT: May affect entry decisions and thus emergence patterns. Consider refactoring for exact compliance.: shop exits with probability θ if operating surplus ≤ 0 in either commodity.
+    // VERIFICATION: Current is_profitable() checks both π₀ₖ > 0 AND π₁ₖ > 0.
+    // Paper suggests exit if either π₀ₖ ≤ 0 OR π₁ₖ ≤ 0. Check if logic matches intended behavior.D]: Verify income accounting matches paper's Section 5.3 operating surplus formulas:
+    // π₀ₖ = y₀ₖ - p₁ₖ*y₁ₖ - f(g₀ₖ)  and  π₁ₖ = y₁ₖ - p₀ₖ*y₀ₖ - f(g₁ₖ)
+    // Critical for correct exit decisions. Shop.is_profitable() should implement these exactly.cludes fallback for "widowed" transactors:
+    // If no profitable relationship found, switch to any outlet offering positive price for production commodity.
+    // VERIFICATION NEEDED: Current code has some fallback logic but requires review against paper specification.
+    // This is critical for handling shop exits that leave traders stranded.pling order is:
+            // 1. Random shop location k∈{1,...,K} (if occupied)
+            // 2. Comrade's outlet (transactor with same production commodity)
+            // 3. Soulmate's source (transactor with same consumption commodity)
+            // CURRENT: Code includes all three but order in vector may not match paper sequence.
+            // IMPACT: Minor - affects which shop is tested first, but all valid shops are considered. 7.1 - market research tests 4 specific transactor types:
+        // Side 1: one with production=i, one with consumption=j
+        // Side 2: one with production=j, one with consumption=i
+        // CURRENT ISSUE: research() tests different types (comrade, soulmate, random consumer/producer).
+        // RECOMMENDATION: Verify research() logic matches paper's exact 4-type specification.intercept term.
+    // This implementation allows f1 as intercept: f(i) = f1 + (i-1)*slope.
+    // VERIFICATION NEEDED: Check that caller sets f1=0 for paper compliance.redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -70,6 +95,9 @@ void Simulation::run_all() {
     for (int _s = info.FirstSlope; _s <= info.LastSlope; _s += 2) {
         slope = _s;
 
+        // NOTE[AUTOMATED]: Paper specifies f(i) = s*(i-1) exactly (Section 7, overhead cost function).
+        // Current implementation: f(i) = info.f1 + (i-1)*slope. For exact replication, set info.f1 = 0.
+        // IMPACT: Non-zero f1 may affect GDP calculations and monetary equilibrium emergence rates.
         std::vector<RunInfo*> runs_for_slope;
 
         // For each slope, run multiple simulation runs
@@ -90,6 +118,7 @@ void Simulation::run_all() {
                 } while (runInfo.NumberOfShops == 0);
 
                 // Perform weekly activities: matching, trading, exit, and price updates
+                  // NOTE[AUTOMATED] Paper’s Stage 7.1 "Entry" is once per week; Stage 7.2 "Shopping" processes all traders in a fixed weekly order. Keep this order.
                 weekly_matching();
                 weekly_trade_and_exit(runInfo);
                 weekly_update_prices();
@@ -130,6 +159,7 @@ std::function<double(int)> Simulation::make_overhead(double f1, double slope) {
     // Computes the overhead cost for a shop based on good index and slope.
     // Simulation rule: Overhead increases with good index and slope, affecting shop profitability.
 
+    // NOTE[AUTOMATED] Paper specifies f(i) = s*(i-1). To match exactly, set f1==0 and pass slope==s from sweep. If f1>0, you’re deviating from the paper.
     return [f1, slope](int i) -> double {
         return f1 + (i - 1) * slope;
     };
@@ -185,6 +215,7 @@ void Simulation::init_run(RunInfo& runInfo) {
     for (Trader& trader : traders) { trader.sever_links(); }
     for (Shop& shop : shops) { shop.clear(); }
 
+    // Trader order is shuffled every run
     lineup();
 }
 
@@ -198,6 +229,7 @@ void Simulation::weekly_entry(RunInfo& runInfo) {
     Trader& trader = traders[r];
     if (runInfo.NumberOfShops < info.K && trader.get_familyshop() == nullptr) {
         ResearchResults ok = research(trader);
+        // NOTE[AUTOMATED] Paper’s 7.1 requires success with “at least one prospective customer on each side” using the 4 fixed types (prod-i, cons-j, prod-j, cons-i). Confirm research() replicates this exact rule before opening.
         if (ok.enter > 0) {
             for (Shop& shop : shops) {
                 if (!shop.active && (&shop != &shops.front())) { // skip index 0
@@ -205,6 +237,7 @@ void Simulation::weekly_entry(RunInfo& runInfo) {
                     trader.open_shop(shop);
                     shop.set_targets(ok.targ0, ok.targ1);
                     shop.update_prices(info.C, overhead_f);
+                    // NOTE[AUTOMATED] Verify posted prices use p0 = ((tr1 - f(g1) - C)/tr0)^+ and p1 analogously (positive-part). Also check that implied p0*p1 < 1 where relevant.
                     break;
                 }
             }
@@ -232,6 +265,7 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
             // candidate initialization with current links
 
             // NOTE: order of test does not match paper (random should be first)
+            // NOTE[AUTOMATED] Paper’s 7.2 sampling order: (1) a random location k (if occupied), (2) comrade’s outlet (same production), (3) soulmate’s source (same consumption). Reorder push to cand accordingly for fidelity.
             std::vector<int> cand;
             Shop* comrade_shop = traders[trader->trade_comrade(produces)].get_outlet(); // same production
             Shop* soulmate_shop = traders[trader->soulmate(consumes)].get_source(); // same consumption
@@ -277,6 +311,8 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
         }
         report_trader(trader);
     }
+
+    // NOTE[AUTOMATED] Paper also forces a switch to any outlet with positive price if current relationships are unprofitable (“widowed” cases). Ensure your fallback covers this.
     return response;
 }
 
@@ -315,6 +351,10 @@ void Simulation::weekly_trade_and_exit(RunInfo& runInfo) {
             }
         }
     }
+
+    // NOTE[AUTOMATED] Confirm add_income and internal accounting ensure the shop’s two side-flows imply
+    // π0k = y0k - p1k*y1k - f(g0k) and π1k = y1k - p0k*y0k - f(g1k) as in §5.3. Otherwise exit decisions will differ.
+
     // exit if unprofitable
     for (Shop& shop : shops) {
         if (shop.active) {
@@ -329,6 +369,8 @@ void Simulation::weekly_trade_and_exit(RunInfo& runInfo) {
         }
     }
 
+    // NOTE[AUTOMATED] Paper’s exit rule: if either operating surplus ≤ 0, exit with probability θ that week. Ensure is_profitable() implements “positive in both commodities” exactly.
+
     print_debug("Weekly trade and exit completed");
 }
 
@@ -341,6 +383,7 @@ void Simulation::weekly_update_prices() {
     for (Shop& shop : shops) {
         if (shop.active) {
             shop.update_targets(info.alpha);
+
             shop.update_prices(info.C, overhead_f);
         }
     }
@@ -365,6 +408,11 @@ ResearchResults Simulation::research(Trader& trader) {
     double P1 = priceF(res.targ1, res.targ0, overhead_f(trader.get_supplied_good()));
 
     bool enter = true;
+
+    // NOTE[AUTOMATED] Paper’s research sample is FOUR SPECIFIC TRANS­ACTORS:
+    // (prod-i), (cons-j) on one side; (prod-j), (cons-i) on the other.
+    // Code below uses (comrade), (soulmate), (random consumer of i), (random producer of j).
+    // Confirm equivalence or replace selections to match exactly before accepting “enter”.
 
     // Test with a comrade
     Trader& partner = traders[trader.any_comrade(produces)];
@@ -435,6 +483,8 @@ ResearchResults Simulation::research(Trader& trader) {
         }
     }
 
+    // NOTE[AUTOMATED] Paper’s criterion: open if ≥1 prospective customer on EACH side would choose this shop when applying the Section 5 shopping rule with current links + this shop added. Ensure enter==true only in that case.
+
     res.enter = enter ? 1 : 0;
     return res;
 }
@@ -453,6 +503,7 @@ Trader& Simulation::random_producer(int good) {
 
 Shop& Simulation::random_shop() {
     // Selects a random shop from the shop population.
+    // NOTE[AUTOMATED] Paper picks a random location k∈{1,…,K} and includes it iff occupied. random_shop() should emulate that (possibly returning an inactive slot and being filtered out above).
     return shops[rng.uniform_int(info.K) + 1];
 }
 
@@ -493,6 +544,8 @@ void Simulation::try_barter(const Trader* trader, std::vector<int>& c, struct Ma
             }
         }
     }
+
+    // NOTE[AUTOMATED] Paper does not *prioritize* direct barter; it simply considers all feasible sets and chooses the best via the Section 5 rule. Ensure this heuristic does not bias away from monetary patterns.
 }
 
 // NOTE: Should NULL store be evaluated? PS: c[.] may be zero in the loop
@@ -536,6 +589,8 @@ void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct Match
             }
         }
     }
+
+    // NOTE[AUTOMATED] Ensure “candidate improvement” respects the Section 5 choice rule (maximize weekly consumption), not a greedy local swap that could violate global best among the sample.
 }
 
 void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
