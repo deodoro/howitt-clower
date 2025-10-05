@@ -27,8 +27,6 @@
         // Side 2: one with production=j, one with consumption=i
         // CURRENT ISSUE: research() tests different types (comrade, soulmate, random consumer/producer).
         // RECOMMENDATION: Verify research() logic matches paper's exact 4-type specification.intercept term.
-    // This implementation allows f1 as intercept: f(i) = f1 + (i-1)*slope.
-    // VERIFICATION NEEDED: Check that caller sets f1=0 for paper compliance.redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -95,9 +93,6 @@ void Simulation::run_all() {
     for (int _s = info.FirstSlope; _s <= info.LastSlope; _s += 2) {
         slope = _s;
 
-        // NOTE[AUTOMATED]: Paper specifies f(i) = s*(i-1) exactly (Section 7, overhead cost function).
-        // Current implementation: f(i) = info.f1 + (i-1)*slope. For exact replication, set info.f1 = 0.
-        // IMPACT: Non-zero f1 may affect GDP calculations and monetary equilibrium emergence rates.
         std::vector<RunInfo*> runs_for_slope;
 
         // For each slope, run multiple simulation runs
@@ -159,7 +154,6 @@ std::function<double(int)> Simulation::make_overhead(double f1, double slope) {
     // Computes the overhead cost for a shop based on good index and slope.
     // Simulation rule: Overhead increases with good index and slope, affecting shop profitability.
 
-    // NOTE[AUTOMATED] Paper specifies f(i) = s*(i-1). To match exactly, set f1==0 and pass slope==s from sweep. If f1>0, you’re deviating from the paper.
     return [f1, slope](int i) -> double {
         return f1 + (i - 1) * slope;
     };

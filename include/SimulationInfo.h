@@ -49,7 +49,7 @@ public:
      * @brief Default constructor with default values.
      */
     SimulationInfo()
-        : n(10), bsize(24), K(200), f1(0.0), xMax(200), lambda(0.05),
+        : n(3), bsize(2), K(6), f1(0.0), xMax(200), lambda(0.05),
           alpha(0.25), theta(0.01), C(5.0), persist(10), RANDSEED(1),
           m(bsize * n * (n - 1)), numruns(1), FirstSlope(16), LastSlope(18),
           T(20000) {}
