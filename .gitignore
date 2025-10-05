@@ -11,3 +11,4 @@ howclow_oop
 dist/**
 .fuse_*
 runs*.json
+out/**

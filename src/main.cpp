@@ -35,7 +35,7 @@ int main() {
     std::time_t t = std::time(nullptr);
     std::tm tm = *std::localtime(&t);
     char buf[32];
-    std::strftime(buf, sizeof(buf), "runs-%Y%m%d-%H%M.json", &tm);
+    std::strftime(buf, sizeof(buf), "out/runs-%Y%m%d-%H%M.json", &tm);
 
     std::ofstream out(buf);
     if (out) {
