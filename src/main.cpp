@@ -23,13 +23,14 @@
 #include <fstream>
 #include <ctime>
 #include <iomanip>
+#include <vector>
 
 // -------------------------
 // Entry point
 // -------------------------
 int main() {
     Simulation sim;
-    sim.run_all();
+    std::vector<std::vector<RunInfo*>> runs = sim.run_all();
 
     // Get current time for filename
     std::time_t t = std::time(nullptr);
@@ -39,7 +40,7 @@ int main() {
 
     std::ofstream out(buf);
     if (out) {
-        SimulationSerializer::serialize(sim, out);
+        SimulationSerializer::serialize(sim.get_info(), runs, out);
         out.close();
     }
     return 0;

@@ -11,12 +11,11 @@ static void serializeRunInfo(const RunInfo* run, std::ostream& out) {
     out << run->to_json();
 }
 
-void SimulationSerializer::serialize(const Simulation& sim, std::ostream& out) {
+void SimulationSerializer::serialize(const SimulationInfo& info, const std::vector<std::vector<RunInfo*>>& runs, std::ostream& out) {
     out << "{\n";
     out << "  \"SimulationInfo\": ";
-    serializeSimulationInfo(sim.info, out);
+    serializeSimulationInfo(info, out);
     out << ",\n  \"runs_per_slope\": [\n";
-    const auto& runs = sim.runs_per_slope;
     for (size_t i = 0; i < runs.size(); ++i) {
         out << "    [\n";
         for (size_t j = 0; j < runs[i].size(); ++j) {

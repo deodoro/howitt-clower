@@ -57,19 +57,19 @@ public:
     /**
      * Runs all simulation sweeps and time steps, collecting results and statistics.
      */
-    void run_all();
+    std::vector<std::vector<RunInfo*>> run_all();
+
+
 
     /**
-     * Get the collected run info for all slopes and runs.
+     * Get the simulation information.
      */
-    const std::vector<std::vector<RunInfo*>>& get_runs_per_slope() const { return runs_per_slope; }
+    const SimulationInfo& get_info() const { return info; }
 
 private:
     SimulationInfo info;
 
     double slope{16.0};
-
-    std::vector<std::vector<RunInfo*>> runs_per_slope; // stores all runs for each slope
 
     // State
     std::vector<Trader> traders;

@@ -80,14 +80,14 @@ Simulation::Simulation(SimulationInfo info) : info(info) {
     init_static();
 }
 
-void Simulation::run_all() {
+std::vector<std::vector<RunInfo*>>  Simulation::run_all() {
     // Main simulation loop: runs all parameter sweeps and time steps.
     // Simulation rule: Orchestrates initialization, weekly activities, reporting, and statistics collection.
 
     // Time variables
     std::clock_t clock_begin{}, clock_finish{};
 
-    runs_per_slope.clear(); // clear any previous data
+    std::vector<std::vector<RunInfo*>> runs_per_slope; // clear any previous data
 
     // Loop over different slope values for parameter sweeps
     for (int _s = info.FirstSlope; _s <= info.LastSlope; _s += 2) {
@@ -148,6 +148,7 @@ void Simulation::run_all() {
         // Store all runs for this slope
         runs_per_slope.push_back(runs_for_slope);
     }
+    return runs_per_slope;
 }
 
 std::function<double(int)> Simulation::make_overhead(double f1, double slope) {
@@ -293,6 +294,7 @@ std::vector<MatchEvaluation>* Simulation::weekly_matching() {
                     trader->set_source(nullptr);
                 }
                 else { // trade wins
+                    // assert(eval.candidate_seller != nullptr);
                     trader->set_outlet(eval.candidate_seller);
                     trader->set_source(eval.candidate_buyer);
                 }
@@ -558,14 +560,14 @@ void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct Match
     int d = trader->get_demand_good();
     for (size_t idx = 0; idx < c.size(); ++idx) {
         Shop* shop = c[idx] > 0 ? &shops[c[idx]] : nullptr;
+        assert(shop != nullptr);
         Shop* candidate_seller = eval.candidate_seller ? eval.candidate_seller : &zero;
         Shop* candidate_buyer = eval.candidate_buyer ? eval.candidate_buyer : &zero;
 
-        // improve outlet (sell s)
-        if (shop && shop->provides(s)) {
-            if (candidate_seller->get_price_supply(s) < shop->get_price_supply(s)) {
-                if ((shop->get_the_other_good(s) == candidate_buyer->get_the_other_good(d))) {
-                    eval.Ucomp = shop->get_price_supply(s) * candidate_buyer->get_price_supply(s);
+        if (shop && shop->provides(s)) { // improve outlet (sell s)
+            if (candidate_seller->get_price_supply(s) < shop->get_price_supply(s)) { // If evaluated has better price
+                if ((shop->get_the_other_good(s) == candidate_buyer->get_the_other_good(d))) { // If they can trade directly...
+                    eval.Ucomp = shop->get_price_supply(s) * candidate_buyer->get_price_supply(s); // ...accrue full utility
                     eval.candidate_seller = shop;
                     c.erase(c.begin() + idx--); // Remove candidate from queue
                 }
@@ -575,13 +577,13 @@ void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct Match
                 }
             }
         }
+        // Shouldn't trader want to trader with the one with highest demand price?
         else if (shop && shop->provides(d)) { // improve source (buy d)
-            if (candidate_buyer->get_price_demand(d) < shop->get_price_demand(d)) {
-                if ((shop->get_the_other_good(d
-                ) == candidate_seller->get_the_other_good(s))) {
-                    eval.Ucomp = candidate_seller->get_price_supply(s) * shop->get_price_demand(d);
+            if (candidate_buyer->get_price_demand(d) < shop->get_price_demand(d)) { // If evaluated  has better price...
+                if ((shop->get_the_other_good(d) == candidate_seller->get_the_other_good(s))) { // If they can trade directly...
+                    eval.Ucomp = candidate_seller->get_price_supply(s) * shop->get_price_demand(d); // ...accrue full utility
                     eval.candidate_buyer = shop;
-                    c.erase(c.begin() + idx--);
+                    c.erase(c.begin() + idx--); // Remove candidate from queue
                 }
                 else if (candidate_buyer->get_price_demand(d) == 0.0) {
                     eval.candidate_buyer = shop;
@@ -594,7 +596,6 @@ void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct Match
 
 void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
     // Attempts to match a trader with two shops for indirect trade via a common intermediary.
-    // Simulation rule: Indirect trade is considered for maximizing utility.
     for (size_t ia = 0; ia < c.size(); ++ia) {
         int a = c[ia];
         if (shops[a].provides(trader->get_supplied_good())) {
@@ -604,8 +605,10 @@ void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct Match
                 int b = c[ib];
                 if (shops[b].provides(trader->get_demand_good())) {
                     // common intermediary condition
-                    if (shops[a].get_the_other_good(trader->get_supplied_good()) == shops[b].get_the_other_good(trader->get_demand_good())) {
-                        double val = shops[a].get_price_supply(trader->get_supplied_good()) * shops[b].get_price_demand(trader->get_demand_good());
+                    if (shops[a].get_the_other_good(trader->get_supplied_good()) ==
+                                    shops[b].get_the_other_good(trader->get_demand_good())) {
+                        double val = shops[a].get_price_supply(trader->get_supplied_good()) *
+                                        shops[b].get_price_demand(trader->get_demand_good());
                         if (eval.Ucomp < val) {
                             eval.Ucomp = val;
                             eval.candidate_seller = &shops[a];
@@ -620,7 +623,6 @@ void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct Match
 
 int Simulation::calc1(RunInfo& runInfo) {
     // Calculates monetary equilibrium and tracks the emergence of money in the simulation.
-    // Simulation rule: Aggregates statistics to detect monetary phases and equilibrium.
     runInfo.part = 0.0;
     runInfo.moneytraders = 0.0;
     runInfo.usingmoney.assign(info.n + 1, 0.0);
