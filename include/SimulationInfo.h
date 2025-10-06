@@ -59,28 +59,7 @@ public:
      * @brief Convert the simulation info to a JSON string.
      * @return A JSON string representation of the simulation parameters.
      */
-    std::string to_json() const {
-        std::ostringstream oss;
-        oss << "{";
-        oss << "\"n\":" << n << ",";
-        oss << "\"bsize\":" << bsize << ",";
-        oss << "\"K\":" << K << ",";
-        oss << "\"f1\":" << f1 << ",";
-        oss << "\"xMax\":" << xMax << ",";
-        oss << "\"lambda\":" << lambda << ",";
-        oss << "\"alpha\":" << alpha << ",";
-        oss << "\"theta\":" << theta << ",";
-        oss << "\"C\":" << C << ",";
-        oss << "\"persist\":" << persist << ",";
-        oss << "\"RANDSEED\":" << RANDSEED << ",";
-        oss << "\"m\":" << m << ",";
-        oss << "\"numruns\":" << numruns << ",";
-        oss << "\"FirstSlope\":" << FirstSlope << ",";
-        oss << "\"LastSlope\":" << LastSlope << ",";
-        oss << "\"T\":" << T;
-        oss << "}";
-        return oss.str();
-    }
+    std::string to_json() const;
 };
 
 #endif // SIMULATIONINFO_H

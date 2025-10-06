@@ -12,3 +12,5 @@ dist/**
 .fuse_*
 runs*.json
 out/**
+plot_slope_16.png
+plot_slope_18.png
