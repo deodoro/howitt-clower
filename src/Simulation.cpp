@@ -3,30 +3,7 @@
  *
  * Author: Jose Deodoro <deodoro.filho@gmail.com> <jdeoliv@gmu.edu>
  *
- * This program is free software: you can    // NOTE[AUTOMATED]: Paper's overhead function is f(i) = s*(i-1) with no        // NOTE[AUTOMATED]: Paper Sectio            // NOTE[AUTOMATED]: Paper Section 7.2 sa    // NOTE[AUTOMATED]: Paper Section 7.2 i    // NOTE[AUTOMAT    // NOTE[AUTOMATED]: Paper Section 5.3 exit     // NOTE[AUTOMATED]: Paper Section 7.1 market research samples 4 specific t    // NOTE[AUTOMATED]: Paper Section 7.1 entry criterion: open shop if ≥1 prospective customer on EACH side
-    // would choose this shop using Section 5 utility maximization rule.
-    // CRITICAL: Entry requires customers on BOTH sides, not just one side.
-    // Current logic tracks 'enter' flag - verify it implements this bilateral requirement correctly.ansactors for shop (i,j):
-    // Prospective customers side 1: one with production=i, one with consumption=j
-    // Prospective customers side 2: one with production=j, one with consumption=i
-    // CURRENT DEVIATION: This code tests (comrade, soulmate, random consumer of i, random producer of j)
-    // IMPACT: May affect entry decisions and thus emergence patterns. Consider refactoring for exact compliance.: shop exits with probability θ if operating surplus ≤ 0 in either commodity.
-    // VERIFICATION: Current is_profitable() checks both π₀ₖ > 0 AND π₁ₖ > 0.
-    // Paper suggests exit if either π₀ₖ ≤ 0 OR π₁ₖ ≤ 0. Check if logic matches intended behavior.D]: Verify income accounting matches paper's Section 5.3 operating surplus formulas:
-    // π₀ₖ = y₀ₖ - p₁ₖ*y₁ₖ - f(g₀ₖ)  and  π₁ₖ = y₁ₖ - p₀ₖ*y₀ₖ - f(g₁ₖ)
-    // Critical for correct exit decisions. Shop.is_profitable() should implement these exactly.cludes fallback for "widowed" transactors:
-    // If no profitable relationship found, switch to any outlet offering positive price for production commodity.
-    // VERIFICATION NEEDED: Current code has some fallback logic but requires review against paper specification.
-    // This is critical for handling shop exits that leave traders stranded.pling order is:
-            // 1. Random shop location k∈{1,...,K} (if occupied)
-            // 2. Comrade's outlet (transactor with same production commodity)
-            // 3. Soulmate's source (transactor with same consumption commodity)
-            // CURRENT: Code includes all three but order in vector may not match paper sequence.
-            // IMPACT: Minor - affects which shop is tested first, but all valid shops are considered. 7.1 - market research tests 4 specific transactor types:
-        // Side 1: one with production=i, one with consumption=j
-        // Side 2: one with production=j, one with consumption=i
-        // CURRENT ISSUE: research() tests different types (comrade, soulmate, random consumer/producer).
-        // RECOMMENDATION: Verify research() logic matches paper's exact 4-type specification.intercept term.
+ * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
@@ -83,10 +60,7 @@ Simulation::Simulation(SimulationInfo info) : info(info) {
 std::vector<std::vector<RunInfo*>>  Simulation::run_all() {
     // Main simulation loop: runs all parameter sweeps and time steps.
     // Simulation rule: Orchestrates initialization, weekly activities, reporting, and statistics collection.
-
-    // Time variables
     std::clock_t clock_begin{}, clock_finish{};
-
     std::vector<std::vector<RunInfo*>> runs_per_slope; // clear any previous data
 
     // Loop over different slope values for parameter sweeps
@@ -113,7 +87,6 @@ std::vector<std::vector<RunInfo*>>  Simulation::run_all() {
                 } while (runInfo.NumberOfShops == 0);
 
                 // Perform weekly activities: matching, trading, exit, and price updates
-                  // NOTE[AUTOMATED] Paper’s Stage 7.1 "Entry" is once per week; Stage 7.2 "Shopping" processes all traders in a fixed weekly order. Keep this order.
                 weekly_matching();
                 weekly_trade_and_exit(runInfo);
                 weekly_update_prices();
@@ -224,7 +197,6 @@ void Simulation::weekly_entry(RunInfo& runInfo) {
     Trader& trader = traders[r];
     if (runInfo.NumberOfShops < info.K && trader.get_familyshop() == nullptr) {
         ResearchResults ok = research(trader);
-        // NOTE[AUTOMATED] Paper’s 7.1 requires success with “at least one prospective customer on each side” using the 4 fixed types (prod-i, cons-j, prod-j, cons-i). Confirm research() replicates this exact rule before opening.
         if (ok.enter > 0) {
             for (Shop& shop : shops) {
                 if (!shop.active && (&shop != &shops.front())) { // skip index 0
@@ -232,7 +204,6 @@ void Simulation::weekly_entry(RunInfo& runInfo) {
                     trader.open_shop(shop);
                     shop.set_targets(ok.targ0, ok.targ1);
                     shop.update_prices(info.C, overhead_f);
-                    // NOTE[AUTOMATED] Verify posted prices use p0 = ((tr1 - f(g1) - C)/tr0)^+ and p1 analogously (positive-part). Also check that implied p0*p1 < 1 where relevant.
                     break;
                 }
             }
@@ -351,9 +322,6 @@ void Simulation::weekly_trade_and_exit(RunInfo& runInfo) {
         }
     }
 
-    // NOTE[AUTOMATED] Confirm add_income and internal accounting ensure the shop’s two side-flows imply
-    // π0k = y0k - p1k*y1k - f(g0k) and π1k = y1k - p0k*y0k - f(g1k) as in §5.3. Otherwise exit decisions will differ.
-
     // exit if unprofitable
     for (Shop& shop : shops) {
         if (shop.active) {
@@ -367,8 +335,6 @@ void Simulation::weekly_trade_and_exit(RunInfo& runInfo) {
             }
         }
     }
-
-    // NOTE[AUTOMATED] Paper’s exit rule: if either operating surplus ≤ 0, exit with probability θ that week. Ensure is_profitable() implements “positive in both commodities” exactly.
 
     print_debug("Weekly trade and exit completed");
 }
@@ -505,7 +471,6 @@ Trader& Simulation::random_producer(int good) {
 
 Shop& Simulation::random_shop() {
     // Selects a random shop from the shop population.
-    // NOTE[AUTOMATED] Paper picks a random location k∈{1,…,K} and includes it iff occupied. random_shop() should emulate that (possibly returning an inactive slot and being filtered out above).
     return shops[rng.uniform_int(info.K) + 1];
 }
 
@@ -546,11 +511,8 @@ void Simulation::try_barter(const Trader* trader, std::vector<int>& c, struct Ma
             }
         }
     }
-
-    // NOTE[AUTOMATED] Paper does not *prioritize* direct barter; it simply considers all feasible sets and chooses the best via the Section 5 rule. Ensure this heuristic does not bias away from monetary patterns.
 }
 
-// NOTE: Should NULL store be evaluated? PS: c[.] may be zero in the loop
 // TODO: replace array for a proper queue
 void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct MatchEvaluation& eval) {
     // Attempts to improve a trader's outlet or source by matching with candidate shops.
@@ -559,8 +521,8 @@ void Simulation::try_one(const Trader* trader, std::vector<int>& c, struct Match
     int s = trader->get_supplied_good();
     int d = trader->get_demand_good();
     for (size_t idx = 0; idx < c.size(); ++idx) {
-        Shop* shop = c[idx] > 0 ? &shops[c[idx]] : nullptr;
-        assert(shop != nullptr);
+        Shop* shop = &shops[c[idx]];
+        assert(shop != nullptr); // It should never the case that the candidate seller shop is  null, this is for safety
         Shop* candidate_seller = eval.candidate_seller ? eval.candidate_seller : &zero;
         Shop* candidate_buyer = eval.candidate_buyer ? eval.candidate_buyer : &zero;
 
@@ -623,6 +585,7 @@ void Simulation::try_two(const Trader* trader, std::vector<int>& c, struct Match
 
 int Simulation::calc1(RunInfo& runInfo) {
     // Calculates monetary equilibrium and tracks the emergence of money in the simulation.
+
     runInfo.part = 0.0;
     runInfo.moneytraders = 0.0;
     runInfo.usingmoney.assign(info.n + 1, 0.0);
@@ -633,31 +596,31 @@ int Simulation::calc1(RunInfo& runInfo) {
 
             Shop* shop_a = trader.get_outlet();
             Shop* shop_b = trader.get_source();
-            int ma = (shop_a->g[0] == trader.get_supplied_good());
-            int mb = (shop_b != nullptr && shop_b->g[0] == trader.get_demand_good());
 
-            runInfo.part += (shop_a->g[ma] == trader.get_demand_good()) ||
-                    (shop_b != nullptr && (shop_a->g[ma] == shop_b->g[mb])) ||
-                    (shop_b == nullptr && (shop_a->g[ma] == 0));
+            runInfo.part += (shop_a->get_the_other_good(trader.get_supplied_good()) == trader.get_demand_good()) ||
+                            (shop_b != nullptr && (shop_a->get_the_other_good(trader.get_supplied_good()) == shop_b->get_the_other_good(trader.get_demand_good()))) ||
+                            (shop_b == nullptr && (shop_a->get_the_other_good(trader.get_supplied_good()) == 0));
 
-            if (shop_b != nullptr && shop_a->g[ma] == shop_b->g[mb]) {
+            // Money appears when a trader is conducting indirect (two-step) exchange mediated by the same intermediary good on both sides
+            if (shop_b != nullptr && shop_a->get_the_other_good(trader.get_supplied_good()) == shop_b->get_the_other_good(trader.get_demand_good())) {
                 runInfo.moneytraders += 1.0;
-                runInfo.usingmoney[shop_b->g[mb]] += 1.0;
+                runInfo.usingmoney[shop_b->get_the_other_good(trader.get_demand_good())] += 1.0;
             }
         }
     }
 
     if (runInfo.part >= 0.99 * info.m) {
         if (runInfo.devcount == 0)
-            runInfo.devyear = runInfo.t / 50;
+            runInfo.devyear = runInfo.t / 50; // devyear records the (coarse) time when broad participation first appears
         runInfo.devcount++;
     }
     else {
         runInfo.devcount = 0;
     }
-    if (runInfo.devcount >= info.persist)
-        runInfo.fulldev = 1;
+    if (runInfo.devcount >= info.persist) // If development persists enough...
+        runInfo.fulldev = 1; // Fully developed monetary economy
 
+    // The most used good becomes the money good
     runInfo.usingmax = 0.0;
     runInfo.moneygood = 0;
     for (int i = 1; i <= info.n; ++i) {
@@ -667,6 +630,7 @@ int Simulation::calc1(RunInfo& runInfo) {
         }
     }
 
+    // If participation is large enough, equilibrium is reached
     if (runInfo.usingmoney[runInfo.moneygood] >= 0.99 * runInfo.Fmon) {
         if (runInfo.endcount == 0) {
             runInfo.monyear = runInfo.t / 50;
@@ -682,7 +646,6 @@ int Simulation::calc1(RunInfo& runInfo) {
 
 void Simulation::calc2(RunInfo& runInfo) {
     // Calculates final statistics for the simulation run, including surplus and shop counts.
-    // Simulation rule: Summarizes market outcomes for analysis.
     std::vector<double> Pinv(info.n + 1, 0.0);
 
     auto overhead_f = make_overhead(info.f1, slope);
@@ -690,21 +653,24 @@ void Simulation::calc2(RunInfo& runInfo) {
     // count non-money active shops
     runInfo.BS = 0;
     for (Shop& shop : shops) {
-        if (shop.active) {
-            if (shop.g[0] != runInfo.moneygood && shop.g[1] != runInfo.moneygood)
-                runInfo.BS++;
-        }
+        if (shop.active && (!shop.provides(runInfo.moneygood))) { runInfo.BS++; }
     }
 
+    // Compute W: the fraction of the nominal market remaining after overhead and
+    // per-trade constant C are subtracted.
     runInfo.W = 1.0 - (overhead_f(runInfo.moneygood) + info.C) / info.bsize;
     if (runInfo.W > 0.0) {
+        // Pinv: for each good i, the expected fraction (inverse retail) under the SME benchmark. Rescaled to allow relative comparison.
         for (int i = 1; i <= info.n; ++i) {
             Pinv[i] = ((info.m / info.n) - (overhead_f(i) + info.C)) /
                 ((info.m / info.n) - (info.n - 2) * (overhead_f(runInfo.moneygood) + info.C));
         }
     }
+
+    // SurpSME is the SME benchmark surplus used for diagnostics
     runInfo.SurpSME = info.m - info.n * info.f1 - (slope / 2.0) * info.n * (info.n - 1) - (info.n - 2) * overhead_f(runInfo.moneygood);
 
+    // Compute RMSE diagnostics that compare observed price/volume patterns to SME benchmark
     rmse(runInfo, Pinv);
 
     runInfo.Csurp = 0.0;
@@ -718,9 +684,7 @@ void Simulation::calc2(RunInfo& runInfo) {
             for (int h = 0; h < 2; ++h) {
                 runInfo.Psurp += (shop.y[h] - overhead_f(shop.g[h]) - shop.P[1 - h] * shop.y[1 - h]);
             }
-            int own = shop.owner;
-            int qown = (own > 0) ? traders[own].q : 0;
-            if ((own > 0) && (shop.y[qown] > 1.0 || shop.y[1 - qown] > 0.0))
+            if (shop.y[shop.get_owner()->q] > 1.0 || shop.y[1 - shop.get_owner()->q] > 0.0)
                 runInfo.Nshop++;
         }
     }
@@ -728,7 +692,6 @@ void Simulation::calc2(RunInfo& runInfo) {
 
 void Simulation::rmse(RunInfo& runInfo, std::vector<double> &Pinv) {
     // Computes root mean square error for price and volume statistics.
-    // Simulation rule: Measures market efficiency and price dispersion.
     std::vector<double> vol[2], avp[2];
     for (int h = 0; h < 2; ++h) {
         vol[h].assign(info.n + 1, 0.0);
@@ -744,7 +707,7 @@ void Simulation::rmse(RunInfo& runInfo, std::vector<double> &Pinv) {
         // aggregate by pairs with moneygood
         for (Shop& shop : shops) {
             if (shop.active) {
-                if (shop.g[0] == runInfo.moneygood || shop.g[1] == runInfo.moneygood) {
+                if (shop.provides(runInfo.moneygood)) {
                     int ma = (shop.g[1] == runInfo.moneygood);
                     int i = shop.g[1 - ma];
                     vol[0][i] += shop.y[1 - ma];
@@ -760,21 +723,21 @@ void Simulation::rmse(RunInfo& runInfo, std::vector<double> &Pinv) {
         }
 
         for (int i = 1; i <= info.n; ++i) {
-            if (i == runInfo.moneygood)
-                continue;
-            avp[0][i] = (runInfo.W != 0.0) ? (avp[0][i] / runInfo.W) : 0.0;
-            avp[1][i] = (Pinv[i] != 0.0) ? (avp[1][i] / Pinv[i]) : 0.0;
+            if (i != runInfo.moneygood) {
+                avp[0][i] = (runInfo.W != 0.0) ? (avp[0][i] / runInfo.W) : 0.0;
+                avp[1][i] = (Pinv[i] != 0.0) ? (avp[1][i] / Pinv[i]) : 0.0;
+            }
         }
 
         for (int h = 0; h < 2; ++h) {
             double sse = 0.0;
             int count = 0;
             for (int i = 1; i <= info.n; ++i) {
-                if (i == runInfo.moneygood)
-                    continue;
-                double e = 1.0 - avp[h][i];
-                sse += e * e;
-                ++count;
+                if (i == runInfo.moneygood) {
+                    double e = 1.0 - avp[h][i];
+                    sse += e * e;
+                    ++count;
+                }
             }
             runInfo.R[h] = (count > 0) ? std::sqrt(sse / count) : -1.0;
         }

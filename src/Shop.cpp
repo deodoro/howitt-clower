@@ -18,6 +18,7 @@
  */
 
 #include "Shop.h"
+#include "Trader.h"
 
 // Shop class models a trading post in the simulation.
 // Each shop has two goods it can trade (g[0], g[1]), an owner, posted prices (P[0], P[1]),
@@ -25,10 +26,15 @@
 // The simulation rules encoded here govern how shops interact with traders, update prices,
 // accumulate income, and determine profitability and survival.
 
+
+void Shop::set_owner(Trader* owner) {
+    this->owner = owner;
+}
+
 std::string Shop::to_string() const {
     // Returns a string representation of the shop's state for debugging.
     return "Shop{active=" + std::to_string(active) + ", g=[" + std::to_string(g[0]) + "," + std::to_string(g[1]) +
-           "], owner=" + std::to_string(owner) + ", P=[" + std::to_string(P[0]) + "," + std::to_string(P[1]) +
+           "], owner=" + std::to_string(owner->idx) + ", P=[" + std::to_string(P[0]) + "," + std::to_string(P[1]) +
            "], y=[" + std::to_string(y[0]) + "," + std::to_string(y[1]) + "], tr=[" + std::to_string(tr[0]) + "," + std::to_string(tr[1]) + "]}";
 }
 

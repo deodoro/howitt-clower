@@ -110,7 +110,7 @@ bool Trader::open_shop(Shop &shop)
         set_outlet(&shop);
         set_source(nullptr);
         set_familyshop(&shop);
-        shop.owner = idx;
+        shop.set_owner(this);
         return true;
     }
 }

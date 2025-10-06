@@ -23,6 +23,8 @@
 #include <string>
 #include <functional>
 
+class Trader;
+
 /**
  * @brief The Shop class models a trading post in the simulation.
  *
@@ -34,15 +36,17 @@
  * - The math in methods encodes these rules, ensuring shops only survive if they contribute positively to the simulated economy.
  */
 class Shop {
+private:
+    Trader* owner{nullptr};          // trader that owns this shop
 public:
     int idx{0};
     int active{0};         // 1 if active
     int g[2]{0,0};         // traded goods, ordered so g[0]<=g[1]
-    int owner{0};          // trader id that owns this shop
     double P[2]{0.0,0.0};  // posted buying prices per side
     double y[2]{0.0,0.0};  // realized incomes this week per side
     double tr[2]{0.0,0.0}; // income targets per side
 
+    Shop() {};
     /**
      * Returns a string representation of the shop's state for debugging.
      * Includes active status, traded goods, owner, prices, incomes, and targets.
@@ -106,6 +110,14 @@ public:
      * Returns true if the shop is active.
      */
     bool is_active() const { return active == 1; }
+    /**
+     * Sets the owner of the shop.
+     */
+    void set_owner(Trader*);
+    /**
+     * Returns the owner of the shop.
+     */
+    Trader* get_owner() const { return owner; }
 };
 
 #endif // SHOP_H
